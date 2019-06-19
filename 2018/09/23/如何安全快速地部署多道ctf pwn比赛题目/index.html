@@ -88,7 +88,7 @@
 <meta property="og:description" content="前言一开始接触pwn的时候，我们要么本地调试，要么自己用socat将程序启动起来远程调试 最近去搞pwn培训，发现将pwn题一个一个部署起来还是比较繁琐，除了权限还要考虑其他东西 后来一顿搜索，看看有无别人的解决方案，发现一个xinted + docker的方案： https://github.com/Eadom/ctf_xinetd 但是对于这个我发现了一些缺点：  需要自己配置flag 需要自">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1537761038385.jpg">
-<meta property="og:updated_time" content="2019-05-24T15:07:13.300Z">
+<meta property="og:updated_time" content="2019-06-17T12:14:45.678Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="如何安全快速地部署多道ctf pwn比赛题目">
 <meta name="twitter:description" content="前言一开始接触pwn的时候，我们要么本地调试，要么自己用socat将程序启动起来远程调试 最近去搞pwn培训，发现将pwn题一个一个部署起来还是比较繁琐，除了权限还要考虑其他东西 后来一顿搜索，看看有无别人的解决方案，发现一个xinted + docker的方案： https://github.com/Eadom/ctf_xinetd 但是对于这个我发现了一些缺点：  需要自己配置flag 需要自">
@@ -384,7 +384,7 @@
         <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>一开始接触pwn的时候，我们要么本地调试，要么自己用socat将程序启动起来远程调试</p>
 <p>最近去搞pwn培训，发现将pwn题一个一个部署起来还是比较繁琐，除了权限还要考虑其他东西</p>
 <p>后来一顿搜索，看看有无别人的解决方案，发现一个xinted + docker的方案：</p>
-<p><a href="https://github.com/Eadom/ctf_xinetd" target="_blank" rel="external">https://github.com/Eadom/ctf_xinetd</a></p>
+<p><a href="https://github.com/Eadom/ctf_xinetd" target="_blank" rel="noopener">https://github.com/Eadom/ctf_xinetd</a></p>
 <p>但是对于这个我发现了一些缺点：</p>
 <ol>
 <li>需要自己配置flag</li>
@@ -393,7 +393,7 @@
 <li>一次只能部署一个题目（我想一键将5道题甚至是10道题同时部署在一个docker容器中）</li>
 <li>安全性基于chroot，而且只给了ls，cat和sh三个程序，已经很安全了，但是sh还是存在fork炸弹的可能</li>
 </ol>
-<p>于是我根据自己需要，写了一个项目：<a href="https://github.com/giantbranch/pwn_deploy_chroot" target="_blank" rel="external">https://github.com/giantbranch/pwn_deploy_chroot</a></p>
+<p>于是我根据自己需要，写了一个项目：<a href="https://github.com/giantbranch/pwn_deploy_chroot" target="_blank" rel="noopener">https://github.com/giantbranch/pwn_deploy_chroot</a></p>
 <h1 id="pwn-deploy-chroot介绍"><a href="#pwn-deploy-chroot介绍" class="headerlink" title="pwn_deploy_chroot介绍"></a>pwn_deploy_chroot介绍</h1><h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><blockquote>
 <ol>
 <li>一次可以部署多个题目到一个docker容器中</li>
@@ -404,7 +404,8 @@
 <li>默认从10000端口监听，多一个程序就+1，起始的监听端口可以在config.py配置，或者生成pwn.xinetd和docker-compose.yml后自己修改这两个文件</li>
 </ol>
 </blockquote>
-<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"># 安装docker</div><div class="line">curl -s https://get.docker.com/ | sh</div><div class="line"># 安装 docker compose 和git</div><div class="line">apt install docker-compose git</div><div class="line"># 下载</div><div class="line">git clone https://github.com/giantbranch/pwn_deploy_chroot.git</div></pre></td></tr></table></figure>
+<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 安装docker</span><br><span class="line">curl -s https://get.docker.com/ | sh</span><br><span class="line"># 安装 docker compose 和git</span><br><span class="line">apt install docker-compose git</span><br><span class="line"># 下载</span><br><span class="line">git clone https://github.com/giantbranch/pwn_deploy_chroot.git</span><br></pre></td></tr></table></figure>
+
 <h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>只需要3步：</p>
 <blockquote>
 <ol>
@@ -416,21 +417,26 @@
 <p>下面给下详细操作：</p>
 <p>1、将你要部署的pwn题目放到bin目录</p>
 <p>我的项目已经将一个程序copy了3分作为示例，注意文件名不要含有特殊字符，文件名建议使用字母，下划线，横杆和数字，当然全字母的当然最好了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root@instance-1:~/pwn_deploy_chroot# ls bin/</div><div class="line">pwn1  pwn1_copy1  pwn1_copy2</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@instance-1:~/pwn_deploy_chroot# ls bin/</span><br><span class="line">pwn1  pwn1_copy1  pwn1_copy2</span><br></pre></td></tr></table></figure>
+
 <p>2、运行initialize.py</p>
 <p>运行脚本后会输出每个pwn的监听端口，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">root@instance-1:~/pwn_deploy_chroot# python initialize.py</div><div class="line"></div><div class="line">pwn1&apos;s port: 10000</div><div class="line">pwn1_copy1&apos;s port: 10001</div><div class="line">pwn1_copy2&apos;s port: 10002</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">root@instance-1:~/pwn_deploy_chroot# python initialize.py</span><br><span class="line"></span><br><span class="line">pwn1&apos;s port: 10000</span><br><span class="line">pwn1_copy1&apos;s port: 10001</span><br><span class="line">pwn1_copy2&apos;s port: 10002</span><br></pre></td></tr></table></figure>
+
 <p>文件与端口信息，还有随机生成的flag默认备份到flags.txt </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">root@instance-1:~/pwn_deploy_chroot# cat flags.txt </div><div class="line">pwn1: flag&#123;93aa6da5-db45-46fa-a2e1-af2be6698692&#125;</div><div class="line">pwn1_copy1: flag&#123;f9966c51-52e4-4212-ac44-97bf16620b41&#125;</div><div class="line">pwn1_copy2: flag&#123;b17949ce-e3fa-4ca7-9fcc-44b8dc997cb3&#125;</div><div class="line"></div><div class="line">pwn1&apos;s port: 10000</div><div class="line">pwn1_copy1&apos;s port: 10001</div><div class="line">pwn1_copy2&apos;s port: 10002</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@instance-1:~/pwn_deploy_chroot# cat flags.txt </span><br><span class="line">pwn1: flag&#123;93aa6da5-db45-46fa-a2e1-af2be6698692&#125;</span><br><span class="line">pwn1_copy1: flag&#123;f9966c51-52e4-4212-ac44-97bf16620b41&#125;</span><br><span class="line">pwn1_copy2: flag&#123;b17949ce-e3fa-4ca7-9fcc-44b8dc997cb3&#125;</span><br><span class="line"></span><br><span class="line">pwn1&apos;s port: 10000</span><br><span class="line">pwn1_copy1&apos;s port: 10001</span><br><span class="line">pwn1_copy2&apos;s port: 10002</span><br></pre></td></tr></table></figure>
+
 <p>3、启动环境</p>
 <p>请使用root用户执行命令</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker-compose up --build -d</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up --build -d</span><br></pre></td></tr></table></figure>
+
 <p>不出意外，题目就启动起来了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">root@instance-1:~/pwn_deploy_chroot# netstat -antp | grep docker</div><div class="line">tcp6       0      0 :::10002                :::*                    LISTEN      19828/docker-proxy</div><div class="line">tcp6       0      0 :::10000                :::*                    LISTEN      19887/docker-proxy</div><div class="line">tcp6       0      0 :::10001                :::*                    LISTEN      19873/docker-proxy</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@instance-1:~/pwn_deploy_chroot# netstat -antp | grep docker</span><br><span class="line">tcp6       0      0 :::10002                :::*                    LISTEN      19828/docker-proxy</span><br><span class="line">tcp6       0      0 :::10000                :::*                    LISTEN      19887/docker-proxy</span><br><span class="line">tcp6       0      0 :::10001                :::*                    LISTEN      19873/docker-proxy</span><br></pre></td></tr></table></figure>
+
 <p>我们测试一下pwn1,看看效果</p>
 <p><img src="http://pic.giantbranch.cn/pic/1537761038385.jpg" alt></p>
 <p>可以看到，虽然执行的是system(“/bin/sh”)，但是实际功能只是输出flag，这样就非常安全了</p>
-<h1 id="感谢"><a href="#感谢" class="headerlink" title="感谢"></a>感谢</h1><p><a href="https://github.com/Eadom/ctf_xinetd" target="_blank" rel="external">https://github.com/Eadom/ctf_xinetd</a></p>
+<h1 id="感谢"><a href="#感谢" class="headerlink" title="感谢"></a>感谢</h1><p><a href="https://github.com/Eadom/ctf_xinetd" target="_blank" rel="noopener">https://github.com/Eadom/ctf_xinetd</a></p>
 
       
     </div>

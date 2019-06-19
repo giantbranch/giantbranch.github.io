@@ -92,7 +92,7 @@
 <meta property="og:image" content="http://pic.giantbranch.cn/1507714501822.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/1507714468511.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/1507714869109.jpg">
-<meta property="og:updated_time" content="2019-05-24T15:07:13.300Z">
+<meta property="og:updated_time" content="2019-06-17T12:14:45.678Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="在Windows下编译 Firefox">
 <meta name="twitter:description" content="简介最近分析CVE-2013-0750 Firefox 字符串替换整数溢出漏洞，尝试一下源码调试的分析方法，所以记录一下编译过程，本次以编译firefox17.0为例记录 环境搭建 源码 MozillaBuild Visual Studio Windows 7 32位（我用的是这个）  各版本的源码可以从下面的连接下载 https://archive.mozilla.org/pub/firefox">
@@ -393,31 +393,32 @@
 <li>Windows 7 32位（我用的是这个）</li>
 </ol>
 <p>各版本的源码可以从下面的连接下载</p>
-<p><a href="https://archive.mozilla.org/pub/firefox/releases/" target="_blank" rel="external">https://archive.mozilla.org/pub/firefox/releases/</a></p>
+<p><a href="https://archive.mozilla.org/pub/firefox/releases/" target="_blank" rel="noopener">https://archive.mozilla.org/pub/firefox/releases/</a></p>
 <p>编译工具MozillaBuild下载（这个推荐是下载与源码发布实践相近的版本，我下的是1.7）</p>
-<p><a href="http://ftp.mozilla.org/pub/mozilla/libraries/win32/" target="_blank" rel="external">http://ftp.mozilla.org/pub/mozilla/libraries/win32/</a></p>
+<p><a href="http://ftp.mozilla.org/pub/mozilla/libraries/win32/" target="_blank" rel="noopener">http://ftp.mozilla.org/pub/mozilla/libraries/win32/</a></p>
 <p>还有我用的vs2012，漏洞战争用的是2010，我自己试过vs2008，不知道不是不express版的问题，编译出错，说SDK缺少了某个头文件</p>
 <h1 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h1><ol>
 <li>将源码和MozillaBuild到一个目录，我是直接解压到盘符的根目录了，防止有意外的中文编码什么错误</li>
 </ol>
 <p><img src="http://pic.giantbranch.cn/1507713735287.jpg" alt></p>
-<ol>
+<ol start="2">
 <li>去源码的./brower/config目录复制mozconfig文件到源码根目录，之后打开文件添加如下配置（其实直接在源码根目录直接新建就可以了感觉）</li>
 </ol>
-<figure class="highlight moonscript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">ac_add_options --enable-application=browser</div><div class="line">export MOZ_DEBUG_SYMBOLS=1</div><div class="line">ac_add_options --enable-debug</div><div class="line">ac_add_options --disable-webgl</div></pre></td></tr></table></figure>
+<figure class="highlight moonscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ac_add_options --enable-application=browser</span><br><span class="line">export MOZ_DEBUG_SYMBOLS=1</span><br><span class="line">ac_add_options --enable-debug</span><br><span class="line">ac_add_options --disable-webgl</span><br></pre></td></tr></table></figure>
+
 <p>–disable-webgl的话是当时发现编译不了添加的</p>
 <p><img src="http://pic.giantbranch.cn/1507714054507.jpg" alt></p>
-<ol>
+<ol start="3">
 <li>之后打开mozilla-build目录，根据你下载的vs版本打开start-msvc.bat文件（最好还是以管理员运行吧）</li>
 </ol>
 <p>比如vs2012是start-msvc11.bat，2010是start-msvc10.bat</p>
-<ol>
+<ol start="4">
 <li>最后cd到源码的路径，执行make –f client.mk build命令即可，无意外就等待1个半到两个小时就完成了</li>
 </ol>
 <p><img src="http://pic.giantbranch.cn/1507714304127.jpg" alt></p>
 <p>完成截图</p>
 <p><img src="http://pic.giantbranch.cn/1507714501822.jpg" alt></p>
-<ol>
+<ol start="5">
 <li>最后的exe在源码目录中的objxxxxxx\dist\bin目录下</li>
 </ol>
 <p><img src="http://pic.giantbranch.cn/1507714468511.jpg" alt></p>

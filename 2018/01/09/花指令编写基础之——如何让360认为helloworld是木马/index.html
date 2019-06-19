@@ -79,13 +79,13 @@
 
 
 
-<meta name="description" content="其实这篇文章是讲讲最简单的花指令，这标题是写到后面发现360报木马，所以有此题目。 开始之前首先编写一个简单的hello world程序，并编译 1234567#include &amp;quot;stdio.h&amp;quot;int main(int argc, char const *argv[])&amp;#123;	printf(&amp;quot;hello，giantbranch&amp;quot;);&amp;#125; 花指">
+<meta name="description" content="其实这篇文章是讲讲最简单的花指令，这标题是写到后面发现360报木马，所以有此题目。 开始之前首先编写一个简单的hello world程序，并编译 1234567#include &amp;quot;stdio.h&amp;quot;int main(int argc, char const *argv[])&amp;#123;	printf(&amp;quot;hello，giantbranch&amp;quot;);&amp;#125;  花">
 <meta name="keywords" content="逆向,花指令">
 <meta property="og:type" content="article">
 <meta property="og:title" content="花指令编写基础之——如何让360认为helloworld是木马">
 <meta property="og:url" content="https://www.giantbranch.cn/2018/01/09/花指令编写基础之——如何让360认为helloworld是木马/index.html">
 <meta property="og:site_name" content="giantbranch&#39;s blog">
-<meta property="og:description" content="其实这篇文章是讲讲最简单的花指令，这标题是写到后面发现360报木马，所以有此题目。 开始之前首先编写一个简单的hello world程序，并编译 1234567#include &amp;quot;stdio.h&amp;quot;int main(int argc, char const *argv[])&amp;#123;	printf(&amp;quot;hello，giantbranch&amp;quot;);&amp;#125; 花指">
+<meta property="og:description" content="其实这篇文章是讲讲最简单的花指令，这标题是写到后面发现360报木马，所以有此题目。 开始之前首先编写一个简单的hello world程序，并编译 1234567#include &amp;quot;stdio.h&amp;quot;int main(int argc, char const *argv[])&amp;#123;	printf(&amp;quot;hello，giantbranch&amp;quot;);&amp;#125;  花">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1515595993729.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1515595684175.jpg">
@@ -96,10 +96,10 @@
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1515597069224.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1515598556630.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1515597311717.jpg">
-<meta property="og:updated_time" content="2019-05-24T15:07:13.300Z">
+<meta property="og:updated_time" content="2019-06-17T12:14:45.682Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="花指令编写基础之——如何让360认为helloworld是木马">
-<meta name="twitter:description" content="其实这篇文章是讲讲最简单的花指令，这标题是写到后面发现360报木马，所以有此题目。 开始之前首先编写一个简单的hello world程序，并编译 1234567#include &amp;quot;stdio.h&amp;quot;int main(int argc, char const *argv[])&amp;#123;	printf(&amp;quot;hello，giantbranch&amp;quot;);&amp;#125; 花指">
+<meta name="twitter:description" content="其实这篇文章是讲讲最简单的花指令，这标题是写到后面发现360报木马，所以有此题目。 开始之前首先编写一个简单的hello world程序，并编译 1234567#include &amp;quot;stdio.h&amp;quot;int main(int argc, char const *argv[])&amp;#123;	printf(&amp;quot;hello，giantbranch&amp;quot;);&amp;#125;  花">
 <meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1515595993729.jpg">
 
 
@@ -391,11 +391,14 @@
       
         <p>其实这篇文章是讲讲最简单的花指令，这标题是写到后面发现360报木马，所以有此题目。</p>
 <h1 id="开始之前"><a href="#开始之前" class="headerlink" title="开始之前"></a>开始之前</h1><p>首先编写一个简单的hello world程序，并编译</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">#include &quot;stdio.h&quot;</div><div class="line"></div><div class="line">int main(int argc, char const *argv[])</div><div class="line">&#123;</div><div class="line">	printf(&quot;hello，giantbranch&quot;);</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;stdio.h&quot;</span><br><span class="line"></span><br><span class="line">int main(int argc, char const *argv[])</span><br><span class="line">&#123;</span><br><span class="line">	printf(&quot;hello，giantbranch&quot;);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>花指令可以简单理解为欺骗杀软，给分析者增加障碍的指令，但是对程序的运行结果没有影响的指令，比如下面的（高级点的使ida反汇编的时候出错，让破解者无法清楚正确地反汇编程序的内容，迷失方向）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">push eax</div><div class="line">push ebx</div><div class="line">pop ebx</div><div class="line">pop eax</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">push eax</span><br><span class="line">push ebx</span><br><span class="line">pop ebx</span><br><span class="line">pop eax</span><br></pre></td></tr></table></figure>
+
 <p>再比如</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">sub eax, 1</div><div class="line">add eax, 1</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sub eax, 1</span><br><span class="line">add eax, 1</span><br></pre></td></tr></table></figure>
+
 <p>有时候会在jmp的下一行插入一些干扰ida静态分析的字节，而jmp是刚好跳过这些垃圾字节的</p>
 <h1 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h1><p><strong>指导思想</strong>：我们使用od在程序比较后的没有代码的地址编写一些简单花指令，之后跳回真正的入口点（当然我们要将程序的入口点修改为我们的代码的地址）</p>
 <p>实践前我们先查下壳（其实这是vs2015编译的）</p>

@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="使用socat部署安装 1apt install socat 模板：socat tcp-listen:port,fork exec:./程序名,reuseaddr 实例：socat tcp-listen:10001,fork exec:./pwn1,reuseaddr 缺点：需要控制好权限；存在各种风险 使用pwn_deploy部署https://github.com/giantbranch/pw">
+<meta name="description" content="使用socat部署安装 1apt install socat  模板：socat tcp-listen:port,fork exec:./程序名,reuseaddr 实例：socat tcp-listen:10001,fork exec:./pwn1,reuseaddr 缺点：需要控制好权限；存在各种风险 使用pwn_deploy部署https://github.com/giantbranch/p">
 <meta name="keywords" content="pwn,部署">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ctf pwn题目的部署">
 <meta property="og:url" content="https://www.giantbranch.cn/2018/09/16/ctf pwn题目的部署/index.html">
 <meta property="og:site_name" content="giantbranch&#39;s blog">
-<meta property="og:description" content="使用socat部署安装 1apt install socat 模板：socat tcp-listen:port,fork exec:./程序名,reuseaddr 实例：socat tcp-listen:10001,fork exec:./pwn1,reuseaddr 缺点：需要控制好权限；存在各种风险 使用pwn_deploy部署https://github.com/giantbranch/pw">
+<meta property="og:description" content="使用socat部署安装 1apt install socat  模板：socat tcp-listen:port,fork exec:./程序名,reuseaddr 实例：socat tcp-listen:10001,fork exec:./pwn1,reuseaddr 缺点：需要控制好权限；存在各种风险 使用pwn_deploy部署https://github.com/giantbranch/p">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-05-24T15:07:13.288Z">
+<meta property="og:updated_time" content="2019-06-17T12:14:45.678Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ctf pwn题目的部署">
-<meta name="twitter:description" content="使用socat部署安装 1apt install socat 模板：socat tcp-listen:port,fork exec:./程序名,reuseaddr 实例：socat tcp-listen:10001,fork exec:./pwn1,reuseaddr 缺点：需要控制好权限；存在各种风险 使用pwn_deploy部署https://github.com/giantbranch/pw">
+<meta name="twitter:description" content="使用socat部署安装 1apt install socat  模板：socat tcp-listen:port,fork exec:./程序名,reuseaddr 实例：socat tcp-listen:10001,fork exec:./pwn1,reuseaddr 缺点：需要控制好权限；存在各种风险 使用pwn_deploy部署https://github.com/giantbranch/p">
 
 
 
@@ -380,11 +380,12 @@
 
       
         <h1 id="使用socat部署"><a href="#使用socat部署" class="headerlink" title="使用socat部署"></a>使用socat部署</h1><p>安装</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">apt install socat</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt install socat</span><br></pre></td></tr></table></figure>
+
 <p>模板：<code>socat tcp-listen:port,fork exec:./程序名,reuseaddr</code></p>
 <p>实例：<code>socat tcp-listen:10001,fork exec:./pwn1,reuseaddr</code></p>
 <p>缺点：需要控制好权限；存在各种风险</p>
-<h1 id="使用pwn-deploy部署"><a href="#使用pwn-deploy部署" class="headerlink" title="使用pwn_deploy部署"></a>使用pwn_deploy部署</h1><p><a href="https://github.com/giantbranch/pwn_deploy" target="_blank" rel="external">https://github.com/giantbranch/pwn_deploy</a></p>
+<h1 id="使用pwn-deploy部署"><a href="#使用pwn-deploy部署" class="headerlink" title="使用pwn_deploy部署"></a>使用pwn_deploy部署</h1><p><a href="https://github.com/giantbranch/pwn_deploy" target="_blank" rel="noopener">https://github.com/giantbranch/pwn_deploy</a></p>
 <p>项目基于docker和xinetd<br>项目主要根据bin目录的文件，动态生成flag，xinetd配置文件，Dockerfile和docker-compose.yml<br>程序都是放在家目录，通过权限控制不能进入别人的家目录，同时不能修改或删除二进制程序和flag文件</p>
 <p><strong>使用</strong></p>
 <blockquote>
@@ -395,8 +396,8 @@
 </ol>
 </blockquote>
 <p>这个部署方式并不太安全，只是基于权限控制</p>
-<p>请使用： <a href="https://github.com/giantbranch/pwn_deploy_chroot" target="_blank" rel="external">https://github.com/giantbranch/pwn_deploy_chroot</a></p>
-<h1 id="使用pwn-deploy-chroot部署"><a href="#使用pwn-deploy-chroot部署" class="headerlink" title="使用pwn_deploy_chroot部署"></a>使用pwn_deploy_chroot部署</h1><p><a href="https://github.com/giantbranch/pwn_deploy_chroot" target="_blank" rel="external">https://github.com/giantbranch/pwn_deploy_chroot</a></p>
+<p>请使用： <a href="https://github.com/giantbranch/pwn_deploy_chroot" target="_blank" rel="noopener">https://github.com/giantbranch/pwn_deploy_chroot</a></p>
+<h1 id="使用pwn-deploy-chroot部署"><a href="#使用pwn-deploy-chroot部署" class="headerlink" title="使用pwn_deploy_chroot部署"></a>使用pwn_deploy_chroot部署</h1><p><a href="https://github.com/giantbranch/pwn_deploy_chroot" target="_blank" rel="noopener">https://github.com/giantbranch/pwn_deploy_chroot</a></p>
 <p>项目基于docker，xinetd和chroot，更加安全</p>
 <p>相对上面的pwn_deploy，使用chroot更加安全</p>
 <p>而且用自己写的catflag程序作为/bin/sh程序，这就将安全性提升一步了</p>

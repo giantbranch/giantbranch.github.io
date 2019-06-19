@@ -79,20 +79,20 @@
 
 
 
-<meta name="description" content="说一下DRDos我们知道Dos是拒绝服务攻击，DDos是分布式的，那么这个R是反射的意思，DNS放大的拒绝服务就是这种,这次我们实践的是memcache的DRDos，当然我们只是看看发送和返回的差异 这个实验基于：  memcache无认证（有认证基本没戏啊） udp的源ip可伪造性  测试环境一个装了memcache的vps 1apt install memcached 启动服务（其实默认端口是">
+<meta name="description" content="说一下DRDos我们知道Dos是拒绝服务攻击，DDos是分布式的，那么这个R是反射的意思，DNS放大的拒绝服务就是这种,这次我们实践的是memcache的DRDos，当然我们只是看看发送和返回的差异 这个实验基于：  memcache无认证（有认证基本没戏啊） udp的源ip可伪造性  测试环境一个装了memcache的vps 1apt install memcached  启动服务（其实默认端口">
 <meta name="keywords" content="DDos,DRDos,memcache">
 <meta property="og:type" content="article">
 <meta property="og:title" content="简单实践传说中的2T&#x2F;S的DRDoS">
 <meta property="og:url" content="https://www.giantbranch.cn/2018/01/21/简单实践传说中的2T每秒的DRDoS/index.html">
 <meta property="og:site_name" content="giantbranch&#39;s blog">
-<meta property="og:description" content="说一下DRDos我们知道Dos是拒绝服务攻击，DDos是分布式的，那么这个R是反射的意思，DNS放大的拒绝服务就是这种,这次我们实践的是memcache的DRDos，当然我们只是看看发送和返回的差异 这个实验基于：  memcache无认证（有认证基本没戏啊） udp的源ip可伪造性  测试环境一个装了memcache的vps 1apt install memcached 启动服务（其实默认端口是">
+<meta property="og:description" content="说一下DRDos我们知道Dos是拒绝服务攻击，DDos是分布式的，那么这个R是反射的意思，DNS放大的拒绝服务就是这种,这次我们实践的是memcache的DRDos，当然我们只是看看发送和返回的差异 这个实验基于：  memcache无认证（有认证基本没戏啊） udp的源ip可伪造性  测试环境一个装了memcache的vps 1apt install memcached  启动服务（其实默认端口">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1516589676806.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1516602707294.jpg">
-<meta property="og:updated_time" content="2019-05-24T15:07:13.300Z">
+<meta property="og:updated_time" content="2019-06-17T12:14:45.682Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="简单实践传说中的2T&#x2F;S的DRDoS">
-<meta name="twitter:description" content="说一下DRDos我们知道Dos是拒绝服务攻击，DDos是分布式的，那么这个R是反射的意思，DNS放大的拒绝服务就是这种,这次我们实践的是memcache的DRDos，当然我们只是看看发送和返回的差异 这个实验基于：  memcache无认证（有认证基本没戏啊） udp的源ip可伪造性  测试环境一个装了memcache的vps 1apt install memcached 启动服务（其实默认端口是">
+<meta name="twitter:description" content="说一下DRDos我们知道Dos是拒绝服务攻击，DDos是分布式的，那么这个R是反射的意思，DNS放大的拒绝服务就是这种,这次我们实践的是memcache的DRDos，当然我们只是看看发送和返回的差异 这个实验基于：  memcache无认证（有认证基本没戏啊） udp的源ip可伪造性  测试环境一个装了memcache的vps 1apt install memcached  启动服务（其实默认端口">
 <meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1516589676806.jpg">
 
 
@@ -389,12 +389,16 @@
 <li>udp的源ip可伪造性</li>
 </ol>
 <h1 id="测试环境"><a href="#测试环境" class="headerlink" title="测试环境"></a>测试环境</h1><p>一个装了memcache的vps</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">apt install memcached</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt install memcached</span><br></pre></td></tr></table></figure>
+
 <p>启动服务（其实默认端口是11211，我用11111吧）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">memcached -p 11111 -m 64m -vv -u memcache</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">memcached -p 11111 -m 64m -vv -u memcache</span><br></pre></td></tr></table></figure>
+
 <p>一个用于测试的vps，安装memcache python模块</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip install python-memcached</div></pre></td></tr></table></figure>
-<h1 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">&gt;&gt;&gt; import memcache</div><div class="line">&gt;&gt;&gt; mc = memcache.Client([&apos;127.0.0.1:xxxx&apos;],debug=True)</div><div class="line">&gt;&gt;&gt; mc.add(&apos;giantbranch&apos;,&quot;giantbranch&quot;*1000)</div><div class="line">True</div><div class="line">&gt;&gt;&gt; mc.add(&apos;giant1&apos;,&quot;giantbranch&quot;*10000)</div><div class="line">True</div><div class="line">&gt;&gt;&gt; mc.add(&apos;giant2&apos;,&quot;giantbranch&quot;*20000)</div><div class="line">True</div><div class="line">&gt;&gt;&gt; mc.add(&apos;giant3&apos;,&quot;giantbranch&quot;*50000)</div><div class="line">True</div><div class="line">&gt;&gt;&gt; mc.add(&apos;giant4&apos;,&quot;giantbranch&quot;*90000)</div><div class="line">True</div><div class="line">&gt;&gt;&gt; mc.set(&apos;giantbranch&apos;, &quot;giantbranch&quot;,9999999)</div><div class="line">True</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install python-memcached</span><br></pre></td></tr></table></figure>
+
+<h1 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; import memcache</span><br><span class="line">&gt;&gt;&gt; mc = memcache.Client([&apos;127.0.0.1:xxxx&apos;],debug=True)</span><br><span class="line">&gt;&gt;&gt; mc.add(&apos;giantbranch&apos;,&quot;giantbranch&quot;*1000)</span><br><span class="line">True</span><br><span class="line">&gt;&gt;&gt; mc.add(&apos;giant1&apos;,&quot;giantbranch&quot;*10000)</span><br><span class="line">True</span><br><span class="line">&gt;&gt;&gt; mc.add(&apos;giant2&apos;,&quot;giantbranch&quot;*20000)</span><br><span class="line">True</span><br><span class="line">&gt;&gt;&gt; mc.add(&apos;giant3&apos;,&quot;giantbranch&quot;*50000)</span><br><span class="line">True</span><br><span class="line">&gt;&gt;&gt; mc.add(&apos;giant4&apos;,&quot;giantbranch&quot;*90000)</span><br><span class="line">True</span><br><span class="line">&gt;&gt;&gt; mc.set(&apos;giantbranch&apos;, &quot;giantbranch&quot;,9999999)</span><br><span class="line">True</span><br></pre></td></tr></table></figure>
+
 <p>真正的实验来了</p>
 <p><img src="http://pic.giantbranch.cn/pic/1516589676806.jpg" alt></p>
 <p>可以看到我们发送55个字节，收到1459480字节</p>
@@ -406,9 +410,11 @@
 <h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h1><p>记录下实际的memcache的命令吧</p>
 <p>mc.add(‘giant1’,”giantbranch”*10000)</p>
 <p>实际服务器执行如下，成功返回STORED</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;31 add giant1 0 0 110000 </div><div class="line">&gt;31 STORED</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;31 add giant1 0 0 110000 </span><br><span class="line">&gt;31 STORED</span><br></pre></td></tr></table></figure>
+
 <p>mc.set(‘giantbranch’, “giantbranch”,9999999)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;31 set giantbranch 0 9999999 11 </div><div class="line">&gt;31 STORED</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;31 set giantbranch 0 9999999 11 </span><br><span class="line">&gt;31 STORED</span><br></pre></td></tr></table></figure>
+
 
       
     </div>

@@ -79,21 +79,21 @@
 
 
 
-<meta name="description" content="实践下载固件ftp://54.187.190.227/PRODUCTS/DIR-605L/REVA/DIR-605L_FIRMWARE_1.13.ZIP， binwalk解开 1binwalk -e ./dir605L_FW_113.bin 讲qemu-mips复制到固件根目录 1cp $(which qemu-mips) ./ 尝试直接执行 12sudo chroot . ./qemu-mips">
+<meta name="description" content="实践下载固件ftp://54.187.190.227/PRODUCTS/DIR-605L/REVA/DIR-605L_FIRMWARE_1.13.ZIP， binwalk解开 1binwalk -e ./dir605L_FW_113.bin  讲qemu-mips复制到固件根目录 1cp $(which qemu-mips) ./  尝试直接执行 12sudo chroot . ./qemu-mi">
 <meta name="keywords" content="调试,路由器,iot">
 <meta property="og:type" content="article">
 <meta property="og:title" content="一次qemu动态调试路由程序的记录">
 <meta property="og:url" content="https://www.giantbranch.cn/2018/04/15/一次qemu动态调试路由程序的记录/index.html">
 <meta property="og:site_name" content="giantbranch&#39;s blog">
-<meta property="og:description" content="实践下载固件ftp://54.187.190.227/PRODUCTS/DIR-605L/REVA/DIR-605L_FIRMWARE_1.13.ZIP， binwalk解开 1binwalk -e ./dir605L_FW_113.bin 讲qemu-mips复制到固件根目录 1cp $(which qemu-mips) ./ 尝试直接执行 12sudo chroot . ./qemu-mips">
+<meta property="og:description" content="实践下载固件ftp://54.187.190.227/PRODUCTS/DIR-605L/REVA/DIR-605L_FIRMWARE_1.13.ZIP， binwalk解开 1binwalk -e ./dir605L_FW_113.bin  讲qemu-mips复制到固件根目录 1cp $(which qemu-mips) ./  尝试直接执行 12sudo chroot . ./qemu-mi">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1523858835024.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1523863591350.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1523864640539.jpg">
-<meta property="og:updated_time" content="2019-05-24T15:07:13.300Z">
+<meta property="og:updated_time" content="2019-06-17T12:14:45.678Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="一次qemu动态调试路由程序的记录">
-<meta name="twitter:description" content="实践下载固件ftp://54.187.190.227/PRODUCTS/DIR-605L/REVA/DIR-605L_FIRMWARE_1.13.ZIP， binwalk解开 1binwalk -e ./dir605L_FW_113.bin 讲qemu-mips复制到固件根目录 1cp $(which qemu-mips) ./ 尝试直接执行 12sudo chroot . ./qemu-mips">
+<meta name="twitter:description" content="实践下载固件ftp://54.187.190.227/PRODUCTS/DIR-605L/REVA/DIR-605L_FIRMWARE_1.13.ZIP， binwalk解开 1binwalk -e ./dir605L_FW_113.bin  讲qemu-mips复制到固件根目录 1cp $(which qemu-mips) ./  尝试直接执行 12sudo chroot . ./qemu-mi">
 <meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1523858835024.jpg">
 
 
@@ -383,49 +383,67 @@
       
 
       
-        <h1 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h1><p>下载固件ftp://54.187.190.227/PRODUCTS/DIR-605L/REVA/DIR-605L_FIRMWARE_1.13.ZIP，</p>
+        <h1 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h1><p>下载固件<a href="ftp://54.187.190.227/PRODUCTS/DIR-605L/REVA/DIR-605L_FIRMWARE_1.13.ZIP，" target="_blank" rel="noopener">ftp://54.187.190.227/PRODUCTS/DIR-605L/REVA/DIR-605L_FIRMWARE_1.13.ZIP，</a></p>
 <p>binwalk解开</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">binwalk -e ./dir605L_FW_113.bin</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">binwalk -e ./dir605L_FW_113.bin</span><br></pre></td></tr></table></figure>
+
 <p>讲qemu-mips复制到固件根目录</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cp $(which qemu-mips) ./</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp $(which qemu-mips) ./</span><br></pre></td></tr></table></figure>
+
 <p>尝试直接执行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">sudo chroot . ./qemu-mips ./bin/boa</div><div class="line">chroot: failed to run command ‘./qemu-mips’: No such file or directory</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo chroot . ./qemu-mips ./bin/boa</span><br><span class="line">chroot: failed to run command ‘./qemu-mips’: No such file or directory</span><br></pre></td></tr></table></figure>
+
 <p>后来发现需要将依赖库复制到对应目录</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">giant@ubuntu:~$ ldd /usr/bin/qemu-mips</div><div class="line">	linux-vdso.so.1 =&gt;  (0x00007fffc016e000)</div><div class="line">	libgmodule-2.0.so.0 =&gt; /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0 (0x00007f252f59a000)</div><div class="line">	libglib-2.0.so.0 =&gt; /lib/x86_64-linux-gnu/libglib-2.0.so.0 (0x00007f252f286000)</div><div class="line">	librt.so.1 =&gt; /lib/x86_64-linux-gnu/librt.so.1 (0x00007f252f07e000)</div><div class="line">	libm.so.6 =&gt; /lib/x86_64-linux-gnu/libm.so.6 (0x00007f252ed28000)</div><div class="line">	libgcc_s.so.1 =&gt; /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f252eb11000)</div><div class="line">	libpthread.so.0 =&gt; /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007f252e8f2000)</div><div class="line">	libc.so.6 =&gt; /lib/x86_64-linux-gnu/libc.so.6 (0x00007f252e512000)</div><div class="line">	libdl.so.2 =&gt; /lib/x86_64-linux-gnu/libdl.so.2 (0x00007f252e30e000)</div><div class="line">	libpcre.so.3 =&gt; /lib/x86_64-linux-gnu/libpcre.so.3 (0x00007f252e09c000)</div><div class="line">	/lib64/ld-linux-x86-64.so.2 (0x00007f2531c02000)</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">giant@ubuntu:~$ ldd /usr/bin/qemu-mips</span><br><span class="line">	linux-vdso.so.1 =&gt;  (0x00007fffc016e000)</span><br><span class="line">	libgmodule-2.0.so.0 =&gt; /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0 (0x00007f252f59a000)</span><br><span class="line">	libglib-2.0.so.0 =&gt; /lib/x86_64-linux-gnu/libglib-2.0.so.0 (0x00007f252f286000)</span><br><span class="line">	librt.so.1 =&gt; /lib/x86_64-linux-gnu/librt.so.1 (0x00007f252f07e000)</span><br><span class="line">	libm.so.6 =&gt; /lib/x86_64-linux-gnu/libm.so.6 (0x00007f252ed28000)</span><br><span class="line">	libgcc_s.so.1 =&gt; /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f252eb11000)</span><br><span class="line">	libpthread.so.0 =&gt; /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007f252e8f2000)</span><br><span class="line">	libc.so.6 =&gt; /lib/x86_64-linux-gnu/libc.so.6 (0x00007f252e512000)</span><br><span class="line">	libdl.so.2 =&gt; /lib/x86_64-linux-gnu/libdl.so.2 (0x00007f252e30e000)</span><br><span class="line">	libpcre.so.3 =&gt; /lib/x86_64-linux-gnu/libpcre.so.3 (0x00007f252e09c000)</span><br><span class="line">	/lib64/ld-linux-x86-64.so.2 (0x00007f2531c02000)</span><br></pre></td></tr></table></figure>
+
 <p>复制</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">cp /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0  ./usr/lib/</div><div class="line">cp /lib/x86_64-linux-gnu/libglib-2.0.so.0  ./lib/x86_64-linux-gnu</div><div class="line">cp /lib/x86_64-linux-gnu/librt.so.1  ./lib/x86_64-linux-gnu</div><div class="line">cp /lib/x86_64-linux-gnu/libm.so.6  ./lib/x86_64-linux-gnu</div><div class="line">cp /lib/x86_64-linux-gnu/libgcc_s.so.1  ./lib/x86_64-linux-gnu</div><div class="line">cp /lib/x86_64-linux-gnu/libpthread.so.0  ./lib/x86_64-linux-gnu</div><div class="line">cp /lib/x86_64-linux-gnu/libc.so.6  ./lib/x86_64-linux-gnu</div><div class="line">cp /lib/x86_64-linux-gnu/libdl.so.2  ./lib/x86_64-linux-gnu</div><div class="line">cp /lib/x86_64-linux-gnu/libpcre.so.3  ./lib/x86_64-linux-gnu</div><div class="line">cp /lib64/ld-linux-x86-64.so.2  ./lib64</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">cp /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0  ./usr/lib/</span><br><span class="line">cp /lib/x86_64-linux-gnu/libglib-2.0.so.0  ./lib/x86_64-linux-gnu</span><br><span class="line">cp /lib/x86_64-linux-gnu/librt.so.1  ./lib/x86_64-linux-gnu</span><br><span class="line">cp /lib/x86_64-linux-gnu/libm.so.6  ./lib/x86_64-linux-gnu</span><br><span class="line">cp /lib/x86_64-linux-gnu/libgcc_s.so.1  ./lib/x86_64-linux-gnu</span><br><span class="line">cp /lib/x86_64-linux-gnu/libpthread.so.0  ./lib/x86_64-linux-gnu</span><br><span class="line">cp /lib/x86_64-linux-gnu/libc.so.6  ./lib/x86_64-linux-gnu</span><br><span class="line">cp /lib/x86_64-linux-gnu/libdl.so.2  ./lib/x86_64-linux-gnu</span><br><span class="line">cp /lib/x86_64-linux-gnu/libpcre.so.3  ./lib/x86_64-linux-gnu</span><br><span class="line">cp /lib64/ld-linux-x86-64.so.2  ./lib64</span><br></pre></td></tr></table></figure>
+
 <p>ok，完美，接下来就是处理路由器程序的问题了（路由器的web二进制程序是boa）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">sudo chroot ./ ./qemu-mips ./bin/boa</div><div class="line">Initialize AP MIB failed!</div><div class="line">qemu: uncaught target signal 11 (Segmentation fault) - core dumped</div><div class="line">Segmentation fault</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo chroot ./ ./qemu-mips ./bin/boa</span><br><span class="line">Initialize AP MIB failed!</span><br><span class="line">qemu: uncaught target signal 11 (Segmentation fault) - core dumped</span><br><span class="line">Segmentation fault</span><br></pre></td></tr></table></figure>
+
 <p>32位程序，那就用32位ida远程调试</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ file ./bin/boa</div><div class="line">./bin/boa: ELF 32-bit MSB executable, MIPS, MIPS-I version 1 (SYSV), dynamically linked, interpreter /lib/ld-uClibc.so.0, corrupted section header size</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ file ./bin/boa</span><br><span class="line">./bin/boa: ELF 32-bit MSB executable, MIPS, MIPS-I version 1 (SYSV), dynamically linked, interpreter /lib/ld-uClibc.so.0, corrupted section header size</span><br></pre></td></tr></table></figure>
+
 <p>加上-g参数qemu会帮你启动一个gdbserver在那</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo chroot ./ ./qemu-mips -g 1234 ./bin/boa</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo chroot ./ ./qemu-mips -g 1234 ./bin/boa</span><br></pre></td></tr></table></figure>
+
 <p>ida打开程序后远程附加调试，搜索字符串并在上一处跳转处下断点</p>
 <p><img src="http://pic.giantbranch.cn/pic/1523858835024.jpg" alt></p>
 <p>可以看到是apmib_init函数返回0导致输出Initialize AP MIB failed!这个错误</p>
-<p>查了下：<a href="http://jyhshin.pixnet.net/blog/post/47162002-realtek-apmib-library" target="_blank" rel="external">http://jyhshin.pixnet.net/blog/post/47162002-realtek-apmib-library</a></p>
+<p>查了下：<a href="http://jyhshin.pixnet.net/blog/post/47162002-realtek-apmib-library" target="_blank" rel="noopener">http://jyhshin.pixnet.net/blog/post/47162002-realtek-apmib-library</a></p>
 <p>apmib_init(),是從 flash 讀出 mib 值寫入 RAM，这个跟我们的web程序应该影响</p>
 <p>或者使用gdb，当然要使用多架构的</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo apt install gdb-multiarch</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install gdb-multiarch</span><br></pre></td></tr></table></figure>
+
 <p>最好装个gef</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">https://github.com/hugsy/gef</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/hugsy/gef</span><br></pre></td></tr></table></figure>
+
 <p>gdb打开</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">gdb-multiarch ./boa</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gdb-multiarch ./boa</span><br></pre></td></tr></table></figure>
+
 <p>gdb远程附加</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">gef➤  target remote 127.0.0.1:1234</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gef➤  target remote 127.0.0.1:1234</span><br></pre></td></tr></table></figure>
+
 <p>那就可以愉快地调试了</p>
 <p>那我们怎么劫持这个调用呢，那我们就，搜索一下，应该是下面的so文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ find ./ -name &quot;apmib*&quot;</div><div class="line">./lib/apmib.so</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ find ./ -name &quot;apmib*&quot;</span><br><span class="line">./lib/apmib.so</span><br></pre></td></tr></table></figure>
+
 <p>那我们编写一个动态库劫持这个init函数得了，直接return1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">#include &lt;stdio.h&gt;</div><div class="line">#include &lt;stdlib.h&gt;</div><div class="line"></div><div class="line">int apmib_init()&#123;</div><div class="line">    return 1;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line"></span><br><span class="line">int apmib_init()&#123;</span><br><span class="line">    return 1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>编译前，装一下啊gcc-mips-linux-gnu</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo apt install gcc-mips-linux-gnu</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install gcc-mips-linux-gnu</span><br></pre></td></tr></table></figure>
+
 <p>编译</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ mips-linux-gnu-gcc -Wall -fPIC -shared apmib.c -o apmib-ld.so</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ mips-linux-gnu-gcc -Wall -fPIC -shared apmib.c -o apmib-ld.so</span><br></pre></td></tr></table></figure>
+
 <p>我们启动的时候可以用-E设置环境变量（LD_PRELOAD就是优先加载我们的so文件）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">sudo chroot ./ ./qemu-mips -E LD_PRELOAD=&quot;./apmib-ld.so&quot; ./bin/boa</div><div class="line">./bin/boa: can&apos;t load library &apos;libc.so.6&apos;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo chroot ./ ./qemu-mips -E LD_PRELOAD=&quot;./apmib-ld.so&quot; ./bin/boa</span><br><span class="line">./bin/boa: can&apos;t load library &apos;libc.so.6&apos;</span><br></pre></td></tr></table></figure>
+
 <p>那就讲lib目录的文件复制一份，又来一个错误</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">giant@ubuntu:~/learn/ch3/_dir605L_FW_113.bin.extracted/squashfs-root-0/lib$ file libc.so.0 </div><div class="line">libc.so.0: ELF 32-bit MSB shared object, MIPS, MIPS-I version 1 (SYSV), dynamically linked, corrupted section header size</div><div class="line">giant@ubuntu:~/learn/ch3/_dir605L_FW_113.bin.extracted/squashfs-root-0/lib$ cp libc.so.0 libc.so.6</div><div class="line">giant@ubuntu:~/learn/ch3/_dir605L_FW_113.bin.extracted/squashfs-root-0/lib$ cd ..</div><div class="line">giant@ubuntu:~/learn/ch3/_dir605L_FW_113.bin.extracted/squashfs-root-0$ sudo chroot ./ ./qemu-mips -E LD_PRELOAD=&quot;./apmib-ld.so&quot; ./bin/boa</div><div class="line">Create chklist file error!</div><div class="line">Create chklist file error!</div><div class="line">qemu: uncaught target signal 11 (Segmentation fault) - core dumped</div><div class="line">Segmentation fault</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">giant@ubuntu:~/learn/ch3/_dir605L_FW_113.bin.extracted/squashfs-root-0/lib$ file libc.so.0 </span><br><span class="line">libc.so.0: ELF 32-bit MSB shared object, MIPS, MIPS-I version 1 (SYSV), dynamically linked, corrupted section header size</span><br><span class="line">giant@ubuntu:~/learn/ch3/_dir605L_FW_113.bin.extracted/squashfs-root-0/lib$ cp libc.so.0 libc.so.6</span><br><span class="line">giant@ubuntu:~/learn/ch3/_dir605L_FW_113.bin.extracted/squashfs-root-0/lib$ cd ..</span><br><span class="line">giant@ubuntu:~/learn/ch3/_dir605L_FW_113.bin.extracted/squashfs-root-0$ sudo chroot ./ ./qemu-mips -E LD_PRELOAD=&quot;./apmib-ld.so&quot; ./bin/boa</span><br><span class="line">Create chklist file error!</span><br><span class="line">Create chklist file error!</span><br><span class="line">qemu: uncaught target signal 11 (Segmentation fault) - core dumped</span><br><span class="line">Segmentation fault</span><br></pre></td></tr></table></figure>
+
 <p>这个报错是两个函数里头</p>
 <p><img src="http://pic.giantbranch.cn/pic/1523863591350.jpg" alt></p>
 <p>但一时发现不了是哪里出错，那就从之前apmib_init开始调试</p>

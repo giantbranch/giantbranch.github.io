@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="apache123a2enmod proxya2enmod proxy_httpa2enmod proxy_connect 之后编辑/etc/apache2/mods-available/proxy.conf 加个这个，或者修改助理里面的proxy 1234&amp;lt;Proxy *&amp;gt;		Order allow,deny		Allow from all&amp;lt;/Proxy&amp;gt; 设置站点的配置">
+<meta name="description" content="apache123a2enmod proxya2enmod proxy_httpa2enmod proxy_connect  之后编辑/etc/apache2/mods-available/proxy.conf 加个这个，或者修改助理里面的proxy 1234&amp;lt;Proxy *&amp;gt;		Order allow,deny		Allow from all&amp;lt;/Proxy&amp;gt;  设置站点的">
 <meta name="keywords" content="apache,nginx">
 <meta property="og:type" content="article">
 <meta property="og:title" content="apache和nginx设置反向代理">
 <meta property="og:url" content="https://www.giantbranch.cn/2018/02/03/apache和nginx设置反向代理/index.html">
 <meta property="og:site_name" content="giantbranch&#39;s blog">
-<meta property="og:description" content="apache123a2enmod proxya2enmod proxy_httpa2enmod proxy_connect 之后编辑/etc/apache2/mods-available/proxy.conf 加个这个，或者修改助理里面的proxy 1234&amp;lt;Proxy *&amp;gt;		Order allow,deny		Allow from all&amp;lt;/Proxy&amp;gt; 设置站点的配置">
+<meta property="og:description" content="apache123a2enmod proxya2enmod proxy_httpa2enmod proxy_connect  之后编辑/etc/apache2/mods-available/proxy.conf 加个这个，或者修改助理里面的proxy 1234&amp;lt;Proxy *&amp;gt;		Order allow,deny		Allow from all&amp;lt;/Proxy&amp;gt;  设置站点的">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-05-24T15:07:13.288Z">
+<meta property="og:updated_time" content="2019-06-17T12:14:45.678Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="apache和nginx设置反向代理">
-<meta name="twitter:description" content="apache123a2enmod proxya2enmod proxy_httpa2enmod proxy_connect 之后编辑/etc/apache2/mods-available/proxy.conf 加个这个，或者修改助理里面的proxy 1234&amp;lt;Proxy *&amp;gt;		Order allow,deny		Allow from all&amp;lt;/Proxy&amp;gt; 设置站点的配置">
+<meta name="twitter:description" content="apache123a2enmod proxya2enmod proxy_httpa2enmod proxy_connect  之后编辑/etc/apache2/mods-available/proxy.conf 加个这个，或者修改助理里面的proxy 1234&amp;lt;Proxy *&amp;gt;		Order allow,deny		Allow from all&amp;lt;/Proxy&amp;gt;  设置站点的">
 
 
 
@@ -379,20 +379,27 @@
       
 
       
-        <h1 id="apache"><a href="#apache" class="headerlink" title="apache"></a>apache</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">a2enmod proxy</div><div class="line">a2enmod proxy_http</div><div class="line">a2enmod proxy_connect</div></pre></td></tr></table></figure>
+        <h1 id="apache"><a href="#apache" class="headerlink" title="apache"></a>apache</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a2enmod proxy</span><br><span class="line">a2enmod proxy_http</span><br><span class="line">a2enmod proxy_connect</span><br></pre></td></tr></table></figure>
+
 <p>之后编辑<code>/etc/apache2/mods-available/proxy.conf</code></p>
 <p>加个这个，或者修改助理里面的proxy</p>
-<figure class="highlight apache"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="section">&lt;Proxy *&gt;</span></div><div class="line">		<span class="attribute"><span class="nomarkup">Order</span></span> allow,deny</div><div class="line">		<span class="attribute"><span class="nomarkup">Allow</span></span> from <span class="literal">all</span></div><div class="line"><span class="section">&lt;/Proxy&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">&lt;Proxy *&gt;</span></span><br><span class="line">		<span class="attribute"><span class="nomarkup">Order</span></span> allow,deny</span><br><span class="line">		<span class="attribute"><span class="nomarkup">Allow</span></span> from <span class="literal">all</span></span><br><span class="line"><span class="section">&lt;/Proxy&gt;</span></span><br></pre></td></tr></table></figure>
+
 <p>设置站点的配置文件，以代理本地3000端口为例，那当我们访问XXXXX.giantbranch.cn就可以访问本地3000端口的网站了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&lt;VirtualHost *:80&gt;</div><div class="line">		......</div><div class="line">		</div><div class="line">        ServerName XXXXX.giantbranch.cn</div><div class="line">        ProxyPass / http://127.0.0.1:3000/</div><div class="line">        ProxyPassReverse / http://127.0.0.1:3000/</div><div class="line">		</div><div class="line">		......</div><div class="line">&lt;/VirtualHost&gt;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&lt;VirtualHost *:80&gt;</span><br><span class="line">		......</span><br><span class="line">		</span><br><span class="line">        ServerName XXXXX.giantbranch.cn</span><br><span class="line">        ProxyPass / http://127.0.0.1:3000/</span><br><span class="line">        ProxyPassReverse / http://127.0.0.1:3000/</span><br><span class="line">		</span><br><span class="line">		......</span><br><span class="line">&lt;/VirtualHost&gt;</span><br></pre></td></tr></table></figure>
+
 <p>最后重启（下面以ubuntu为例）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">service apache2 restart</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service apache2 restart</span><br></pre></td></tr></table></figure>
+
 <p>有些系统可以这样</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl restart apache2</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart apache2</span><br></pre></td></tr></table></figure>
+
 <h1 id="nginx"><a href="#nginx" class="headerlink" title="nginx"></a>nginx</h1><p>这个就简单多了，直接创建一个站点配置文件，那么访问haha.giantbranch.cn，就可以访问本地的3001端口了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">server &#123;</div><div class="line">	......</div><div class="line">        listen 80;</div><div class="line">        server_name haha.giantbranch.cn;</div><div class="line"></div><div class="line">        location / &#123;</div><div class="line">                proxy_pass http://localhost:3001;</div><div class="line">        &#125;</div><div class="line">		</div><div class="line">		......</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">	......</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name haha.giantbranch.cn;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://localhost:3001;</span><br><span class="line">        &#125;</span><br><span class="line">		</span><br><span class="line">		......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>当然重启一下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">service nginx restart</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service nginx restart</span><br></pre></td></tr></table></figure>
+
 
       
     </div>

@@ -79,19 +79,19 @@
 
 
 
-<meta name="description" content="安装项目的地址：https://github.com/aria2/aria2 不过我们直接apt就行 1apt install aria2 注：如果你要命令行下东西输入：  aria2c &amp;quot;url&amp;quot; 还支持磁力链接什么的 启动后台服务配置文件可以参考http://aria2c.com/usage.html 需要自己修改dir，input-file和save-session这几个">
+<meta name="description" content="安装项目的地址：https://github.com/aria2/aria2 不过我们直接apt就行 1apt install aria2  注：如果你要命令行下东西输入：  aria2c &amp;quot;url&amp;quot; 还支持磁力链接什么的 启动后台服务配置文件可以参考http://aria2c.com/usage.html 需要自己修改dir，input-file和save-session这几">
 <meta name="keywords" content="离线下载">
 <meta property="og:type" content="article">
 <meta property="og:title" content="利用vps搭建离线下载服务器">
 <meta property="og:url" content="https://www.giantbranch.cn/2018/06/16/利用vps搭建离线下载服务器/index.html">
 <meta property="og:site_name" content="giantbranch&#39;s blog">
-<meta property="og:description" content="安装项目的地址：https://github.com/aria2/aria2 不过我们直接apt就行 1apt install aria2 注：如果你要命令行下东西输入：  aria2c &amp;quot;url&amp;quot; 还支持磁力链接什么的 启动后台服务配置文件可以参考http://aria2c.com/usage.html 需要自己修改dir，input-file和save-session这几个">
+<meta property="og:description" content="安装项目的地址：https://github.com/aria2/aria2 不过我们直接apt就行 1apt install aria2  注：如果你要命令行下东西输入：  aria2c &amp;quot;url&amp;quot; 还支持磁力链接什么的 启动后台服务配置文件可以参考http://aria2c.com/usage.html 需要自己修改dir，input-file和save-session这几">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1529242904688.jpg">
-<meta property="og:updated_time" content="2019-05-24T15:07:13.300Z">
+<meta property="og:updated_time" content="2019-06-17T12:14:45.678Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="利用vps搭建离线下载服务器">
-<meta name="twitter:description" content="安装项目的地址：https://github.com/aria2/aria2 不过我们直接apt就行 1apt install aria2 注：如果你要命令行下东西输入：  aria2c &amp;quot;url&amp;quot; 还支持磁力链接什么的 启动后台服务配置文件可以参考http://aria2c.com/usage.html 需要自己修改dir，input-file和save-session这几个">
+<meta name="twitter:description" content="安装项目的地址：https://github.com/aria2/aria2 不过我们直接apt就行 1apt install aria2  注：如果你要命令行下东西输入：  aria2c &amp;quot;url&amp;quot; 还支持磁力链接什么的 启动后台服务配置文件可以参考http://aria2c.com/usage.html 需要自己修改dir，input-file和save-session这几">
 <meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1529242904688.jpg">
 
 
@@ -381,22 +381,24 @@
       
 
       
-        <h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>项目的地址：<a href="https://github.com/aria2/aria2" target="_blank" rel="external">https://github.com/aria2/aria2</a></p>
+        <h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>项目的地址：<a href="https://github.com/aria2/aria2" target="_blank" rel="noopener">https://github.com/aria2/aria2</a></p>
 <p>不过我们直接apt就行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">apt install aria2</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt install aria2</span><br></pre></td></tr></table></figure>
+
 <p>注：如果你要命令行下东西输入：  <code>aria2c &quot;url&quot;</code> 还支持磁力链接什么的</p>
-<h1 id="启动后台服务"><a href="#启动后台服务" class="headerlink" title="启动后台服务"></a>启动后台服务</h1><p>配置文件可以参考<a href="http://aria2c.com/usage.html" target="_blank" rel="external">http://aria2c.com/usage.html</a></p>
+<h1 id="启动后台服务"><a href="#启动后台服务" class="headerlink" title="启动后台服务"></a>启动后台服务</h1><p>配置文件可以参考<a href="http://aria2c.com/usage.html" target="_blank" rel="noopener">http://aria2c.com/usage.html</a></p>
 <p>需要自己修改dir，input-file和save-session这几个参数，其他参数可以自己调整，默认也可以</p>
 <p>后台启动即可（建议先去掉-D看看有无错误，ipv6那个错误不用管，无错误ctrl+c停止后再用-D参数后台运行启动）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">aria2c --conf-path=/var/www/ariang/aria2.conf -D</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aria2c --conf-path=/var/www/ariang/aria2.conf -D</span><br></pre></td></tr></table></figure>
+
 <p>注：conf文件需要自己新建，存放目录也可以自己新建</p>
-<h1 id="使用web界面"><a href="#使用web界面" class="headerlink" title="使用web界面"></a>使用web界面</h1><p>我使用的AriaNg：<a href="https://github.com/mayswind/AriaNg/releases" target="_blank" rel="external">https://github.com/mayswind/AriaNg/releases</a></p>
+<h1 id="使用web界面"><a href="#使用web界面" class="headerlink" title="使用web界面"></a>使用web界面</h1><p>我使用的AriaNg：<a href="https://github.com/mayswind/AriaNg/releases" target="_blank" rel="noopener">https://github.com/mayswind/AriaNg/releases</a></p>
 <p>下载zip包后直接解压到web目录即可</p>
 <p>跟着就可以极速离线下载了</p>
 <p><img src="http://pic.giantbranch.cn/pic/1529242904688.jpg" alt></p>
 <p>或者你直接使用别人的界面也是可以的，配置下json-rpc 的path就行</p>
-<p><a href="http://aria2c.com/" target="_blank" rel="external">http://aria2c.com/</a> </p>
-<h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><p><a href="https://segmentfault.com/a/1190000008908995" target="_blank" rel="external">https://segmentfault.com/a/1190000008908995</a><br><a href="https://yorkchou.com/aria2.html" target="_blank" rel="external">https://yorkchou.com/aria2.html</a></p>
+<p><a href="http://aria2c.com/" target="_blank" rel="noopener">http://aria2c.com/</a> </p>
+<h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><p><a href="https://segmentfault.com/a/1190000008908995" target="_blank" rel="noopener">https://segmentfault.com/a/1190000008908995</a><br><a href="https://yorkchou.com/aria2.html" target="_blank" rel="noopener">https://yorkchou.com/aria2.html</a></p>
 
       
     </div>

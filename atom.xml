@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://www.giantbranch.cn/"/>
-  <updated>2019-06-19T15:44:23.913Z</updated>
+  <updated>2019-06-25T13:01:31.969Z</updated>
   <id>https://www.giantbranch.cn/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>路由器0day漏洞挖掘实战</title>
+    <link href="https://www.giantbranch.cn/2019/06/20/%E8%B7%AF%E7%94%B1%E5%99%A80day%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98%E5%AE%9E%E6%88%98/"/>
+    <id>https://www.giantbranch.cn/2019/06/20/路由器0day漏洞挖掘实战/</id>
+    <published>2019-06-19T23:00:00.000Z</published>
+    <updated>2019-06-25T13:01:31.969Z</updated>
+    
+    <content type="html"><![CDATA[<p><strong>本文已发表到安全客</strong>：<a href="https://www.anquanke.com/post/id/180714" target="_blank" rel="noopener">https://www.anquanke.com/post/id/180714</a></p><p>这个题目，2018年的7月6日的时候在公司内部分享过了，说来也将近一年了，懒得现在才发出来。</p><p>在2018年的3，4月两个多三个月的时间里，花了比较多的时间去搞一个国产的路由器，挖了一些漏洞后，之后也就没搞了。</p><p>也写了个有一点作用的MIPS IDAPYTHON审计辅助脚本</p><p><a href="https://github.com/giantbranch/mipsAudit" target="_blank" rel="noopener">https://github.com/giantbranch/mipsAudit</a></p><h1 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h1><p><strong>简介</strong></p><p>1、路由器基本都是阉割版的linux系统<br>2、架构以MIPS和ARM为主<br>3、一般含有telnet服务<br>4、很多基础命令以busybox的方式实现（如cat，chmod，date，echo，ifconfig，ls，kill等）</p><p>比如下面路由器中的busybox</p><p><img src="http://pic.giantbranch.cn/pic/1561041696573.jpg" alt></p><p><strong>路由器常见漏洞</strong></p><p>Web漏洞</p><ul><li>XSS</li><li>CSRF</li></ul><p>二进制漏洞</p><ul><li>主要是栈溢出</li></ul><p>自带后门</p><ul><li>磊科路由器后门：私有协议，硬编码密码的后门</li></ul><p><strong>环境及工具</strong></p><blockquote><p>Ubuntu虚拟机<br>python<br>IDA<br>Binwalk<br>QEMU<br>对应架构的qemu虚拟机<br>gdb及静态编译的gdbserver<br>Burp，filefox插件<br>。。。。。。</p></blockquote><h1 id="固件的提取与解压"><a href="#固件的提取与解压" class="headerlink" title="固件的提取与解压"></a>固件的提取与解压</h1><p><strong>总览</strong></p><p><img src="http://pic.giantbranch.cn/pic/1561042083346.jpg" alt></p><h2 id="固件提取"><a href="#固件提取" class="headerlink" title="固件提取"></a>固件提取</h2><p>1、对智能硬件（路由器）的升级进行抓包，提取url<br>2、通过烧录器读取拆卸下来的芯片</p><p><img src="http://pic.giantbranch.cn/pic/1561042127074.jpg" alt></p><p>3、通过mtd的方式</p><ul><li>查看分区信息</li></ul><p><img src="http://pic.giantbranch.cn/pic/1561042182492.jpg" alt></p><ul><li>一般别人用dd命令来提取，其实用cp和cat也可以</li></ul><p><img src="http://pic.giantbranch.cn/pic/1561042190703.jpg" alt></p><p>4、通过串口的方式<br>假如串口可以获得shell，那么可以使用第三种方法</p><h2 id="固件解压"><a href="#固件解压" class="headerlink" title="固件解压"></a>固件解压</h2><p>binwalk -Me XXXXXX.bin<br>M ，–matryoshka  递归扫描可解压的<br>e，–extract    提取<br>解压到的是_XXXXXX.bin.extracted/</p><p><img src="http://pic.giantbranch.cn/pic/1561042364368.jpg" alt></p><h1 id="以某个路由器为例的漏洞挖掘"><a href="#以某个路由器为例的漏洞挖掘" class="headerlink" title="以某个路由器为例的漏洞挖掘"></a>以某个路由器为例的漏洞挖掘</h1><h2 id="Web安全漏洞"><a href="#Web安全漏洞" class="headerlink" title="Web安全漏洞"></a>Web安全漏洞</h2><p>审计web源码，发现有些目录（下面的goform）不存在，代码在二进制中实现，故使用黑盒测试</p><p><img src="http://pic.giantbranch.cn/pic/1561042560331.jpg" alt></p><p>随便试了一下搞了几个XSS</p><p><img src="http://pic.giantbranch.cn/pic/1561042663036.jpg" alt></p><p><img src="http://pic.giantbranch.cn/pic/1561042756174.jpg" alt></p><p><img src="http://pic.giantbranch.cn/pic/1561042792803.jpg" alt></p><p>还有自带命令执行的</p><p><img src="http://pic.giantbranch.cn/pic/1561042830521.jpg" alt></p><p>添加路由处存在命令注入漏洞，这个是找到溢出后顺便发现的</p><p><img src="http://pic.giantbranch.cn/pic/1561042924200.jpg" alt></p><h2 id="二进制漏洞挖掘之静态分析"><a href="#二进制漏洞挖掘之静态分析" class="headerlink" title="二进制漏洞挖掘之静态分析"></a>二进制漏洞挖掘之静态分析</h2><p>这个我编写了个IDAPYTHON审计辅助脚本，用处嘛，有一点点吧。。。</p><p>开源地址：<a href="https://github.com/giantbranch/mipsAudit" target="_blank" rel="noopener">https://github.com/giantbranch/mipsAudit</a></p><p>辅助脚本功能如下：<br>1、找到危险函数的调用处，并且高亮该行（也可以下断点）<br>2、给参数赋值处加上注释<br>3、最后以表格的形式输出函数名，调用地址，参数，还有当前函数的缓冲区大小</p><p>详细见下图</p><p><img src="http://pic.giantbranch.cn/pic/1561043089518.jpg" alt></p><p><img src="http://pic.giantbranch.cn/pic/1561043102522.jpg" alt></p><p>针对不确定参数的函数</p><p><img src="http://pic.giantbranch.cn/pic/1561043151335.jpg" alt></p><p>我们可以点击addr那一列直接到达函数调用处，方便审计</p><p>其实跑出来的量还是很大的，我只不过是偶然的机会遇到了刚好又漏洞的。。</p><p>我定位到的是下面这里，有strcat和sprintf</p><p><img src="http://pic.giantbranch.cn/pic/1561043300311.jpg" alt></p><p>向上回溯有个route add的字符串</p><p><img src="http://pic.giantbranch.cn/pic/1561043336327.jpg" alt></p><p>那应该是添加路由的地方</p><p><img src="http://pic.giantbranch.cn/pic/1561043389164.jpg" alt></p><p>测试</p><p><img src="http://pic.giantbranch.cn/pic/1561043442682.jpg" alt></p><p>发现后面goahead的pid都变了，那应该溢出崩溃，重启了</p><p><img src="http://pic.giantbranch.cn/pic/1561043541304.jpg" alt></p><p>上gdb调试确认溢出</p><p><img src="http://pic.giantbranch.cn/pic/1561043564258.jpg" alt></p><p>那么漏洞成因就是：strcat和sprintf的拼接</p><h2 id="动态调试"><a href="#动态调试" class="headerlink" title="动态调试"></a>动态调试</h2><p>1、基于qemu<br>2、在设备上调试</p><h3 id="qemu"><a href="#qemu" class="headerlink" title="qemu"></a>qemu</h3><p>qemu有两种运作模式<br>用户模式（User mode），启动不同架构的Linux程序<br>系统模式（System mode），模拟整个电脑系统（这个暂时还没能够实现动态调试）</p><p>注：有些程序比较依赖于特定的函数（比如nvram系列函数）就很难用qemu启动了</p><p>将对应的qemu程序及其依赖库拷贝到对应目录，使用静态的就没这烦恼了</p><p><img src="http://pic.giantbranch.cn/pic/1561043811710.jpg" alt></p><p><img src="http://pic.giantbranch.cn/pic/1561043816148.jpg" alt></p><p>启动一个mipsel的程序</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo chroot ./ ./qemu-mipsel ./bin/busybox</span><br></pre></td></tr></table></figure><p><img src="http://pic.giantbranch.cn/pic/1561043917521.jpg" alt></p><p>调试只要加-g参数即可（下面会监听23946端口）<br>sudo chroot ./ ./qemu-mipsel -g 23946 ./bin/busybox<br>ida 使用remote gdb debuger即可</p><p><img src="http://pic.giantbranch.cn/pic/1561043964096.jpg" alt></p><h3 id="在设备上调试"><a href="#在设备上调试" class="headerlink" title="在设备上调试"></a>在设备上调试</h3><p>条件<br>1、有shell权限<br>2、有静态编译的gdbserver或者gdb</p><p><img src="http://pic.giantbranch.cn/pic/1561044038610.jpg" alt></p><p><img src="http://pic.giantbranch.cn/pic/1561044043601.jpg" alt></p><p><img src="http://pic.giantbranch.cn/pic/1561044050691.jpg" alt></p><h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p>《揭秘家用路由器0day漏洞挖掘技术》<br>《IDA Pro权威指南》<br>《python 灰帽子》<br><a href="https://github.com/wangzery/SearchOverflow/blob/master/SearchOverflow.py" target="_blank" rel="noopener">https://github.com/wangzery/SearchOverflow/blob/master/SearchOverflow.py</a><br><a href="https://www.hex-rays.com/products/ida/support/idapython_docs/" target="_blank" rel="noopener">https://www.hex-rays.com/products/ida/support/idapython_docs/</a></p><p>  [29]:</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;&lt;strong&gt;本文已发表到安全客&lt;/strong&gt;：&lt;a href=&quot;https://www.anquanke.com/post/id/180714&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://www.anquanke.com/post
+      
+    
+    </summary>
+    
+    
+      <category term="路由器漏洞挖掘" scheme="https://www.giantbranch.cn/tags/%E8%B7%AF%E7%94%B1%E5%99%A8%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98/"/>
+    
+  </entry>
   
   <entry>
     <title>CVE-2019-5736 docker escape 简要分析</title>
@@ -504,32 +527,6 @@
     
     
       <category term="更新评论系统" scheme="https://www.giantbranch.cn/tags/%E6%9B%B4%E6%96%B0%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>如何安全快速地部署多道ctf pwn比赛题目</title>
-    <link href="https://www.giantbranch.cn/2018/09/24/%E5%A6%82%E4%BD%95%E5%AE%89%E5%85%A8%E5%BF%AB%E9%80%9F%E5%9C%B0%E9%83%A8%E7%BD%B2%E5%A4%9A%E9%81%93ctf%20pwn%E6%AF%94%E8%B5%9B%E9%A2%98%E7%9B%AE/"/>
-    <id>https://www.giantbranch.cn/2018/09/24/如何安全快速地部署多道ctf pwn比赛题目/</id>
-    <published>2018-09-23T23:00:00.000Z</published>
-    <updated>2019-06-17T12:14:45.678Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>一开始接触pwn的时候，我们要么本地调试，要么自己用socat将程序启动起来远程调试</p><p>最近去搞pwn培训，发现将pwn题一个一个部署起来还是比较繁琐，除了权限还要考虑其他东西</p><p>后来一顿搜索，看看有无别人的解决方案，发现一个xinted + docker的方案：</p><p><a href="https://github.com/Eadom/ctf_xinetd" target="_blank" rel="noopener">https://github.com/Eadom/ctf_xinetd</a></p><p>但是对于这个我发现了一些缺点：</p><ol><li>需要自己配置flag</li><li>需要自己修改ctf.xinetd文件</li><li>没有docker-compose.yml方便我们去启动</li><li>一次只能部署一个题目（我想一键将5道题甚至是10道题同时部署在一个docker容器中）</li><li>安全性基于chroot，而且只给了ls，cat和sh三个程序，已经很安全了，但是sh还是存在fork炸弹的可能</li></ol><p>于是我根据自己需要，写了一个项目：<a href="https://github.com/giantbranch/pwn_deploy_chroot" target="_blank" rel="noopener">https://github.com/giantbranch/pwn_deploy_chroot</a></p><h1 id="pwn-deploy-chroot介绍"><a href="#pwn-deploy-chroot介绍" class="headerlink" title="pwn_deploy_chroot介绍"></a>pwn_deploy_chroot介绍</h1><h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><blockquote><ol><li>一次可以部署多个题目到一个docker容器中</li><li>自动生成flag,并备份到当前目录</li><li>也是基于xinted + docker + chroot</li><li>利用python脚本根据pwn的文件名自动化地生成3个文件：pwn.xinetd，Dockerfile和docker-compose.yml</li><li>在/bin目录，利用自己编写的静态编译的catflag程序作为/bin/sh,这样的话，system(“/bin/sh”)实际执行的只是读取flag文件的内容，完全不给搅屎棍任何操作的余地</li><li>默认从10000端口监听，多一个程序就+1，起始的监听端口可以在config.py配置，或者生成pwn.xinetd和docker-compose.yml后自己修改这两个文件</li></ol></blockquote><h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 安装docker</span><br><span class="line">curl -s https://get.docker.com/ | sh</span><br><span class="line"># 安装 docker compose 和git</span><br><span class="line">apt install docker-compose git</span><br><span class="line"># 下载</span><br><span class="line">git clone https://github.com/giantbranch/pwn_deploy_chroot.git</span><br></pre></td></tr></table></figure><h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>只需要3步：</p><blockquote><ol><li>将所有pwn题目放入bin目录（注意名字不带特殊字符，因为会将文件名作为linux用户名） </li><li>python initialize.py </li><li>docker-compose up –build -d</li></ol></blockquote><p>下面给下详细操作：</p><p>1、将你要部署的pwn题目放到bin目录</p><p>我的项目已经将一个程序copy了3分作为示例，注意文件名不要含有特殊字符，文件名建议使用字母，下划线，横杆和数字，当然全字母的当然最好了</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@instance-1:~/pwn_deploy_chroot# ls bin/</span><br><span class="line">pwn1  pwn1_copy1  pwn1_copy2</span><br></pre></td></tr></table></figure><p>2、运行initialize.py</p><p>运行脚本后会输出每个pwn的监听端口，</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">root@instance-1:~/pwn_deploy_chroot# python initialize.py</span><br><span class="line"></span><br><span class="line">pwn1&apos;s port: 10000</span><br><span class="line">pwn1_copy1&apos;s port: 10001</span><br><span class="line">pwn1_copy2&apos;s port: 10002</span><br></pre></td></tr></table></figure><p>文件与端口信息，还有随机生成的flag默认备份到flags.txt </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@instance-1:~/pwn_deploy_chroot# cat flags.txt </span><br><span class="line">pwn1: flag&#123;93aa6da5-db45-46fa-a2e1-af2be6698692&#125;</span><br><span class="line">pwn1_copy1: flag&#123;f9966c51-52e4-4212-ac44-97bf16620b41&#125;</span><br><span class="line">pwn1_copy2: flag&#123;b17949ce-e3fa-4ca7-9fcc-44b8dc997cb3&#125;</span><br><span class="line"></span><br><span class="line">pwn1&apos;s port: 10000</span><br><span class="line">pwn1_copy1&apos;s port: 10001</span><br><span class="line">pwn1_copy2&apos;s port: 10002</span><br></pre></td></tr></table></figure><p>3、启动环境</p><p>请使用root用户执行命令</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up --build -d</span><br></pre></td></tr></table></figure><p>不出意外，题目就启动起来了</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@instance-1:~/pwn_deploy_chroot# netstat -antp | grep docker</span><br><span class="line">tcp6       0      0 :::10002                :::*                    LISTEN      19828/docker-proxy</span><br><span class="line">tcp6       0      0 :::10000                :::*                    LISTEN      19887/docker-proxy</span><br><span class="line">tcp6       0      0 :::10001                :::*                    LISTEN      19873/docker-proxy</span><br></pre></td></tr></table></figure><p>我们测试一下pwn1,看看效果</p><p><img src="http://pic.giantbranch.cn/pic/1537761038385.jpg" alt></p><p>可以看到，虽然执行的是system(“/bin/sh”)，但是实际功能只是输出flag，这样就非常安全了</p><h1 id="感谢"><a href="#感谢" class="headerlink" title="感谢"></a>感谢</h1><p><a href="https://github.com/Eadom/ctf_xinetd" target="_blank" rel="noopener">https://github.com/Eadom/ctf_xinetd</a></p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;一开始接触pwn的时候，我们要么本地调试，要么自己用socat将程序启动起来远程调试&lt;/p&gt;
-&lt;p&gt;最近去搞pwn培训，发现将pwn题一个一
-      
-    
-    </summary>
-    
-    
-      <category term="pwn" scheme="https://www.giantbranch.cn/tags/pwn/"/>
-    
-      <category term="部署" scheme="https://www.giantbranch.cn/tags/%E9%83%A8%E7%BD%B2/"/>
     
   </entry>
   

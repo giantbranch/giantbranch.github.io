@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://www.giantbranch.cn/"/>
-  <updated>2019-07-17T09:20:20.508Z</updated>
+  <updated>2019-08-08T01:27:49.160Z</updated>
   <id>https://www.giantbranch.cn/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>在ubuntu 18.04上编译VirtualBox</title>
+    <link href="https://www.giantbranch.cn/2019/08/07/%E5%9C%A8ubuntu%2018.04%E4%B8%8A%E7%BC%96%E8%AF%91VirtualBox/"/>
+    <id>https://www.giantbranch.cn/2019/08/07/在ubuntu 18.04上编译VirtualBox/</id>
+    <published>2019-08-06T23:00:00.000Z</published>
+    <updated>2019-08-08T01:27:49.160Z</updated>
+    
+    <content type="html"><![CDATA[<p>源码下载地址：</p><p><a href="https://download.virtualbox.org/virtualbox/" target="_blank" rel="noopener">https://download.virtualbox.org/virtualbox/</a></p><p>当然这个也可以</p><p><a href="https://www.virtualbox.org/wiki/Download_Old_Builds" target="_blank" rel="noopener">https://www.virtualbox.org/wiki/Download_Old_Builds</a></p><p>我下载了这个5.2.18</p><p><a href="https://download.virtualbox.org/virtualbox/5.2.18/VirtualBox-5.2.18.tar.bz2" target="_blank" rel="noopener">https://download.virtualbox.org/virtualbox/5.2.18/VirtualBox-5.2.18.tar.bz2</a></p><p>linux下的编译文档</p><p><a href="https://www.virtualbox.org/wiki/Linux%20build%20instructions" target="_blank" rel="noopener">https://www.virtualbox.org/wiki/Linux%20build%20instructions</a></p><p>libhal-dev和python-central没找到，就先不安装了</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install gcc g++ bcc iasl xsltproc uuid-dev zlib1g-dev libidl-dev \</span><br><span class="line">                libsdl1.2-dev libxcursor-dev libasound2-dev libstdc++5 \</span><br><span class="line">                libpulse-dev libxml2-dev libxslt1-dev \</span><br><span class="line">                python-dev libqt4-dev qt4-dev-tools libcap-dev \</span><br><span class="line">                libxmu-dev mesa-common-dev libglu1-mesa-dev \</span><br><span class="line">                linux-kernel-headers libcurl4-openssl-dev libpam0g-dev \</span><br><span class="line">                libxrandr-dev libxinerama-dev libqt4-opengl-dev makeself \</span><br><span class="line">                libdevmapper-dev default-jdk \</span><br><span class="line">                texlive-latex-base \</span><br><span class="line">                texlive-latex-extra texlive-latex-recommended \</span><br><span class="line">                texlive-fonts-extra texlive-fonts-recommended</span><br></pre></td></tr></table></figure><p>64位系统还要装一下</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install lib32z1 libc6-dev-i386 lib32gcc1 gcc-multilib \</span><br><span class="line">                lib32stdc++6 g++-multilib</span><br></pre></td></tr></table></figure><p>链接共享库</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo ln -s libX11.so.6    /usr/lib32/libX11.so </span><br><span class="line">sudo ln -s libXTrap.so.6  /usr/lib32/libXTrap.so </span><br><span class="line">sudo ln -s libXt.so.6     /usr/lib32/libXt.so </span><br><span class="line">sudo ln -s libXtst.so.6   /usr/lib32/libXtst.so</span><br><span class="line">sudo ln -s libXmu.so.6    /usr/lib32/libXmu.so</span><br><span class="line">sudo ln -s libXext.so.6   /usr/lib32/libXext.so</span><br></pre></td></tr></table></figure><p>./configure来发现还有东西没装</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libssl-dev libvpx-dev libopus-dev</span><br></pre></td></tr></table></figure><p>之后就是qt5 not found，上面的qt4费了</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Checking for Qt5: </span><br><span class="line">  ** qt5 not found!</span><br></pre></td></tr></table></figure><p>安装qt5</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential qtcreator qt5-default libqt5*</span><br></pre></td></tr></table></figure><p>编译的时候有错误</p><p><img src="http://pic.giantbranch.cn/pic/1565163024016.jpg" alt></p><p>我就发现kmk可以-i忽略错误</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kmk BUILD_TYPE=debug -i</span><br></pre></td></tr></table></figure><p>之后就ko了</p><p><img src="http://pic.giantbranch.cn/pic/1565163107837.jpg" alt></p><p>直接启动即可</p><p><img src="http://pic.giantbranch.cn/pic/1565173181376.jpg" alt></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;源码下载地址：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://download.virtualbox.org/virtualbox/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://download.virtualbox.org/virtu
+      
+    
+    </summary>
+    
+    
+      <category term="编译" scheme="https://www.giantbranch.cn/tags/%E7%BC%96%E8%AF%91/"/>
+    
+      <category term="virtualbox" scheme="https://www.giantbranch.cn/tags/virtualbox/"/>
+    
+  </entry>
   
   <entry>
     <title>VM escape 之 QEMU Case Study</title>
@@ -510,29 +536,6 @@
       <category term="rootkit" scheme="https://www.giantbranch.cn/tags/rootkit/"/>
     
       <category term="检测rootkit" scheme="https://www.giantbranch.cn/tags/%E6%A3%80%E6%B5%8Brootkit/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>没有libc6-dbg的符号如何查找main_arena</title>
-    <link href="https://www.giantbranch.cn/2018/09/30/%E6%B2%A1%E6%9C%89libc6-dbg%E7%9A%84%E7%AC%A6%E5%8F%B7%E5%A6%82%E4%BD%95%E6%9F%A5%E6%89%BEmain_arena/"/>
-    <id>https://www.giantbranch.cn/2018/09/30/没有libc6-dbg的符号如何查找main_arena/</id>
-    <published>2018-09-29T23:00:00.000Z</published>
-    <updated>2019-06-17T12:14:45.682Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="通过malloc-trim函数定位"><a href="#通过malloc-trim函数定位" class="headerlink" title="通过malloc_trim函数定位"></a>通过malloc_trim函数定位</h1><p>一种方法是先从ida找到malloc_trim函数，那么下面这个就是main_arena的偏移了</p><p><img src="http://pic.giantbranch.cn/pic/1538967617036.jpg" alt></p><p>为什么呢，我们看看malloc_trim的<a href="https://code.woboq.org/userspace/glibc/malloc/malloc.c.html#4807" target="_blank" rel="noopener">源码</a></p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">int</span><br><span class="line">__malloc_trim (size_t s)</span><br><span class="line">&#123;</span><br><span class="line">  int result = 0;</span><br><span class="line">  if (__malloc_initialized &lt; 0)</span><br><span class="line">    ptmalloc_init ();</span><br><span class="line">  mstate ar_ptr = &amp;main_arena;</span><br><span class="line">  do</span><br><span class="line">    &#123;</span><br><span class="line">      __libc_lock_lock (ar_ptr-&gt;mutex);</span><br><span class="line">      result |= mtrim (ar_ptr, s);</span><br><span class="line">      __libc_lock_unlock (ar_ptr-&gt;mutex);</span><br><span class="line">      ar_ptr = ar_ptr-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line">  while (ar_ptr != &amp;main_arena);</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h1 id="通过malloc-hook定位"><a href="#通过malloc-hook定位" class="headerlink" title="通过malloc_hook定位"></a>通过malloc_hook定位</h1><p>在导出表里面搜索malloc_hook</p><p><img src="http://pic.giantbranch.cn/pic/1538967804469.jpg" alt></p><p>跟过去，在他下面+0x10的就是main_arena</p><p><img src="http://pic.giantbranch.cn/pic/1538967842001.jpg" alt></p><h1 id="其他方法"><a href="#其他方法" class="headerlink" title="其他方法"></a>其他方法</h1><p>其实方法很多，我们解引用一些这个地址，发现很多函数都会用到的，只要那个位置比较固定，我们就能找出来</p><p><img src="http://pic.giantbranch.cn/pic/1538967968652.jpg" alt></p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h1 id=&quot;通过malloc-trim函数定位&quot;&gt;&lt;a href=&quot;#通过malloc-trim函数定位&quot; class=&quot;headerlink&quot; title=&quot;通过malloc_trim函数定位&quot;&gt;&lt;/a&gt;通过malloc_trim函数定位&lt;/h1&gt;&lt;p&gt;一种方法是先从ida
-      
-    
-    </summary>
-    
-    
-      <category term="查找main_arena" scheme="https://www.giantbranch.cn/tags/%E6%9F%A5%E6%89%BEmain-arena/"/>
     
   </entry>
   

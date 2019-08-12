@@ -97,7 +97,7 @@
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1563244885957.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1563268001815.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1563348038846.jpg">
-<meta property="og:updated_time" content="2019-07-17T09:20:20.508Z">
+<meta property="og:updated_time" content="2019-08-12T03:04:51.620Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="VM escape 之 QEMU Case Study">
 <meta name="twitter:description" content="声明：首先这篇文章算是翻译+实践的 学习的来源是phrack网站的paper，这个应是上年就看到了，现在才去尝试实践与学习。 其实算是简译再加上自己的实践吧，最后劫持rip起shell由于需要特殊的内核编译才能搞，就没具体实践了，原理上理解了。 看完这篇文章，一句话说明虚拟机逃逸漏洞利用其实就是： 利用qemu代码实现上的漏洞去起一个/bin/sh什么的（当然执行计算器也是可以的），问题是我们在g">
@@ -408,7 +408,7 @@
 
 <p>之后得装下系统获得一个qcow2的镜像，直接用别人的镜像也行，我下面安装的是ubuntu-16.04.5-server</p>
 <p>我们可以新建硬盘，在启动安装，可能需要vnc连接安装一下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">qemu-img creat -f qcow2 ubuntu.qcow2 20G</span><br><span class="line">qemu-system-x86_64 -enable-kvm -m 2048 -hda /path/to/ubuntu.qcow2 -cdrom /path/to/ubuntu.iso</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">qemu-img create -f qcow2 ubuntu.qcow2 20G</span><br><span class="line">qemu-system-x86_64 -enable-kvm -m 2048 -hda /path/to/ubuntu.qcow2 -cdrom /path/to/ubuntu.iso</span><br></pre></td></tr></table></figure>
 
 <p>当然我们也可以通过图形化的virt-manager来安装</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install virt-manager</span><br><span class="line">sudo apt install qemu</span><br><span class="line">sudo apt install qemu-kvm</span><br></pre></td></tr></table></figure>

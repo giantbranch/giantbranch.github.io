@@ -97,7 +97,7 @@
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1563244885957.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1563268001815.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1563348038846.jpg">
-<meta property="og:updated_time" content="2019-08-12T03:04:51.620Z">
+<meta property="og:updated_time" content="2019-08-13T09:21:23.183Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="VM escape 之 QEMU Case Study">
 <meta name="twitter:description" content="声明：首先这篇文章算是翻译+实践的 学习的来源是phrack网站的paper，这个应是上年就看到了，现在才去尝试实践与学习。 其实算是简译再加上自己的实践吧，最后劫持rip起shell由于需要特殊的内核编译才能搞，就没具体实践了，原理上理解了。 看完这篇文章，一句话说明虚拟机逃逸漏洞利用其实就是： 利用qemu代码实现上的漏洞去起一个/bin/sh什么的（当然执行计算器也是可以的），问题是我们在g">
@@ -505,7 +505,7 @@
 <p>比如下面的函数会给一个内存区域对象真机一个may-overlap的属性，这个属性有一个getter方法去获取这个属性的布尔值</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">object_property_add_bool(OBJECT(mr), <span class="string">"may-overlap"</span>,</span><br><span class="line">                         memory_region_get_may_overlap,</span><br><span class="line">                         <span class="literal">NULL</span>, <span class="comment">/* memory_region_set_may_overlap */</span></span><br><span class="line">                         &amp;error_abort);</span><br></pre></td></tr></table></figure>
 
-<p>RTL8139网卡设备仿真器 在堆上用一个64 KB的内存 来重新组装数据包。而这个64K的buffer被free掉的时候很容易被已经销毁的object properties占位了</p>
+<p>RTL8139网卡设备仿真器 在堆上用一个64KB的内存来重新组装数据包。而这个64K的buffer有很大机会把free掉了的object properties的内存占位了</p>
 <p>在漏洞利用中，我们在泄漏的内存中搜索已知的对象属性。更确切地说，我们正在寻找80字节的内存块（块的大小为已经free掉的ObjectProperty结构，80加上堆头16，就是96，即0x60），其中至少有一个函数指针（get, set, resolve or release），即使开了ASLR，我们仍然可以获得.text部分的基地址。实际上，他们的页面偏移是固定的（12个最低有效位不是随机的），我们可以通过一些简单的计算获得qemu一些有用的函数的地址，我们也可以得到libc的一些地址，比如mprotect() 和 system() 的地址</p>
 <p>我们还注意到地址PHY_MEM + 0x78泄漏了几次，其中PHY_MEM是给guest虚拟机分配的物理内存的起始地址</p>
 <p>exp就是搜索泄露的内存数据并尝试解析，.text段的虚拟地址，以及物理内存的基址</p>

@@ -1,3 +1,4 @@
+https://www.giantbranch.cn/2019/10/08/冰蝎动态二进制加密WebShell的检测/
 https://www.giantbranch.cn/2019/09/29/CVE-2019-0708 微软远程桌面服务远程代码执行漏洞之漏洞分析与漏洞利用/
 https://www.giantbranch.cn/2019/09/04/MITRE ATT&CK 入门/
 https://www.giantbranch.cn/2019/08/07/在ubuntu 18.04上编译VirtualBox/

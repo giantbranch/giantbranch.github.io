@@ -91,7 +91,7 @@
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1570528656560.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1570529078023.jpg">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1570530520536.jpg">
-<meta property="og:updated_time" content="2019-10-09T03:00:59.991Z">
+<meta property="og:updated_time" content="2019-10-14T09:15:07.785Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="冰蝎动态二进制加密WebShell的检测">
 <meta name="twitter:description" content="中国菜刀等工具管理WebShell的时候会有一些固定的特征，容易被waf或者IPS检测到，最近1年出来了个动态加密的WebShell管理工具，给检测带来了一定的困难，所以写个文章简单解剖一下 注：本文只针对当前的最新版冰蝎(Behinder) v2.0.1，以php webshell为例，其他webshell只是有细微的差别，有兴趣可以自行研究 实验环境 客户端： windows 7 + 冰蝎(B">
@@ -417,8 +417,6 @@
 <p>最后输出结构也是AES128加密的</p>
 <p>工具每次只需倒数第二行的$cmd即可更换要执行的命令</p>
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>攻防是不断对抗升级的，冰蝎虽然通信过程加密，但是请求密钥阶段有很多特征，假如将请求密钥阶段特征抹掉，那么我们防御端会更加难以检查。</p>
-<p>怎么更加能规避检测呢，可能以后的发展方向如下：</p>
-<p>1、服务端无需打印固定的16位密钥，md5是32位，可以随机打印16-32位，甚至可以在后面加垃圾字符，而服务器截取前16位作为密钥，而客户端获取了密钥后也是取前16位作为密钥<br>2、请求密钥时候的参数值可以是字符，数字，下划线等特殊字符，而不是纯数字，长度的跨度也可以适当大些</p>
 
       
     </div>

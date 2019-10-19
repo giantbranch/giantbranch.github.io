@@ -69,8 +69,8 @@ https://www.giantbranch.cn/2018/02/01/Murus 1.4.11 - Local Privilege Escalation 
 https://www.giantbranch.cn/2018/02/01/读《如何做好首席安全官 》/
 https://www.giantbranch.cn/2018/01/28/搭建mhn蜜罐管理系统并部署蜜罐/
 https://www.giantbranch.cn/2018/01/22/简单实践传说中的2T每秒的DRDoS/
-https://www.giantbranch.cn/2018/01/21/调用dll里面的函数的两种方法/
 https://www.giantbranch.cn/2018/01/21/使用远程线程注入DLL/
+https://www.giantbranch.cn/2018/01/21/调用dll里面的函数的两种方法/
 https://www.giantbranch.cn/2018/01/20/Windows服务编程/
 https://www.giantbranch.cn/2018/01/17/C++添加开机自启动的代码/
 https://www.giantbranch.cn/2018/01/17/Microsoft Excel CSV 文件代码执行/

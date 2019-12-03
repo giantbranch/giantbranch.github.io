@@ -1,4 +1,4 @@
-https://www.giantbranch.cn/2019/11/15/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/
+https://www.giantbranch.cn/2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/
 https://www.giantbranch.cn/2019/10/11/“远古时代”的隐秘网络通信简析/
 https://www.giantbranch.cn/2019/10/09/QEMU 虚拟机逃逸漏洞（CVE-2019-14378）漏洞分析/
 https://www.giantbranch.cn/2019/10/08/冰蝎动态二进制加密WebShell的检测/

@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://www.giantbranch.cn/about/index.html</loc>
+    
+    <lastmod>2019-12-31T03:24:57.918Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://www.giantbranch.cn/book/index.html</loc>
     
     <lastmod>2019-12-29T12:21:30.558Z</lastmod>
@@ -138,13 +145,6 @@
     <loc>https://www.giantbranch.cn/2019/07/17/VM%20escape%20%E4%B9%8B%20QEMU%20Case%20Study/</loc>
     
     <lastmod>2019-08-30T06:22:14.391Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://www.giantbranch.cn/about/index.html</loc>
-    
-    <lastmod>2019-08-20T02:51:40.293Z</lastmod>
     
   </url>
   

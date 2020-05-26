@@ -1,4 +1,5 @@
 https://www.giantbranch.cn/2020/04/17/git查看某个文件的提交记录/
+https://www.giantbranch.cn/2020/03/06/libprotobuf-mutator学习/
 https://www.giantbranch.cn/2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/
 https://www.giantbranch.cn/2019/11/04/windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞/
 https://www.giantbranch.cn/2019/10/28/CFG防护机制简单实践与介绍/

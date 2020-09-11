@@ -291,6 +291,147 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2020/09/08/通过编译器转换(llvm pass)规避模糊测试的一些障碍/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/09/08/通过编译器转换(llvm pass)规避模糊测试的一些障碍/" itemprop="url">通过编译器转换(llvm pass)规避模糊测试的一些障碍</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-09-08T00:00:00+08:00">
+                2020-09-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/09/08/通过编译器转换(llvm pass)规避模糊测试的一些障碍/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/09/08/通过编译器转换(llvm pass)规避模糊测试的一些障碍/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          这个是看一个文章的记录，算是简译吧
+总的来说是通过llvm pass去优化代码的生成去提高AFL的代码覆盖率
+AFL通过插桩获取的代码覆盖率，假如变异的样本触发的新的路径，就会加入到接下来的变异队列中
+但是有一些情况，会给afl造成极大的障碍
+12345if (input == 0xabad1dea
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2020/09/08/通过编译器转换(llvm pass)规避模糊测试的一些障碍/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2020/08/21/冰蝎 Behinder_v3.0 Beta 3 重点更新简析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1531,145 +1672,6 @@ qemu的漏洞一般在设备中，这个题目是一个PCI设备模拟器的漏�
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2019/10/25/翻译——N种脱壳安卓恶意软件的方式/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="giantbranch">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="giantbranch's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/10/25/翻译——N种脱壳安卓恶意软件的方式/" itemprop="url">翻译——N种脱壳安卓恶意软件的方式</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-25T00:00:00+08:00">
-                2019-10-25
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2019/10/25/翻译——N种脱壳安卓恶意软件的方式/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/10/25/翻译——N种脱壳安卓恶意软件的方式/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          之前Anubis这个安卓恶意软件家族比较流行，而且通过官方的应用商店进行传播。
-Android生态系统中的打包程序下面说的打包程序就是我们常说的加固，但是呢，恶意软件也用，用于隐藏他们恶意的payloads。这包含反射，混淆，控制流平坦化和垃圾代码，当然Anubis 也是使用了这些来阻碍我们分析。
-
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/10/25/翻译——N种脱壳安卓恶意软件的方式/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1720,7 +1722,7 @@ Android生态系统中的打包程序下面说的打包程序就是我们常说�
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">133</span>
+                  <span class="site-state-item-count">134</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1733,7 +1735,7 @@ Android生态系统中的打包程序下面说的打包程序就是我们常说�
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">177</span>
+                  <span class="site-state-item-count">178</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>

@@ -1,5 +1,7 @@
+https://www.giantbranch.cn/2020/12/25/winafl编译与测试/
 https://www.giantbranch.cn/2020/09/08/通过编译器转换(llvm pass)规避模糊测试的一些障碍/
 https://www.giantbranch.cn/2020/08/21/冰蝎 Behinder_v3.0 Beta 3 重点更新简析/
+https://www.giantbranch.cn/2020/08/18/哥斯拉Godzilla PHP Webshell分析与检测特征提取/
 https://www.giantbranch.cn/2020/08/17/冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测/
 https://www.giantbranch.cn/2020/04/17/git查看某个文件的提交记录/
 https://www.giantbranch.cn/2020/03/08/libfuzzer 文档/

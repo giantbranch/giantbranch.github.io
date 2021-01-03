@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://www.giantbranch.cn/book/index.html</loc>
+    
+    <lastmod>2021-01-03T01:52:43.664Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://www.giantbranch.cn/2020/05/24/%E4%B8%80%E4%B8%AA2016%E5%B9%B4afl%E7%9A%84%E8%AE%AE%E9%A2%98%E8%AE%B0%E5%BD%95%EF%BC%9ABSidesSF%202016%20-%20Fuzz%20Smarter,%20Not%20Harder%20(An%20afl-fuzz%20Primer)%20(Craig%20Young)/</loc>
     
     <lastmod>2020-12-28T09:06:27.543Z</lastmod>
@@ -89,13 +96,6 @@
     <loc>https://www.giantbranch.cn/2020/12/25/winafl%E7%BC%96%E8%AF%91%E4%B8%8E%E6%B5%8B%E8%AF%95/</loc>
     
     <lastmod>2020-12-25T10:14:45.748Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://www.giantbranch.cn/book/index.html</loc>
-    
-    <lastmod>2020-09-30T05:06:47.975Z</lastmod>
     
   </url>
   

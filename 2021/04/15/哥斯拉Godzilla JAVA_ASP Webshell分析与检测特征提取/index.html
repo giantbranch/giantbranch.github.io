@@ -91,7 +91,7 @@
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1619079852106.png">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1619080843846.png">
 <meta property="og:image" content="http://pic.giantbranch.cn/pic/1619081102107.png">
-<meta property="og:updated_time" content="2021-04-23T09:43:56.748Z">
+<meta property="og:updated_time" content="2021-04-23T09:45:52.077Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="哥斯拉Godzilla JAVA&#x2F;ASP Webshell分析与检测特征提取">
 <meta name="twitter:description" content="实验环境控制端：win7 + 哥斯拉Godzilla V2.96服务端：Ubuntu 16.04 + Tomcat8 之前的一些流程php已经分析过了，JAVA/ASP也差不多，所以就不分析了，简单说一下整儿过程 1、先把功能代码发过去，存在$_SESSION[$V]2、调用功能代码里面test函数，假如密码什么的都正确，返回加密后的ok3、最后就是获取基本信息，调用功能代码里面的getBasic">
@@ -401,7 +401,7 @@
 <p>1、请求长度在47-60左右，假如攻击者使用的密码很长，那很难检测，或者检测设备可以直接提取参数长度，那就可以限制在很短的范围（44-50就基本很准确了，假如有url解码的，直接44，非常精准）<br>2、返回长度56</p>
 <p>大家可以再加些跟多特征限制，比如Content-type:或者url后缀等</p>
 <h1 id="JAVA-AES-RAW"><a href="#JAVA-AES-RAW" class="headerlink" title="JAVA_AES_RAW"></a>JAVA_AES_RAW</h1><p>这个由于没有base64的url编码干扰，直接检测第一个请求即可</p>
-<p>1、Content-Length: 23360<br>2、返回长度为0</p>
+<p>1、请求内容的长度为 23360<br>2、返回长度为0</p>
 <h1 id="ASP-AES-BASE64"><a href="#ASP-AES-BASE64" class="headerlink" title="ASP_AES_BASE64"></a>ASP_AES_BASE64</h1><p>这个看了，更jsp的基本一样，除了url的后缀不一样。。。</p>
 <h1 id="ASP-AES-RAW"><a href="#ASP-AES-RAW" class="headerlink" title="ASP_AES_RAW"></a>ASP_AES_RAW</h1><p>这个也是直接固定长度，大家直接看看吧</p>
 

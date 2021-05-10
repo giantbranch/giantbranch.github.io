@@ -1,4 +1,3 @@
-https://www.giantbranch.cn/2021/04/15/哥斯拉Godzilla JAVA_ASP Webshell分析与检测特征提取/
 https://www.giantbranch.cn/2021/04/14/冰蝎v3.0 Beta 7(Behinder_v3.0 Beta 7) 简析与检测/
 https://www.giantbranch.cn/2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/
 https://www.giantbranch.cn/2020/12/25/winafl编译与测试/

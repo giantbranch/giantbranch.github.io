@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://www.giantbranch.cn/2021/07/09/libdislocator%E5%8E%9F%E7%90%86%E5%8F%8Aafl++%E7%9A%84%E6%9B%B4%E6%96%B0/</loc>
+    <lastmod>2021-07-12</lastmod>
+  </url>  <url>
     <loc>https://www.giantbranch.cn/2021/01/25/ClusterFuzz%E7%9A%84bot%E6%BA%90%E7%A0%81(fuzz%20engine%E7%9A%84%E9%80%89%E6%8B%A9%E4%B8%8E%E8%B0%83%E5%BA%A6%E4%B9%8Blibfuzzer)%E9%98%85%E8%AF%BB/</loc>
     <lastmod>2021-04-23</lastmod>
   </url>  <url>

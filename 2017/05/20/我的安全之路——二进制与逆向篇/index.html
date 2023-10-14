@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="我的安全之路,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="write in my dormitory  at ‏‎11:23:35 Saturday, May 20th, 2017 by giantbranch（其实当初想横跨web跟二进制的） ————致即将毕业的自己。 上一篇是《我的安全之路——Web安全篇》，，因为参加比赛，搞论文，就没什么时间写了，今天刚好答完辩，终于有时间开始写我的安全之路下篇了。虽然是5月20日写的，感觉写得太差，主要是技术也">
+<meta name="keywords" content="我的安全之路">
+<meta property="og:type" content="article">
+<meta property="og:title" content="我的安全之路——二进制与逆向篇">
+<meta property="og:url" content="https://www.giantbranch.cn/2017/05/20/我的安全之路——二进制与逆向篇/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="write in my dormitory  at ‏‎11:23:35 Saturday, May 20th, 2017 by giantbranch（其实当初想横跨web跟二进制的） ————致即将毕业的自己。 上一篇是《我的安全之路——Web安全篇》，，因为参加比赛，搞论文，就没什么时间写了，今天刚好答完辩，终于有时间开始写我的安全之路下篇了。虽然是5月20日写的，感觉写得太差，主要是技术也">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.134Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="我的安全之路——二进制与逆向篇">
+<meta name="twitter:description" content="write in my dormitory  at ‏‎11:23:35 Saturday, May 20th, 2017 by giantbranch（其实当初想横跨web跟二进制的） ————致即将毕业的自己。 上一篇是《我的安全之路——Web安全篇》，，因为参加比赛，搞论文，就没什么时间写了，今天刚好答完辩，终于有时间开始写我的安全之路下篇了。虽然是5月20日写的，感觉写得太差，主要是技术也">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2017/05/20/我的安全之路——二进制与逆向篇/">
+
+
+
+
+
+  <title>我的安全之路——二进制与逆向篇 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2017/05/20/我的安全之路——二进制与逆向篇/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">我的安全之路——二进制与逆向篇</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-20T00:00:00+00:00">
+                2017-05-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/05/20/我的安全之路——二进制与逆向篇/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/05/20/我的安全之路——二进制与逆向篇/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>write in my dormitory  at ‏‎11:23:35 Saturday, May 20th, 2017 by giantbranch（其实当初想横跨web跟二进制的）</p>
+<p>————致即将毕业的自己。</p>
+<p>上一篇是<strong>《<a href="http://www.giantbranch.cn/2017/04/07/%E6%88%91%E7%9A%84%E5%AE%89%E5%85%A8%E4%B9%8B%E8%B7%AF%E2%80%94%E2%80%94Web%E5%AE%89%E5%85%A8%E7%AF%87/">我的安全之路——Web安全篇</a>》</strong>，，因为参加比赛，搞论文，就没什么时间写了，今天刚好答完辩，终于有时间开始写我的安全之路下篇了。虽然是5月20日写的，感觉写得太差，主要是技术也不厉害，就没发出来。既然写了，就发出来吧，现在看看有什么完善的再现在发出来吧，确实这个内容比web安全的经历难写，一个是文章题目的原因，另一个是自己接触也不长，经历不足，技术差。</p>
+<h2 id="为什么去搞逆向和二进制了"><a href="#为什么去搞逆向和二进制了" class="headerlink" title="为什么去搞逆向和二进制了"></a>为什么去搞逆向和二进制了</h2><p>在上一篇中我说过，我参加了一些比赛， 由于比赛的题目除了web，misc还有逆向和pwn等，其中逆向和pwn的分值的占比都是比较高的，尤其在高端的比赛中，逆向和pwn的占比也是很高，在国外更是如此。</p>
+<h2 id="艰难入门之路"><a href="#艰难入门之路" class="headerlink" title="艰难入门之路"></a>艰难入门之路</h2><p>一开始就只是自己的孤军奋战，那基本就只能借助与搜索引擎：如何学习逆向，学习逆向的网站有哪些等。</p>
+<p>那么你看到的基本都是首先肯定要有C,C++的编程能力，基本的都要理解透彻。（后来你回发现，当你逆向程序，在汇编层面去理解C++的时候，你会理解得更为透彻。）</p>
+<p>之后就是汇编语言， 先从x86汇编学比较好吧，好书就是王爽的《汇编语言》，当时学校的《汇编语言程序设计》的课我也没选（因为我的那个群的学分已经满了，难得浪费分去选了，自学还可以挑战自我嘛），就看这本书，其实当时学得也并不是很好，用汇编编程的量不足（可以说几乎没编过汇编的感觉，感觉就编了几个helloworld），选了的话可以强制性地逼你去编。</p>
+<p>再之后就自己编程序，查看其汇编代码进行理解。来到这一步，就可以尝试去做一些crackme了，或者破解一些简单的软件，这样就差不多入门了。</p>
+<h2 id="入门之后还是迷茫啊"><a href="#入门之后还是迷茫啊" class="headerlink" title="入门之后还是迷茫啊"></a>入门之后还是迷茫啊</h2><p>发现自己进步得非常慢，几乎没啥大的进步，应该是量还不够，而且由于各种原因，不能完全将时间只投入到逆向的学习与提高上面（这个点是个非常值得注意的点，这是使我有点后悔的一个点，做事一定要专注！【其实当时好像也迫不得已】）。实习的时候是搞渗透的，只能空闲的时间学习逆向，还有就是去参加比赛，但是我还是去当了一个web选手，线下比赛很容易就浪费了很多时间。</p>
+<p>可以算入了逆向的门，之后一直想玩pwn，但确实难以入门啊，你要懂得汇编，调试，栈，堆等基本知识，你还要安装工具，你才能够理解和实践。重要的是当时的pwn的资料很少，我也没有大牛指导啊，搜索引擎搜到的资料也不多，可能当时没用谷歌吧，所以用好的搜索引擎也很重要，看英文资料也很重要，其实当时国外有个博客有个很好的系列文章，很多国内文章的原型来源于它（<a href="https://sploitfun.wordpress.com/）。" target="_blank" rel="noopener">https://sploitfun.wordpress.com/）。</a></p>
+<p>直到有一次，实习的时候刚好遇上公司的对外培训，我也去水了一下，跟安全研究员交流了一番，才拿到了一些资料，就更加激励我走上这一条路。</p>
+<p>实习完就想转岗做安全研究员，当时面试的时候还没分析过什么漏洞，就学过蒸米的那个教程，面试官就叫我尝试去分析二进制漏洞，当时就搞了个<a href="https://www.52pojie.cn/thread-557521-1-1.html" target="_blank" rel="noopener">ftp的缓冲区溢出漏洞</a>，<a href="https://www.52pojie.cn/thread-596064-1-1.html" target="_blank" rel="noopener">IE漏洞(CVE-2012-1889)分析与利用</a>，IE漏洞CVE-2014-0282漏洞分析（这个是分析完ftp后分析的，收获良多，报告没发出来，踩了挺多坑的），也算了入了windows的漏洞分析的门了。</p>
+<p>之后就是参加一些web偏多的比赛，还有准备毕业设计，还有这段时间一直在颓废了，不禁想问自己：为什么能够颓废这么久呢？</p>
+<h2 id="未来之路"><a href="#未来之路" class="headerlink" title="未来之路"></a>未来之路</h2><p>现在已经选择了安全研究员之路了，虽然苦逼了一点，但是既然选择就热爱吧。</p>
+<p>为什么想去当安全研究员呢，因为自从来到这个信息安全专业，我就基本确定走信息安全的道路了，后来也了解到tk教主就是安全研究员做起的，虽然并不是每个人都能成为tk，但是有机会还是可以试一下嘛。</p>
+<p><strong>关于pwn的一些好的博客，资源等（其实有些我收集了还没怎么看呢）</strong></p>
+<p>【更多等待大家补充了】</p>
+<p><a href="http://angelboy.logdown.com/" target="_blank" rel="noopener">http://angelboy.logdown.com/</a></p>
+<p><a href="https://wizardforcel.gitbooks.io/sploitfun-linux-x86-exp-tut/content/" target="_blank" rel="noopener">https://wizardforcel.gitbooks.io/sploitfun-linux-x86-exp-tut/content/</a></p>
+<p><a href="https://github.com/scwuaptx/HITCON-Training" target="_blank" rel="noopener">https://github.com/scwuaptx/HITCON-Training</a></p>
+<p><a href="https://github.com/Kung-Pao-Chicken/ctf" target="_blank" rel="noopener">https://github.com/Kung-Pao-Chicken/ctf</a></p>
+<p><a href="https://github.com/shellphish/how2heap" target="_blank" rel="noopener">https://github.com/shellphish/how2heap</a></p>
+<p><a href="https://pwnable.tw/" target="_blank" rel="noopener">https://pwnable.tw/</a></p>
+<p><a href="http://pwnable.kr/" target="_blank" rel="noopener">http://pwnable.kr/</a></p>
+<p><a href="https://etenal.me/archives/972#B1" target="_blank" rel="noopener">https://etenal.me/archives/972#B1</a></p>
+<p><a href="https://heap-exploitation.dhavalkapil.com/" target="_blank" rel="noopener">https://heap-exploitation.dhavalkapil.com/</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2017/05/20/我的安全之路——二进制与逆向篇/" title="我的安全之路——二进制与逆向篇">https://www.giantbranch.cn/2017/05/20/我的安全之路——二进制与逆向篇/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/我的安全之路/" rel="tag"># 我的安全之路</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/07/我的安全之路——Web安全篇/" rel="next" title="我的安全之路——Web安全篇">
+                <i class="fa fa-chevron-left"></i> 我的安全之路——Web安全篇
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/03/Exploit Exercises Protostar Stack Part 0-7/" rel="prev" title="Exploit Exercises Protostar Stack Part 0-7">
+                Exploit Exercises Protostar Stack Part 0-7 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么去搞逆向和二进制了"><span class="nav-number">1.</span> <span class="nav-text">为什么去搞逆向和二进制了</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#艰难入门之路"><span class="nav-number">2.</span> <span class="nav-text">艰难入门之路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#入门之后还是迷茫啊"><span class="nav-number">3.</span> <span class="nav-text">入门之后还是迷茫啊</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#未来之路"><span class="nav-number">4.</span> <span class="nav-text">未来之路</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2017/05/20/我的安全之路——二进制与逆向篇/';
+          this.page.identifier = '2017/05/20/我的安全之路——二进制与逆向篇/';
+          this.page.title = '我的安全之路——二进制与逆向篇';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

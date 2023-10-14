@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="漏洞分析,windbg,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="下面使用windbg是新版的windbg，叫windbg preview，需要在微软商店（Microsoft Store）中下载安装  新版的windbg具有更现代的视觉效果，速度更快，更完善的脚本编写体验以及Time Travel Debugging 特性 需要注意的是，Time Travel Debugging特性的开启需要以管理员权限运行，之后使用advanced打开并勾选对应的选项即可，最">
+<meta name="keywords" content="漏洞分析,windbg">
+<meta property="og:type" content="article">
+<meta property="og:title" content="windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞">
+<meta property="og:url" content="https://www.giantbranch.cn/2019/11/04/windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="下面使用windbg是新版的windbg，叫windbg preview，需要在微软商店（Microsoft Store）中下载安装  新版的windbg具有更现代的视觉效果，速度更快，更完善的脚本编写体验以及Time Travel Debugging 特性 需要注意的是，Time Travel Debugging特性的开启需要以管理员权限运行，之后使用advanced打开并勾选对应的选项即可，最">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572839370540.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572848750183.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572855969264.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1573035379336.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1573035461236.jpg">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.130Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞">
+<meta name="twitter:description" content="下面使用windbg是新版的windbg，叫windbg preview，需要在微软商店（Microsoft Store）中下载安装  新版的windbg具有更现代的视觉效果，速度更快，更完善的脚本编写体验以及Time Travel Debugging 特性 需要注意的是，Time Travel Debugging特性的开启需要以管理员权限运行，之后使用advanced打开并勾选对应的选项即可，最">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1572839370540.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2019/11/04/windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞/">
+
+
+
+
+
+  <title>windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2019/11/04/windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-04T00:00:00+00:00">
+                2019-11-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/11/04/windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/11/04/windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>下面使用windbg是新版的windbg，叫windbg preview，需要在微软商店（Microsoft Store）中下载安装</p>
+<p><img src="http://pic.giantbranch.cn/pic/1572839370540.jpg" alt></p>
+<p>新版的windbg具有更现代的视觉效果，速度更快，更完善的脚本编写体验以及Time Travel Debugging 特性</p>
+<p>需要注意的是，Time Travel Debugging特性的开启需要以管理员权限运行，之后使用advanced打开并勾选对应的选项即可，最后配置一下记录的保存路径即可</p>
+<p><img src="http://pic.giantbranch.cn/pic/1572848750183.jpg" alt></p>
+<p>当然你也可以attach到正在运行的程序，或者打开别人的trace file</p>
+<p>有了Time Travel Debugging，你几乎可以像本地看电影一样，不断来回脱动进度条，而且这个还是本地化，免去了查找漏洞软件，搭建环境，验证漏洞的烦恼，只需要拿到别人的TTD的记录文件即可，而且调试过程地址还不会变，爽不爽。</p>
+<h1 id="Time-Travel-Debugging-初探"><a href="#Time-Travel-Debugging-初探" class="headerlink" title="Time Travel Debugging 初探"></a>Time Travel Debugging 初探</h1><p>我们随便找一个windows程序，看看这个新特性</p>
+<p>一开始载入没什么反应，以为出什么事了，原来是这个特性载入程序，速度太慢了</p>
+<p>对于我们常用的p,t,g,假如想反向执行，只需在指令后面加个”-“号</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">0:000&gt; p</span><br><span class="line">Time Travel Position: 63:3F</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=559b1944 ebx=02bfe000 ecx=00000001 edx=0099b720 esi=00991100 edi=00991100</span><br><span class="line">eip=00992158 esp=0098f9c0 ebp=0098f9dc iopl=0         nv up ei pl nz na po nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000202</span><br><span class="line">learnCFG!main+0x8:</span><br><span class="line">00992158 b8cccccccc      mov     eax,0CCCCCCCCh</span><br><span class="line">0:000&gt; p</span><br><span class="line">Time Travel Position: 63:40</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=cccccccc ebx=02bfe000 ecx=00000001 edx=0099b720 esi=00991100 edi=00991100</span><br><span class="line">eip=0099215d esp=0098f9c0 ebp=0098f9dc iopl=0         nv up ei pl nz na po nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000202</span><br><span class="line">learnCFG!main+0xd:</span><br><span class="line">0099215d 8945ec          mov     dword ptr [ebp-14h],eax ss:002b:0098f9c8=0098f9d4</span><br><span class="line">0:000&gt; p-</span><br><span class="line">Time Travel Position: 63:3F</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=559b1944 ebx=02bfe000 ecx=00000001 edx=0099b720 esi=00991100 edi=00991100</span><br><span class="line">eip=00992158 esp=0098f9c0 ebp=0098f9dc iopl=0         nv up ei pl nz na po nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000202</span><br><span class="line">learnCFG!main+0x8:</span><br><span class="line">00992158 b8cccccccc      mov     eax,0CCCCCCCCh</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，假如我们一步小心，执行过了，还可以回退，可以回到当初的状态看看寄存器，内存，这是相当好的东西，有后悔药吃了。</p>
+<p>有时候我们执行过了头，想要跟进去那个函数，也是可以回头进去的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">eax=12fd94d0 ebx=02bfe000 ecx=009913a0 edx=00000000 esi=0098f9c0 edi=0098f9bc</span><br><span class="line">eip=009921d1 esp=0098f9bc ebp=0098f9dc iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">learnCFG!main+0x81:</span><br><span class="line">009921d1 ff1500e09900    call    dword ptr [learnCFG!__guard_check_icall_fptr (0099e000)] ds:002b:0099e000=&#123;ntdll!LdrpValidateUserCallTarget (77408be0)&#125;</span><br><span class="line">0:000&gt; p</span><br><span class="line">Time Travel Position: 67:85</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=00132274 ebx=02bfe000 ecx=009913a0 edx=10100444 esi=0098f9c0 edi=0098f9bc</span><br><span class="line">eip=009921d7 esp=0098f9bc ebp=0098f9dc iopl=0         nv up ei pl zr na pe cy</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000247</span><br><span class="line">learnCFG!main+0x87:</span><br><span class="line">009921d7 3bfc            cmp     edi,esp</span><br><span class="line">0:000&gt; p-</span><br><span class="line">Time Travel Position: 67:79</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=12fd94d0 ebx=02bfe000 ecx=009913a0 edx=00000000 esi=0098f9c0 edi=0098f9bc</span><br><span class="line">eip=009921d1 esp=0098f9bc ebp=0098f9dc iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">learnCFG!main+0x81:</span><br><span class="line">009921d1 ff1500e09900    call    dword ptr [learnCFG!__guard_check_icall_fptr (0099e000)] ds:002b:0099e000=&#123;ntdll!LdrpValidateUserCallTarget (77408be0)&#125;</span><br><span class="line">0:000&gt; t</span><br><span class="line">Time Travel Position: 67:7D</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=00009913 ebx=02bfe000 ecx=009913a0 edx=009b0000 esi=0098f9c0 edi=0098f9bc</span><br><span class="line">eip=77408beb esp=0098f9b8 ebp=0098f9dc iopl=0         nv up ei pl nz na po cy</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000203</span><br><span class="line">ntdll!LdrpValidateUserCallTargetBitMapCheck:</span><br><span class="line">77408beb 8b1482          mov     edx,dword ptr [edx+eax*4] ds:002b:009d644c=10100444</span><br></pre></td></tr></table></figure>
+
+<p>我们看看记录的目录，共有三个文件，.run是trace文件，idx是索引文件，索引文件可以让我们更快地访问跟踪信息。假如我们只有.run文件，也是可以的，当WinDbg Preview打开跟踪文件（.run）时，索引文件也会自动创建。</p>
+<p><img src="http://pic.giantbranch.cn/pic/1572855969264.jpg" alt></p>
+<h1 id="利用别人的跟踪文件调试"><a href="#利用别人的跟踪文件调试" class="headerlink" title="利用别人的跟踪文件调试"></a>利用别人的跟踪文件调试</h1><p>这是参考文章的作者给的文件，一个.run文件就592M了，但是可以免除搭建环境，1个G甚至8个G我都能接受</p>
+<p>这个漏洞是Adobe Acrobat Reader DC for Windows - Double Free due to Malformed JP2 Stream(CVE-2019-8044)，POC可以在下面下载</p>
+<p><a href="https://www.exploit-db.com/exploits/47279" target="_blank" rel="noopener">https://www.exploit-db.com/exploits/47279</a></p>
+<p>我就不下载POC复现了，直接用作者的跟踪文件分析，载入run文件后，直接g，触发崩溃</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">Time Travel Position: 224FB2:1</span><br><span class="line">eax=000d0004 ebx=00000000 ecx=ffffd8f0 edx=770d2330 esi=00003a98 edi=00000000</span><br><span class="line">eip=67ce7001 esp=010cc25c ebp=010cc2a8 iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">67ce7001 0970ce          or      dword ptr [eax-32h],esi ds:002b:000cffd2=????????</span><br><span class="line">0:001&gt; kv</span><br><span class="line"> # ChildEBP RetAddr  Args to Child              </span><br><span class="line">WARNING: Frame IP not in any known module. Following frames may be wrong.</span><br><span class="line">00 010cc258 770bdc2c 770ffa22 000006d4 00000000 0x67ce7001</span><br><span class="line">01 010cc25c 770ffa22 000006d4 00000000 010cc290 ntdll!NtWaitForSingleObject+0xc (FPO: [3,0,0])</span><br><span class="line">02 010cc2a8 770ff802 010cce6c 00000568 00000000 ntdll!WaitForWerSvc+0x77 (FPO: [Non-Fpo])</span><br><span class="line">03 010cc338 770fed66 00000000 000002dc 00000000 ntdll!SendMessageToWERService+0x5d (FPO: [Non-Fpo])</span><br><span class="line">04 010cce28 770ff3b1 010cd25c 00000004 00000000 ntdll!ReportExceptionInternal+0xde (FPO: [4,695,4])</span><br><span class="line">05 010cd288 770fee0a 00000000 00000000 00000000 ntdll!RtlReportExceptionHelper+0x29d (FPO: [Non-Fpo])</span><br><span class="line">06 010cd2ac 77129865 010cd424 010cd474 00000000 ntdll!RtlReportException+0x6a (FPO: [3,3,4])</span><br><span class="line">07 010cd2bc 770c20b0 010cd964 00000001 fffffffe ntdll!RtlReportCriticalFailure+0xad (FPO: [SEH])</span><br><span class="line">08 010cd2d0 770c19c0 00000000 00000000 00000000 ntdll!_EH4_CallFilterFunc+0x12 (FPO: [Uses EBP] [0,0,4])</span><br><span class="line">09 010cd2fc 770c5e00 771632d4 770bfbd0 010cd424 ntdll!_except_handler4_common+0x80 (FPO: [Non-Fpo])</span><br><span class="line">0a 010cd31c 770d23b2 010cd424 010cd954 010cd474 ntdll!_except_handler4+0x20 (FPO: [Non-Fpo])</span><br><span class="line">0b 010cd340 770d2384 010cd424 010cd954 010cd474 ntdll!ExecuteHandler2+0x26</span><br><span class="line">0c 010cd40c 770bff1f 010cd424 010cd474 010cd424 ntdll!ExecuteHandler+0x24</span><br><span class="line">0d 010cd964 00000000 00000001 00000002 7712b763 ntdll!KiUserExceptionDispatcher+0xf (FPO: [2,0,0]) (CONTEXT @ ffffffff)</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这里面看不到什么有用的东西，都是windows的异常处理函数相关的，而且我们通过信息已经知道这个漏洞是double free了，可能是free的时候崩溃的，我们需要向上回溯</p>
+<p>通过不断点击step out back，或者命令<code>g-u</code>去不断返回，但是我们到<code>ntdll!KiUserExceptionDispatcher+0xf</code>的时候再返回，就变成载入时的状态，所以到这一步我们应该点击step over back，或者命令<code>p-</code>，多step over back几次即可</p>
+<p>最终可以执行下面命令回到真正触发崩溃的地方</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g-u;g-u;g-u;g-u;g-u;g-u;g-u;g-u;g-u;g-u;g-u;g-u;g-u;p-;p-;p-;p-;p-;p-;</span><br></pre></td></tr></table></figure>
+
+<p>再看下此时的栈，是MSVCR120!free之后调用ntdll!RtlFreeHeap失败，最终进入ntdll!RtlpLogHeapFailure处理</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; kb</span><br><span class="line"> # ChildEBP RetAddr  Args to Child              </span><br><span class="line">WARNING: Frame IP not in any known module. Following frames may be wrong.</span><br><span class="line">00 010cd5e0 770bf13c 770d2595 010cd8f8 010cd5f8 0x67ce7000</span><br><span class="line">01 010cd5e4 770d2595 010cd8f8 010cd5f8 00000001 ntdll!NtRaiseException+0xc</span><br><span class="line">02 010cd8c8 77129841 010cd8f8 3a9cf7ad 1fb1c848 ntdll!RtlRaiseException+0x35</span><br><span class="line">03 010cd964 7712cfe2 00000001 00000002 7712b763 ntdll!RtlReportCriticalFailure+0x89</span><br><span class="line">04 010cd970 7712b763 01670000 00000002 010cd9b0 ntdll!RtlpReportHeapFailure+0x32</span><br><span class="line">05 010cd980 770d16cf 3a9cf779 01670000 1fb1c848 ntdll!RtlpHeapHandleError+0x1c</span><br><span class="line">06 010cd9b0 770e23be 1fb1c848 00000000 00000000 ntdll!RtlpLogHeapFailure+0x9f</span><br><span class="line">07 010cd9e4 6b1becfa 01670000 00000000 1fb1c850 ntdll!RtlFreeHeap+0x4abce</span><br><span class="line">08 010cd9f8 6a18b2a7 1fb1c850 277326dc 010cdb5c MSVCR120!free+0x1a [f:\dd\vctools\crt\crtw32\heap\free.c @ 51] </span><br><span class="line">09 010cdb0c 6a17bc96 010cdb7c 00000001 00000b20 AcroRd32!CTJPEGTiledContentWriter::operator=+0x12c83</span><br><span class="line">0a 010cdcd4 6a179c26 00000000 00000000 00000000 AcroRd32!CTJPEGTiledContentWriter::operator=+0x3672</span><br><span class="line">0b 010cdd08 6a171033 1ff1e030 074eaf44 074eaf60 AcroRd32!CTJPEGTiledContentWriter::operator=+0x1602</span><br><span class="line">0c 010cdd1c 6a1654a7 1ff1e030 000033f8 07637cd8 AcroRd32!AX_PDXlateToHostEx+0x271448</span><br><span class="line">0d 010cddc4 69c7c595 074eaf44 00000001 078438e0 AcroRd32!AX_PDXlateToHostEx+0x2658bc</span><br><span class="line">0e 010cdde0 69c7c4a9 20a54028 00000001 0013d690 AcroRd32!CTJPEGWriter::CTJPEGWriter+0x22d4d</span><br><span class="line">0f 010cde00 69c119d7 010cde20 20a54028 0013d690 AcroRd32!CTJPEGWriter::CTJPEGWriter+0x22c61</span><br><span class="line">10 010cde28 69c1198d 20a54028 00000001 0013d690 AcroRd32!AcroWinBrowserMain+0x19eb3</span><br><span class="line">11 010cde3c 69cb0c16 20a54028 00000001 0013d690 AcroRd32!AcroWinBrowserMain+0x19e69</span><br><span class="line">12 010cde54 69d8d21a 20a54028 00000001 0013d690 AcroRd32!CTJPEGWriter::CTJPEGWriter+0x573ce</span><br><span class="line">13 010cdea8 6a0ee398 00000000 00000e44 076a1e54 AcroRd32!CTJPEGDecoderHasMoreTiles+0xf4a</span><br><span class="line">14 010cdf20 69ff0017 010cdf40 010cdf50 277322b4 AcroRd32!AX_PDXlateToHostEx+0x1ee7ad</span><br><span class="line">15 010cdf64 6b369939 07557880 010cdf88 26c94051 AcroRd32!AX_PDXlateToHostEx+0xf042c</span><br><span class="line">16 010ce010 6b5f6028 075578d8 010ce024 00000000 AGM!AGMGetVersion+0x14263</span><br><span class="line">17 010ce028 6b2fb9af 010ce0cc 26c97f11 00112015 AGM!AGMGetVersion+0x2a0952</span><br><span class="line">18 00000000 00000000 00000000 00000000 00000000 AGM!AGMInitialize+0x33153</span><br></pre></td></tr></table></figure>
+
+<p>我们看看什么导致checkfail了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line">Time Travel Position: 222B02:6F</span><br><span class="line">eax=6ae3fb4c ebx=1fb1c850 ecx=00000008 edx=01670000 esi=1fb1c848 edi=01670000</span><br><span class="line">eip=770e23b9 esp=010cd9b8 ebp=010cd9e4 iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">ntdll!RtlFreeHeap+0x4abc9:</span><br><span class="line">770e23b9 e872f2feff      call    ntdll!RtlpLogHeapFailure (770d1630)</span><br><span class="line">0:001&gt; t-</span><br><span class="line">Time Travel Position: 222B02:6E</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=6ae3fb4c ebx=1fb1c850 ecx=1fb1c850 edx=01670000 esi=1fb1c848 edi=01670000</span><br><span class="line">eip=770e23b4 esp=010cd9b8 ebp=010cd9e4 iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">ntdll!RtlFreeHeap+0x4abc4:</span><br><span class="line">770e23b4 b908000000      mov     ecx,8</span><br><span class="line">0:001&gt; t-</span><br><span class="line">Time Travel Position: 222B02:6D</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=6ae3fb4c ebx=1fb1c850 ecx=1fb1c850 edx=00000000 esi=1fb1c848 edi=01670000</span><br><span class="line">eip=770e23b2 esp=010cd9b8 ebp=010cd9e4 iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">ntdll!RtlFreeHeap+0x4abc2:</span><br><span class="line">770e23b2 8bd7            mov     edx,edi</span><br><span class="line">0:001&gt; t-</span><br><span class="line">Time Travel Position: 222B02:6C</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=6ae3fb4c ebx=1fb1c850 ecx=1fb1c850 edx=00000000 esi=1fb1c848 edi=01670000</span><br><span class="line">eip=770e23b1 esp=010cd9bc ebp=010cd9e4 iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">ntdll!RtlFreeHeap+0x4abc1:</span><br><span class="line">770e23b1 56              push    esi</span><br><span class="line">0:001&gt; t-</span><br><span class="line">Time Travel Position: 222B02:6B</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=6ae3fb4c ebx=1fb1c850 ecx=1fb1c850 edx=00000000 esi=1fb1c848 edi=01670000</span><br><span class="line">eip=770e23af esp=010cd9c0 ebp=010cd9e4 iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">ntdll!RtlFreeHeap+0x4abbf:</span><br><span class="line">770e23af 6a00            push    0</span><br><span class="line">0:001&gt; t-</span><br><span class="line">Time Travel Position: 222B02:6A</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=6ae3fb4c ebx=1fb1c850 ecx=1fb1c850 edx=00000000 esi=1fb1c848 edi=01670000</span><br><span class="line">eip=770e23ad esp=010cd9c4 ebp=010cd9e4 iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">ntdll!RtlFreeHeap+0x4abbd:</span><br><span class="line">770e23ad 6a00            push    0</span><br><span class="line">0:001&gt; t-</span><br><span class="line">Time Travel Position: 222B02:69</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=6ae3fb4c ebx=1fb1c850 ecx=1fb1c850 edx=00000000 esi=1fb1c848 edi=01670000</span><br><span class="line">eip=770e23ab esp=010cd9c8 ebp=010cd9e4 iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">ntdll!RtlFreeHeap+0x4abbb:</span><br><span class="line">770e23ab 6a00            push    0</span><br><span class="line">0:001&gt; t-</span><br><span class="line">Time Travel Position: 222B02:68</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=6ae3fb4c ebx=1fb1c850 ecx=1fb1c850 edx=00000000 esi=1fb1c848 edi=01670000</span><br><span class="line">eip=77097855 esp=010cd9c8 ebp=010cd9e4 iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">ntdll!RtlFreeHeap+0x65:</span><br><span class="line">77097855 0f8450ab0400    je      ntdll!RtlFreeHeap+0x4abbb (770e23ab)    [br=1]</span><br><span class="line">0:001&gt; t-</span><br><span class="line">Time Travel Position: 222B02:67</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=6ae3fb4c ebx=1fb1c850 ecx=1fb1c850 edx=00000000 esi=1fb1c848 edi=01670000</span><br><span class="line">eip=77097851 esp=010cd9c8 ebp=010cd9e4 iopl=0         ov up ei pl nz ac pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000a16</span><br><span class="line">ntdll!RtlFreeHeap+0x61:</span><br><span class="line">77097851 f646073f        test    byte ptr [esi+7],3Fh       ds:002b:1fb1c84f=80</span><br></pre></td></tr></table></figure>
+
+<p>原来是这个<code>77097851 f646073f        test    byte ptr [esi+7],3Fh       ds:002b:1fb1c84f=80</code></p>
+<p>这个地址肯定被改写了才导致检查是吧，所以我们可以对这个地址下一个写入断点，之后往回走，g-就行，实在太方便了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ba w1 1fb1c84f</span><br><span class="line">g-</span><br></pre></td></tr></table></figure>
+
+<p>由于这个断下来会停在写入的下一个指令，所以还要p-一下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; p-</span><br><span class="line">Time Travel Position: 222B02:B</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=0317022d ebx=1fb1c848 ecx=8317022d edx=0317022d esi=0317022d edi=078410c0</span><br><span class="line">eip=77097953 esp=010cd990 ebp=010cd9bc iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">ntdll!RtlpLowFragHeapFree+0x93:</span><br><span class="line">77097953 c6430780        mov     byte ptr [ebx+7],80h       ds:002b:1fb1c84f=88</span><br></pre></td></tr></table></figure>
+
+<p>这时再看一下栈，可以看到<code>MSVCR120!free(void * pBlock = 0x1fb1c850)+0x1a</code>，是<code>free(0x1fb1c850)</code>后导致的写入，而且这个栈跟上面的有所区别，所以这应该是第一次free，写入了0x80后，导致第二次free失败了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; kp</span><br><span class="line"> # ChildEBP RetAddr  </span><br><span class="line">00 010cd9bc 7709787d ntdll!RtlpLowFragHeapFree+0x93</span><br><span class="line">01 010cd9e4 6b1becfa ntdll!RtlFreeHeap+0x8d</span><br><span class="line">02 010cd9f8 6a18b296 MSVCR120!free(void * pBlock = 0x1fb1c850)+0x1a [f:\dd\vctools\crt\crtw32\heap\free.c @ 51] </span><br><span class="line">WARNING: Stack unwind information not available. Following frames may be wrong.</span><br><span class="line">03 010cdb0c 6a17bc96 AcroRd32!CTJPEGTiledContentWriter::operator=+0x12c72</span><br><span class="line">04 010cdcd4 6a179c26 AcroRd32!CTJPEGTiledContentWriter::operator=+0x3672</span><br><span class="line">05 010cdd08 6a171033 AcroRd32!CTJPEGTiledContentWriter::operator=+0x1602</span><br><span class="line">06 010cdd1c 6a1654a7 AcroRd32!AX_PDXlateToHostEx+0x271448</span><br><span class="line">07 010cddc4 69c7c595 AcroRd32!AX_PDXlateToHostEx+0x2658bc</span><br><span class="line">08 010cdde0 69c7c4a9 AcroRd32!CTJPEGWriter::CTJPEGWriter+0x22d4d</span><br><span class="line">09 010cde00 69c119d7 AcroRd32!CTJPEGWriter::CTJPEGWriter+0x22c61</span><br><span class="line">0a 010cde28 69c1198d AcroRd32!AcroWinBrowserMain+0x19eb3</span><br><span class="line">0b 010cde3c 69cb0c16 AcroRd32!AcroWinBrowserMain+0x19e69</span><br><span class="line">0c 010cde54 69d8d21a AcroRd32!CTJPEGWriter::CTJPEGWriter+0x573ce</span><br><span class="line">0d 010cdea8 6a0ee398 AcroRd32!CTJPEGDecoderHasMoreTiles+0xf4a</span><br><span class="line">0e 010cdf20 69ff0017 AcroRd32!AX_PDXlateToHostEx+0x1ee7ad</span><br><span class="line">0f 010cdf64 6b369939 AcroRd32!AX_PDXlateToHostEx+0xf042c</span><br><span class="line">10 010ce010 6b5f6028 AGM!AGMGetVersion+0x14263</span><br><span class="line">11 010ce028 6b2fb9af AGM!AGMGetVersion+0x2a0952</span><br><span class="line">12 00000000 00000000 AGM!AGMInitialize+0x33153</span><br></pre></td></tr></table></figure>
+
+<p>参考文章的作者还给出了TTD的一个牛逼的命令，可以看到MSVCR120!malloc什么时候返回0x1fb1c850<br>注：下面中括号的四个可能会变</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; dx -r1 @$cursession.TTD.Calls(&quot;MSVCR120!malloc&quot;).Where(c =&gt; c.ReturnValue == (void *)0x1fb1c850)</span><br><span class="line">@$cursession.TTD.Calls(&quot;MSVCR120!malloc&quot;).Where(c =&gt; c.ReturnValue == (void *)0x1fb1c850)                </span><br><span class="line">    [0x231fe]       </span><br><span class="line">    [0x3991b]       </span><br><span class="line">    [0x3c926]       </span><br><span class="line">    [0x3e405]</span><br></pre></td></tr></table></figure>
+
+<p>之后可以在后面加个中括号去访问对应的那个状态，可以看到他的时间点去判断是在free之前malloc的还是之后（下面的TimeStart）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; dx -r1 @$cursession.TTD.Calls(&quot;MSVCR120!malloc&quot;).Where(c =&gt; c.ReturnValue == (void *)0x1fb1c850)[0x231fe]</span><br><span class="line">@$cursession.TTD.Calls(&quot;MSVCR120!malloc&quot;).Where(c =&gt; c.ReturnValue == (void *)0x1fb1c850)[0x231fe]                </span><br><span class="line">    EventType        : 0x0</span><br><span class="line">    ThreadId         : 0x146c</span><br><span class="line">    UniqueThreadId   : 0x8</span><br><span class="line">    TimeStart        : 20FB5D:162 [Translate Position]</span><br><span class="line">    SystemTimeStart  : Unexpected failure to dereference object</span><br><span class="line">    TimeEnd          : 20FB5E:90 [Translate Position]</span><br><span class="line">    SystemTimeEnd    : Unexpected failure to dereference object</span><br><span class="line">    Function         : MSVCR120!malloc</span><br><span class="line">    FunctionAddress  : 0x6b1bed30</span><br><span class="line">    ReturnAddress    : 0x69bf3042</span><br><span class="line">    ReturnValue      : 0x1fb1c850 [Type: void *]</span><br><span class="line">    Parameters</span><br></pre></td></tr></table></figure>
+
+<p>或者直接点击那是个中括号的值（点击的话中括号的会变成十进制的）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; dx -r1 @$cursession.TTD.Calls(&quot;MSVCR120!malloc&quot;).Where(c =&gt; c.ReturnValue == (void *)0x1fb1c850)[143870]</span><br><span class="line">@$cursession.TTD.Calls(&quot;MSVCR120!malloc&quot;).Where(c =&gt; c.ReturnValue == (void *)0x1fb1c850)[143870]                </span><br><span class="line">    EventType        : 0x0</span><br><span class="line">    ThreadId         : 0x146c</span><br><span class="line">    UniqueThreadId   : 0x8</span><br><span class="line">    TimeStart        : 20FB5D:162 [Translate Position]</span><br><span class="line">    SystemTimeStart  : Unexpected failure to dereference object</span><br><span class="line">    TimeEnd          : 20FB5E:90 [Translate Position]</span><br><span class="line">    SystemTimeEnd    : Unexpected failure to dereference object</span><br><span class="line">    Function         : MSVCR120!malloc</span><br><span class="line">    FunctionAddress  : 0x6b1bed30</span><br><span class="line">    ReturnAddress    : 0x69bf3042</span><br><span class="line">    ReturnValue      : 0x1fb1c850 [Type: void *]</span><br><span class="line">    Parameters      </span><br><span class="line">0:001&gt; dx -r1 @$cursession.TTD.Calls(&quot;MSVCR120!malloc&quot;).Where(c =&gt; c.ReturnValue == (void *)0x1fb1c850)[235803]</span><br><span class="line">@$cursession.TTD.Calls(&quot;MSVCR120!malloc&quot;).Where(c =&gt; c.ReturnValue == (void *)0x1fb1c850)[235803]                </span><br><span class="line">    EventType        : 0x0</span><br><span class="line">    ThreadId         : 0x13a0</span><br><span class="line">    UniqueThreadId   : 0x3</span><br><span class="line">    TimeStart        : 1EA482:1C1 [Translate Position]</span><br><span class="line">    SystemTimeStart  : Unexpected failure to dereference object</span><br><span class="line">    TimeEnd          : 1EA483:90 [Translate Position]</span><br><span class="line">    SystemTimeEnd    : Unexpected failure to dereference object</span><br><span class="line">    Function         : MSVCR120!malloc</span><br><span class="line">    FunctionAddress  : 0x6b1bed30</span><br><span class="line">    ReturnAddress    : 0x68b49911</span><br><span class="line">    ReturnValue      : 0x1fb1c850 [Type: void *]</span><br><span class="line">    Parameters      </span><br><span class="line">0:001&gt; dx -r1 @$cursession.TTD.Calls(&quot;MSVCR120!malloc&quot;).Where(c =&gt; c.ReturnValue == (void *)0x1fb1c850)[248102]</span><br><span class="line">@$cursession.TTD.Calls(&quot;MSVCR120!malloc&quot;).Where(c =&gt; c.ReturnValue == (void *)0x1fb1c850)[248102]                </span><br><span class="line">    EventType        : 0x0</span><br><span class="line">    ThreadId         : 0x13a0</span><br><span class="line">    UniqueThreadId   : 0x3</span><br><span class="line">    TimeStart        : 1F94B3:D6 [Translate Position]</span><br><span class="line">    SystemTimeStart  : Unexpected failure to dereference object</span><br><span class="line">    TimeEnd          : 1F94B4:90 [Translate Position]</span><br><span class="line">    SystemTimeEnd    : Unexpected failure to dereference object</span><br><span class="line">    Function         : MSVCR120!malloc</span><br><span class="line">    FunctionAddress  : 0x6b1bed30</span><br><span class="line">    ReturnAddress    : 0x68b49911</span><br><span class="line">    ReturnValue      : 0x1fb1c850 [Type: void *]</span><br><span class="line">    Parameters      </span><br><span class="line">0:001&gt; dx -r1 @$cursession.TTD.Calls(&quot;MSVCR120!malloc&quot;).Where(c =&gt; c.ReturnValue == (void *)0x1fb1c850)[254981]</span><br><span class="line">@$cursession.TTD.Calls(&quot;MSVCR120!malloc&quot;).Where(c =&gt; c.ReturnValue == (void *)0x1fb1c850)[254981]                </span><br><span class="line">    EventType        : 0x0</span><br><span class="line">    ThreadId         : 0x13a0</span><br><span class="line">    UniqueThreadId   : 0x3</span><br><span class="line">    TimeStart        : 2201C5:62 [Translate Position]</span><br><span class="line">    SystemTimeStart  : Unexpected failure to dereference object</span><br><span class="line">    TimeEnd          : 2201C6:90 [Translate Position]</span><br><span class="line">    SystemTimeEnd    : Unexpected failure to dereference object</span><br><span class="line">    Function         : MSVCR120!malloc</span><br><span class="line">    FunctionAddress  : 0x6b1bed30</span><br><span class="line">    ReturnAddress    : 0x6a17cd10</span><br><span class="line">    ReturnValue      : 0x1fb1c850 [Type: void *]</span><br><span class="line">    Parameters</span><br></pre></td></tr></table></figure>
+
+<p>写入0x80的时间是<code>Time Travel Position: 222B02:B</code>（第一次free），所以malloc应该在他前面且最近的一次</p>
+<p>上面四个分别是下面的，所以最近的应该是最后一个</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">TimeStart        : 20FB5D:162 [Translate Position]</span><br><span class="line">   </span><br><span class="line">TimeStart        : 1EA482:1C1 [Translate Position]</span><br><span class="line">   </span><br><span class="line">TimeStart        : 1F94B3:D6 [Translate Position]</span><br><span class="line">   </span><br><span class="line">TimeStart        : 2201C5:62 [Translate Positio</span><br></pre></td></tr></table></figure>
+
+<p>跟参考文章作者得出的一样，只不过那个中括号的排序可能有所差异</p>
+<p>感觉这样还没有条件记录断点方便，但是还是挺清晰的</p>
+<p><strong>跟踪free</strong></p>
+<p>到上面写入0x80这，我们已经在第一次free的里面了</p>
+<p>向上回溯，到第一次调用free的地方（AcroRd32!AcroWinBrowserMain+0x2593里面会调用MSVCR120!free）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; p-</span><br><span class="line">Time Travel Position: 222B01:43</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=1fb1c850 ebx=00000000 ecx=1fb1c7f0 edx=00000000 esi=1fb1c400 edi=00000000</span><br><span class="line">eip=6a18b291 esp=010cda00 ebp=010cdb0c iopl=0         nv up ei pl nz na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000206</span><br><span class="line">AcroRd32!CTJPEGTiledContentWriter::operator=+0x12c6d:</span><br><span class="line">6a18b291 e821eea6ff      call    AcroRd32!AcroWinBrowserMain+0x2593 (69bfa0b7)</span><br></pre></td></tr></table></figure>
+
+<p>而我们看看现在代码上下，发现两次调用了<code>AcroRd32!AcroWinBrowserMain+0x2593</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">6a18b286 8b8568ffffff mov     eax, dword ptr [ebp-98h]</span><br><span class="line">6a18b28c 85c0         test    eax, eax</span><br><span class="line">6a18b28e 7407         je      AcroRd32!CTJPEGTiledContentWriter::operator=+0x12c73 (6a18b297)</span><br><span class="line">6a18b290 50           push    eax</span><br><span class="line">6a18b291 e821eea6ff   call    AcroRd32!AcroWinBrowserMain+0x2593 (69bfa0b7)    </span><br><span class="line">6a18b296 59           pop     ecx</span><br><span class="line">6a18b297 8b8570ffffff mov     eax, dword ptr [ebp-90h]</span><br><span class="line">6a18b29d 85c0         test    eax, eax</span><br><span class="line">6a18b29f 7407         je      AcroRd32!CTJPEGTiledContentWriter::operator=+0x12c84 (6a18b2a8)</span><br><span class="line">6a18b2a1 50           push    eax</span><br><span class="line">6a18b2a2 e810eea6ff   call    AcroRd32!AcroWinBrowserMain+0x2593 (69bfa0b7)</span><br></pre></td></tr></table></figure>
+
+<p>我们向下执行（记得将写入断点禁用），看看是不是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">6a18b286 8b8568ffffff mov     eax, dword ptr [ebp-98h]</span><br><span class="line">6a18b28c 85c0         test    eax, eax</span><br><span class="line">6a18b28e 7407         je      AcroRd32!CTJPEGTiledContentWriter::operator=+0x12c73 (6a18b297)</span><br><span class="line">6a18b290 50           push    eax</span><br><span class="line">6a18b291 e821eea6ff   call    AcroRd32!AcroWinBrowserMain+0x2593 (69bfa0b7)</span><br><span class="line">6a18b296 59           pop     ecx</span><br><span class="line">6a18b297 8b8570ffffff mov     eax, dword ptr [ebp-90h] ss:002b:010cda7c=1fb1c850</span><br><span class="line">6a18b29d 85c0         test    eax, eax</span><br><span class="line">6a18b29f 7407         je      AcroRd32!CTJPEGTiledContentWriter::operator=+0x12c84 (6a18b2a8)</span><br><span class="line">6a18b2a1 50           push    eax</span><br><span class="line">6a18b2a2 e810eea6ff   call    AcroRd32!AcroWinBrowserMain+0x2593 (69bfa0b7)</span><br></pre></td></tr></table></figure>
+
+<p>可以看到[ebp-90h]里面存的还是1fb1c850，那就明显free了两次了</p>
+<p>看下内存更清晰</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; dd ebp-98 l4</span><br><span class="line">010cda74  1fb1c850 00000000 1fb1c850 00000018</span><br><span class="line">0:001&gt; dd ebp-90 l4</span><br><span class="line">010cda7c  1fb1c850 00000018 00000000 00000000</span><br></pre></td></tr></table></figure>
+
+<p>最终在第二个 <code>call    AcroRd32!AcroWinBrowserMain+0x2593 (69bfa0b7)</code> 里面崩溃，确实free两次了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; p</span><br><span class="line">Time Travel Position: 222B02:3A</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=1fb1c850 ebx=00000000 ecx=1fb1c850 edx=00000000 esi=1fb1c400 edi=00000000</span><br><span class="line">eip=6a18b2a2 esp=010cda00 ebp=010cdb0c iopl=0         nv up ei pl nz na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000206</span><br><span class="line">AcroRd32!CTJPEGTiledContentWriter::operator=+0x12c7e:</span><br><span class="line">6a18b2a2 e810eea6ff      call    AcroRd32!AcroWinBrowserMain+0x2593 (69bfa0b7)</span><br><span class="line">0:001&gt; p</span><br><span class="line">(2dc.13a0): Unknown exception - code c0000374 (first/second chance not available)</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">TTD: End of trace reached.</span><br><span class="line">(2dc.13a0): Break instruction exception - code 80000003 (first/second chance not available)</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">Time Travel Position: 224FB2:1</span><br><span class="line">eax=000d0004 ebx=00000000 ecx=ffffd8f0 edx=770d2330 esi=00003a98 edi=00000000</span><br><span class="line">eip=67ce7001 esp=010cc25c ebp=010cc2a8 iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">67ce7001 0970ce          or      dword ptr [eax-32h],esi ds:002b:000cffd2=????????</span><br></pre></td></tr></table></figure>
+
+<p>那么这个[ebp-98h]和[ebp-90h]从哪里来的呢，由于这个是4字节的，我下一个4字节的写入断点</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; ba w4 010cda74</span><br><span class="line">0:001&gt; ba w4 010cda7c</span><br><span class="line">0:001&gt; g-</span><br><span class="line">Breakpoint 4 hit</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">Time Travel Position: 222B00:1AD3</span><br><span class="line">eax=1fb1c850 ebx=00000000 ecx=016afde0 edx=00000003 esi=1fb1c700 edi=00000000</span><br><span class="line">eip=6a18ac78 esp=010cda04 ebp=010cdb0c iopl=0         nv up ei pl nz ac po nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000212</span><br><span class="line">AcroRd32!CTJPEGTiledContentWriter::operator=+0x12654:</span><br><span class="line">6a18ac78 8d45a8          lea     eax,[ebp-58h]</span><br><span class="line">0:001&gt; p-</span><br><span class="line">Time Travel Position: 222B00:1AD2</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=1fb1c850 ebx=00000000 ecx=016afde0 edx=00000003 esi=1fb1c700 edi=00000000</span><br><span class="line">eip=6a18ac72 esp=010cda04 ebp=010cdb0c iopl=0         nv up ei pl nz ac po nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000212</span><br><span class="line">AcroRd32!CTJPEGTiledContentWriter::operator=+0x1264e:</span><br><span class="line">6a18ac72 898570ffffff    mov     dword ptr [ebp-90h],eax ss:002b:010cda7c=0000077f</span><br><span class="line">0:001&gt; g-</span><br><span class="line">Breakpoint 3 hit</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">Time Travel Position: 222B00:1AA4</span><br><span class="line">eax=1fb1c850 ebx=00000000 ecx=016afde0 edx=00000003 esi=1fb1c700 edi=00000000</span><br><span class="line">eip=6a18ac5f esp=010cd9cc ebp=010cdb0c iopl=0         nv up ei ng nz na pe cy</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000287</span><br><span class="line">AcroRd32!CTJPEGTiledContentWriter::operator=+0x1263b:</span><br><span class="line">6a18ac5f 6a0f            push    0Fh</span><br><span class="line">0:001&gt; p-</span><br><span class="line">Time Travel Position: 222B00:1AA3</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">eax=1fb1c850 ebx=00000000 ecx=016afde0 edx=00000003 esi=1fb1c700 edi=00000000</span><br><span class="line">eip=6a18ac59 esp=010cd9cc ebp=010cdb0c iopl=0         nv up ei ng nz na pe cy</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000287</span><br><span class="line">AcroRd32!CTJPEGTiledContentWriter::operator=+0x12635:</span><br><span class="line">6a18ac59 898568ffffff    mov     dword ptr [ebp-98h],eax ss:002b:010cda74=1ff69498</span><br></pre></td></tr></table></figure>
+
+<p>这两个代码很接近，我们看看上下文</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">6a18ac3f 56           push    esi</span><br><span class="line">6a18ac40 53           push    ebx</span><br><span class="line">6a18ac41 6a0f         push    0Fh</span><br><span class="line">6a18ac43 89855cffffff mov     dword ptr [ebp-0A4h], eax</span><br><span class="line">6a18ac49 8d45a8       lea     eax, [ebp-58h]</span><br><span class="line">6a18ac4c 6a0e         push    0Eh</span><br><span class="line">6a18ac4e 50           push    eax</span><br><span class="line">6a18ac4f ff75e4       push    dword ptr [ebp-1Ch]</span><br><span class="line">6a18ac52 e88e060000   call    AcroRd32!CTJPEGTiledContentWriter::operator=+0x12cc1 (6a18b2e5)</span><br><span class="line">6a18ac57 56           push    esi</span><br><span class="line">6a18ac58 53           push    ebx</span><br><span class="line">6a18ac59 898568ffffff mov     dword ptr [ebp-98h], eax ss:002b:010cda74=1ff69498</span><br><span class="line">6a18ac5f 6a0f         push    0Fh</span><br><span class="line">6a18ac61 6a0e         push    0Eh</span><br><span class="line">6a18ac63 8d45a8       lea     eax, [ebp-58h]</span><br><span class="line">6a18ac66 50           push    eax</span><br><span class="line">6a18ac67 ff75e5       push    dword ptr [ebp-1Bh]</span><br><span class="line">6a18ac6a e876060000   call    AcroRd32!CTJPEGTiledContentWriter::operator=+0x12cc1 (6a18b2e5)</span><br><span class="line">6a18ac6f 83c448       add     esp, 48h</span><br><span class="line">6a18ac72 898570ffffff mov     dword ptr [ebp-90h], eax</span><br></pre></td></tr></table></figure>
+
+<p>这个函数其实是GetMemoryBlock函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">undefined4</span><br><span class="line">GetMemoryBlock(undefined4 memory_block_type,int *param_2,byte offsetVal1,byte offsetVal2,</span><br><span class="line">              undefined4 offsetVal3,int param_6)</span><br><span class="line"> </span><br><span class="line">&#123;</span><br><span class="line">  undefined4 retVal;</span><br><span class="line">  int memory_block_base;</span><br><span class="line">  byte offset;</span><br><span class="line">  code *pcVar1;</span><br><span class="line">  </span><br><span class="line">  if ((char)memory_block_type == &apos;\x03&apos;) &#123;</span><br><span class="line">    if ((param_2 == (int *)0x0) || (param_6 == 0)) &#123;</span><br><span class="line">exception:</span><br><span class="line">      CallThrowException(0x40000003,0);</span><br><span class="line">      memory_block_type = 0;</span><br><span class="line">      _CxxThrowException(&amp;memory_block_type,0x7472e75c);</span><br><span class="line">      pcVar1 = (code *)swi(3);</span><br><span class="line">      retVal = (*pcVar1)();</span><br><span class="line">      return retVal;</span><br><span class="line">    &#125;</span><br><span class="line">    *param_2 = *param_2 + 1;</span><br><span class="line">    retVal = RetrieveMemoryBlock(param_6,*param_2 + -1);</span><br><span class="line">  &#125;</span><br><span class="line">  else &#123;</span><br><span class="line">    offset = offsetVal1;</span><br><span class="line">    if (((char)memory_block_type != &apos;\0&apos;) &amp;&amp;</span><br><span class="line">       (offset = offsetVal2, (char)memory_block_type != &apos;\x01&apos;)) &#123;</span><br><span class="line">      if ((char)memory_block_type != &apos;\x02&apos;) goto exception;</span><br><span class="line">      offset = (byte)offsetVal3;</span><br><span class="line">    &#125;</span><br><span class="line">    if (offset == 0) goto exception;</span><br><span class="line">    memory_block_base = (*_TlsGetValueStub)(_dwTlsIndexForMemoryBlockBase);</span><br><span class="line">    retVal = *(undefined4 *)(memory_block_base + 0x20 + (uint)offset * 4);</span><br><span class="line">  &#125;</span><br><span class="line">  return retVal;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们看看两次调用的6个参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">eax=010cdab4 ebx=00000000 ecx=1fb1c700 edx=00000003 esi=1fb1c700 edi=00000000</span><br><span class="line">eip=6a18ac52 esp=010cd9d4 ebp=010cdb0c iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">AcroRd32!CTJPEGTiledContentWriter::operator=+0x1262e:</span><br><span class="line">6a18ac52 e88e060000      call    AcroRd32!CTJPEGTiledContentWriter::operator=+0x12cc1 (6a18b2e5)</span><br><span class="line">0:001&gt; dds esp l6</span><br><span class="line">010cd9d4  01000000</span><br><span class="line">010cd9d8  010cdab4</span><br><span class="line">010cd9dc  0000000e</span><br><span class="line">010cd9e0  0000000f</span><br><span class="line">010cd9e4  00000000</span><br><span class="line">010cd9e8  1fb1c700</span><br><span class="line">eax=010cdab4 ebx=00000000 ecx=016afde0 edx=00000003 esi=1fb1c700 edi=00000000</span><br><span class="line">eip=6a18ac6a esp=010cd9bc ebp=010cdb0c iopl=0         nv up ei ng nz na pe cy</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000287</span><br><span class="line">AcroRd32!CTJPEGTiledContentWriter::operator=+0x12646:</span><br><span class="line">6a18ac6a e876060000      call    AcroRd32!CTJPEGTiledContentWriter::operator=+0x12cc1 (6a18b2e5)</span><br><span class="line">0:001&gt; dds esp l6</span><br><span class="line">010cd9bc  00010000</span><br><span class="line">010cd9c0  010cdab4</span><br><span class="line">010cd9c4  0000000e</span><br><span class="line">010cd9c8  0000000f</span><br><span class="line">010cd9cc  00000000</span><br><span class="line">010cd9d0  1fb1c700</span><br></pre></td></tr></table></figure>
+
+<p>可以看到两次调用，只是第一个参数不一样，第一次是0x01000000，第二次是0x00010000，但是返回结果是一样的，而函数GetMemoryBlock里面是将memory_block_type强制转为char进行处理的，所以他们都是0x00,导致返回结果一样。</p>
+<p>执行的是else部分代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">else &#123;</span><br><span class="line">    offset = offsetVal1;</span><br><span class="line">    if (((char)memory_block_type != &apos;\0&apos;) &amp;&amp;</span><br><span class="line">       (offset = offsetVal2, (char)memory_block_type != &apos;\x01&apos;)) &#123;</span><br><span class="line">      if ((char)memory_block_type != &apos;\x02&apos;) goto exception;</span><br><span class="line">      offset = (byte)offsetVal3;</span><br><span class="line">    &#125;</span><br><span class="line">    if (offset == 0) goto exception;</span><br><span class="line">    memory_block_base = (*_TlsGetValueStub)(_dwTlsIndexForMemoryBlockBase);</span><br><span class="line">    retVal = *(undefined4 *)(memory_block_base + 0x20 + (uint)offset * 4);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>最终<code>offset = offsetVal1 = 0x0000000e</code><br>而<code>retVal = *(memory_block_base + 0x20 + (uint)offset * 4 = 0x016afde0 + 0x20 + 0x0000000e * 4) = *(0x16afe38)</code></p>
+<p>我们看看这个地址的值，的确是0x1fb1c850</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt;  dd 0x16afe38 l1</span><br><span class="line">016afe38  1fb1c850</span><br></pre></td></tr></table></figure>
+
+<p>跟踪0x00010000来源</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">eax=010cdab4 ebx=00000000 ecx=016afde0 edx=00000003 esi=1fb1c700 edi=00000000</span><br><span class="line">eip=6a18ac67 esp=010cd9c0 ebp=010cdb0c iopl=0         nv up ei ng nz na pe cy</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000287</span><br><span class="line">AcroRd32!CTJPEGTiledContentWriter::operator=+0x12643:</span><br><span class="line">6a18ac67 ff75e5          push    dword ptr [ebp-1Bh]  ss:002b:010cdaf1=00010000</span><br></pre></td></tr></table></figure>
+
+<p>对 [ebp-1Bh]下吸入断点</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; ba w1 010cdaf1</span><br><span class="line">0:001&gt; g-</span><br><span class="line">Breakpoint 5 hit</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">Time Travel Position: 222B00:19AE</span><br><span class="line">eax=00000000 ebx=1fbad818 ecx=00000002 edx=010cdb7c esi=010cdb54 edi=010cdaf4</span><br><span class="line">eip=6a18ab57 esp=010cda04 ebp=010cdb0c iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">AcroRd32!CTJPEGTiledContentWriter::operator=+0x12533:</span><br><span class="line">6a18ab57 f3a5            rep movs dword ptr es:[edi],dword ptr [esi]</span><br></pre></td></tr></table></figure>
+
+<p>这里是010cdb54指向的值吸入010cdaf4，那么010cdaf1就来源于010cdb51，看了下确实是0x00010000</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; dd 010cdb51 l1</span><br><span class="line">010cdb51  00010000</span><br></pre></td></tr></table></figure>
+
+<p>继续不断下硬件写入断点，跟踪010cdb51，来源于0x010cdbd1，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; ba w1 010cdb51</span><br><span class="line">0:001&gt; g-</span><br><span class="line">Breakpoint 6 hit</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">Time Travel Position: 222B00:197C</span><br><span class="line">eax=010cdb7c ebx=1fbad818 ecx=00000002 edx=00000003 esi=010cdbd4 edi=010cdb54</span><br><span class="line">eip=6a17bc8e esp=010cdb18 ebp=010cdcd4 iopl=0         nv up ei pl nz na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000206</span><br><span class="line">AcroRd32!CTJPEGTiledContentWriter::operator=+0x366a:</span><br><span class="line">6a17bc8e f3a5            rep movs dword ptr es:[edi],dword ptr [esi]</span><br><span class="line">0:001&gt; ba w1 010cdbd1</span><br><span class="line">0:001&gt; g-</span><br><span class="line">Breakpoint 7 hit</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">Time Travel Position: 222AAF:140</span><br><span class="line">eax=1fb1c700 ebx=1fbad818 ecx=00000502 edx=00000666 esi=0000000f edi=00000001</span><br><span class="line">eip=6a17b868 esp=010cdb6c ebp=010cdcd4 iopl=0         nv up ei pl nz na po nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000202</span><br><span class="line">AcroRd32!CTJPEGTiledContentWriter::operator=+0x3244:</span><br><span class="line">6a17b868 8a437e          mov     al,byte ptr [ebx+7Eh]      ds:002b:1fbad896=00</span><br></pre></td></tr></table></figure>
+
+<p>这个往上看看，写入的00来源于0x1fbad895</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">6a17b85f 8a437d         mov     al, byte ptr [ebx+7Dh]      ds:002b:1fbad895=00</span><br><span class="line">6a17b862 8885fdfeffff   mov     byte ptr [ebp-103h], al</span><br><span class="line">6a17b868 8a437e         mov     al, byte ptr [ebx+7Eh]</span><br></pre></td></tr></table></figure>
+
+<p>后面有两个字节来源于别处，而且都是0</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a17b86b 8885fefeffff   mov     byte ptr [ebp-102h], al</span><br><span class="line">6a17b871 668b8380000000 mov     ax, word ptr [ebx+80h]</span><br><span class="line">6a17b878 899538ffffff   mov     dword ptr [ebp-0C8h], edx</span><br><span class="line">6a17b87e 8995d8feffff   mov     dword ptr [ebp-128h], edx</span><br><span class="line">6a17b884 66898500ffffff mov     word ptr [ebp-100h], ax</span><br></pre></td></tr></table></figure>
+
+<p>只有ebp-101没被修改，而这里本来就是01了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; db ebp-101 l1</span><br><span class="line">010cdbd3  01</span><br></pre></td></tr></table></figure>
+
+<p>而我们关注的是最低字节，继续看看1fbad895的写入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; ba w1 1fbad895</span><br><span class="line">0:001&gt; g-</span><br><span class="line">Breakpoint 8 hit</span><br><span class="line"></span><br><span class="line">**** WARNING loaded *kernel* extension dll for usermode</span><br><span class="line"></span><br><span class="line">Time Travel Position: 222AAB:7F5</span><br><span class="line">eax=00000000 ebx=00000003 ecx=000000ff edx=0763beae esi=1fbad818 edi=1fb39030</span><br><span class="line">eip=6a17be59 esp=010cdb60 ebp=010cdcd4 iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line">AcroRd32!CTJPEGTiledContentWriter::operator=+0x3835:</span><br><span class="line">6a17be59 8bc1            mov     eax,ecx</span><br></pre></td></tr></table></figure>
+
+<p>向上看</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">6a17be18 e809d5ffff     call    AcroRd32!CTJPEGTiledContentWriter::operator=+0xd02 (6a179326)</span><br><span class="line">6a17be1d 0fb7c8         movzx   ecx, ax</span><br><span class="line">---------------------------------------- 下面的中间的代码可以忽略了，就是上面call返回值给到ecx</span><br><span class="line">6a17be20 8ac1           mov     al, cl</span><br><span class="line">6a17be22 22c3           and     al, bl</span><br><span class="line">6a17be24 884678         mov     byte ptr [esi+78h], al</span><br><span class="line">6a17be27 8ac1           mov     al, cl</span><br><span class="line">6a17be29 c0e802         shr     al, 2</span><br><span class="line">6a17be2c 22c3           and     al, bl</span><br><span class="line">6a17be2e 884679         mov     byte ptr [esi+79h], al</span><br><span class="line">6a17be31 8ac1           mov     al, cl</span><br><span class="line">6a17be33 c0e804         shr     al, 4</span><br><span class="line">6a17be36 22c3           and     al, bl</span><br><span class="line">6a17be38 88467a         mov     byte ptr [esi+7Ah], al</span><br><span class="line">6a17be3b 8ac1           mov     al, cl</span><br><span class="line">6a17be3d c0e806         shr     al, 6</span><br><span class="line">6a17be40 22c3           and     al, bl</span><br><span class="line">6a17be42 88467b         mov     byte ptr [esi+7Bh], al</span><br><span class="line">6a17be45 8bc1           mov     eax, ecx</span><br><span class="line">6a17be47 c1e808         shr     eax, 8</span><br><span class="line">6a17be4a 22c3           and     al, bl</span><br><span class="line">6a17be4c 88467c         mov     byte ptr [esi+7Ch], al</span><br><span class="line">----------------------------------------ecx给到eax做些运算写入1fbad895</span><br><span class="line">6a17be4f 8bc1           mov     eax, ecx</span><br><span class="line">6a17be51 c1e80a         shr     eax, 0Ah</span><br><span class="line">6a17be54 22c3           and     al, bl</span><br><span class="line">6a17be56 88467d         mov     byte ptr [esi+7Dh], al</span><br><span class="line">6a17be59 8bc1           mov     eax, ecx</span><br></pre></td></tr></table></figure>
+
+<p>上面说明分析看出来源于<code>call    AcroRd32!CTJPEGTiledContentWriter::operator=+0xd02 (6a179326)</code>的返回值，跟进去看看，分析可以看出实际来源于<code>0x0763beac</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">6a179358 0fb608     movzx   ecx, byte ptr [eax]         ds:002b:0763beac=00</span><br><span class="line">6a17935b 8d5001     lea     edx, [eax+1]</span><br><span class="line">6a17935e 8917       mov     dword ptr [edi], edx</span><br><span class="line">6a179360 83fe01     cmp     esi, 1</span><br><span class="line">6a179363 760f       jbe     AcroRd32!CTJPEGTiledContentWriter::operator=+0xd50 (6a179374)</span><br><span class="line">6a179365 4e         dec     esi</span><br><span class="line">6a179366 0fb602     movzx   eax, byte ptr [edx] ;eax来源于edx,即上面6a17935b的[eax+1]</span><br><span class="line">6a179369 c1e108     shl     ecx, 8</span><br><span class="line">6a17936c 03c8       add     ecx, eax ;ecx来源于跟eax运算，ecx又来源于6a179358的[eax] </span><br><span class="line">6a17936e 42         inc     edx</span><br><span class="line">6a17936f 8917       mov     dword ptr [edi], edx</span><br><span class="line">6a179371 4e         dec     esi</span><br><span class="line">6a179372 75f2       jne     AcroRd32!CTJPEGTiledContentWriter::operator=+0xd42 (6a179366)</span><br><span class="line">6a179374 8bc1       mov     eax, ecx   ;eax来源于ecx</span><br><span class="line">6a179376 eb03       jmp     AcroRd32!CTJPEGTiledContentWriter::operator=+0xd57 (6a17937b) ;跳到6a17937b</span><br><span class="line">----下面两行没执行</span><br><span class="line">6a179378 6a0a       push    0Ah</span><br><span class="line">6a17937a 58         pop     eax</span><br><span class="line"></span><br><span class="line">6a17937b 5f         pop     edi</span><br><span class="line">6a17937c 5e         pop     esi</span><br><span class="line">6a17937d 5d         pop     ebp</span><br><span class="line">6a17937e c20400     ret     4</span><br></pre></td></tr></table></figure>
+
+<p>看看里面</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">0:001&gt; db 0763beac</span><br><span class="line">0763beac  00 ff 00 00 05 63 20 00-77 65 55 23 00 00 00 00  .....c .weU#....</span><br><span class="line">0763bebc  00 00 00 00 00 00 43 4e-70 39 0f 76 71 19 85 50  ......CNp9.vq..P</span><br><span class="line">0763becc  21 02 54 9e a2 43 da 0e-04 08 12 96 10 95 4a 64  !.T..C........Jd</span><br><span class="line">0763bedc  a2 04 d0 33 43 4a e4 d0-be 9d 96 4d 66 b6 78 21  ...3CJ.....Mf.x!</span><br><span class="line">0763beec  f1 f5 90 24 3d e3 81 2c-e5 30 92 a9 44 ad ee 8a  ...$=..,.0..D...</span><br><span class="line">0763befc  97 ff 07 48 4b 79 a1 7d-3d 44 16 76 9e 4e 84 68  ...HKy.&#125;=D.v.N.h</span><br><span class="line">0763bf0c  9a 06 5a cc 34 14 a6 68-69 c7 fd 1f fe ae 63 64  ..Z.4..hi.....cd</span><br><span class="line">0763bf1c  93 ef ff c2 02 45 3e 20-db 34 0f f0 98 55 e8 12  .....E&gt; .4...U..</span><br></pre></td></tr></table></figure>
+
+<p>通过ba w1 0763beac，发现0x0763beac来源于0x0746ba24，之后就不知道0x0746ba24来源于什么的</p>
+<p>而0763beac我们也在poc中找到了这段内容，那这就是从文件读取进来的了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1573035379336.jpg" alt></p>
+<p>最终再看这张图就很清晰了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1573035461236.jpg" alt></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>漏洞就是经过读取文件，计算，调用GetMemoryBlock，由于最低位都是00，导致获取的指针都指向同一个内存（文中的0x1fb1c850），而free的时候就free两次了。</p>
+<p>TTD虽然优点很明显<br>1、可以无poc，无环境调试漏洞，可以团队协作共享<br>2、地址都是不变的<br>3、能够”时间穿梭”</p>
+<p>缺点<br>1、假如程序过大，跟踪文件可能很大，而且调试也是比较占用内存的<br>2、原始调试者的本地目录可能随着分享的跟踪文件而泄露</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://darungrim.com/research/2019-10-10-vulnerability-root-cause-analysis-with-time-travel-debugging.html" target="_blank" rel="noopener">https://darungrim.com/research/2019-10-10-vulnerability-root-cause-analysis-with-time-travel-debugging.html</a><br><a href="https://www.exploit-db.com/exploits/47279" target="_blank" rel="noopener">https://www.exploit-db.com/exploits/47279</a><br><a href="https://github.com/offensive-security/exploitdb-bin-sploits/raw/master/bin-sploits/47279.zip" target="_blank" rel="noopener">https://github.com/offensive-security/exploitdb-bin-sploits/raw/master/bin-sploits/47279.zip</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2019/11/04/windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞/" title="windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞">https://www.giantbranch.cn/2019/11/04/windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/漏洞分析/" rel="tag"># 漏洞分析</a>
+          
+            <a href="/tags/windbg/" rel="tag"># windbg</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/28/CFG防护机制简单实践与介绍/" rel="next" title="CFG防护机制简单实践与介绍">
+                <i class="fa fa-chevron-left"></i> CFG防护机制简单实践与介绍
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/" rel="prev" title="CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng">
+                CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Time-Travel-Debugging-初探"><span class="nav-number">1.</span> <span class="nav-text">Time Travel Debugging 初探</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#利用别人的跟踪文件调试"><span class="nav-number">2.</span> <span class="nav-text">利用别人的跟踪文件调试</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2019/11/04/windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞/';
+          this.page.identifier = '2019/11/04/windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞/';
+          this.page.title = 'windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

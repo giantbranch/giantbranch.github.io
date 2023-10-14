@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="集群fuzz,ClusterFuzz,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="回顾与总览上一次我们选择了fuzz task的代码进行阅读，这次我们进一步深入，看看fuzz engine的选择 先回到上次说的引擎类：https://www.giantbranch.cn/2020/05/22/ClusterFuzz%E7%9A%84bot%E6%BA%90%E7%A0%81(fuzz%20task)%E9%98%85%E8%AF%BB/#%E5%BC%95%E6%93%8E%E">
+<meta name="keywords" content="集群fuzz,ClusterFuzz">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读">
+<meta property="og:url" content="https://www.giantbranch.cn/2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="回顾与总览上一次我们选择了fuzz task的代码进行阅读，这次我们进一步深入，看看fuzz engine的选择 先回到上次说的引擎类：https://www.giantbranch.cn/2020/05/22/ClusterFuzz%E7%9A%84bot%E6%BA%90%E7%A0%81(fuzz%20task)%E9%98%85%E8%AF%BB/#%E5%BC%95%E6%93%8E%E">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1611902846319.png">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.054Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读">
+<meta name="twitter:description" content="回顾与总览上一次我们选择了fuzz task的代码进行阅读，这次我们进一步深入，看看fuzz engine的选择 先回到上次说的引擎类：https://www.giantbranch.cn/2020/05/22/ClusterFuzz%E7%9A%84bot%E6%BA%90%E7%A0%81(fuzz%20task)%E9%98%85%E8%AF%BB/#%E5%BC%95%E6%93%8E%E">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1611902846319.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/">
+
+
+
+
+
+  <title>ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-25T00:00:00+00:00">
+                2021-01-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="回顾与总览"><a href="#回顾与总览" class="headerlink" title="回顾与总览"></a>回顾与总览</h1><p>上一次我们选择了fuzz task的代码进行阅读，这次我们进一步深入，看看fuzz engine的选择</p>
+<p>先回到上次说的引擎类：<a href="https://www.giantbranch.cn/2020/05/22/ClusterFuzz%E7%9A%84bot%E6%BA%90%E7%A0%81(fuzz%20task)%E9%98%85%E8%AF%BB/#%E5%BC%95%E6%93%8E%E7%B1%BB">https://www.giantbranch.cn/2020/05/22/ClusterFuzz%E7%9A%84bot%E6%BA%90%E7%A0%81(fuzz%20task)%E9%98%85%E8%AF%BB/#%E5%BC%95%E6%93%8E%E7%B1%BB</a></p>
+<p>注册的时候当时我们有疑问说怎么没有afl，现在在读，除了有afl了，还有一个blackbox</p>
+<p>src/python/bot/fuzzers/init.py</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">def run():</span><br><span class="line">  &quot;&quot;&quot;Initialise builtin fuzzing engines.&quot;&quot;&quot;</span><br><span class="line">  engine.register(&apos;afl&apos;, afl_engine.AFLEngine)</span><br><span class="line">  engine.register(&apos;blackbox&apos;, blackbox_engine.BlackboxEngine)</span><br><span class="line">  engine.register(&apos;honggfuzz&apos;, honggfuzz_engine.HonggfuzzEngine)</span><br><span class="line">  engine.register(&apos;libFuzzer&apos;, libFuzzer_engine.LibFuzzerEngine)</span><br><span class="line">  engine.register(&apos;syzkaller&apos;, syzkaller_engine.SyzkallerEngine)</span><br></pre></td></tr></table></figure>
+
+<p>现在fuzz_task整个调用路径是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">获取到任务-&gt;fuzz_task.py中的execute_task-&gt;FuzzingSession-&gt;run()-&gt;engine.get获取具体的引擎类，调用do_engine_fuzzing(engine_impl)  -&gt;  run_engine_fuzzer(engine_impl, self.fuzz_target.binary, sync_corpus_directory, self.testcase_directory) -&gt;</span><br></pre></td></tr></table></figure>
+
+<p>run_engine_fuzzer中，调用prepare生成FuzzOptions（里面也设置了一些fuzz的策略），之后最后调用下面的函数启动fuzz</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">options = engine_impl.prepare(sync_corpus_directory, target_path, build_dir)</span><br><span class="line">fuzz_test_timeout = environment.get_value(&apos;FUZZ_TEST_TIMEOUT&apos;)</span><br><span class="line">  additional_processing_time = engine_impl.fuzz_additional_processing_timeout(</span><br><span class="line">      options)</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">result = engine_impl.fuzz(target_path, options, testcase_directory,</span><br><span class="line">                            fuzz_test_timeout)</span><br></pre></td></tr></table></figure>
+
+<p>即下面的类中的fuzz的函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">AFLEngine</span><br><span class="line">BlackboxEngine</span><br><span class="line">HonggfuzzEngine</span><br><span class="line">LibFuzzerEngine</span><br><span class="line">SyzkallerEngine</span><br></pre></td></tr></table></figure>
+
+<p>先来看libfuzzer</p>
+<h1 id="libfuzzer"><a href="#libfuzzer" class="headerlink" title="libfuzzer"></a>libfuzzer</h1><h2 id="prepare"><a href="#prepare" class="headerlink" title="prepare"></a>prepare</h2><p>先看prepare，首先获取参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arguments = fuzzer.get_arguments(target_path)</span><br></pre></td></tr></table></figure>
+
+<p>参数就是先看看XXX.options文件是否存在（其中XXX为fuzz_target的名字），存在则返回fuzzer_options（类型FuzzerOptions类），通过fuzzer_options.get_engine_arguments(‘libfuzzer’)获取FuzzerArguments(arguments)，之后通过获取FuzzerArguments的list方法转化为元素为”-%s=%s”的形式的list，之后就是加上rss_limit_mb设置内存限制，还有timeout的设置</p>
+<p>之后获取grammar，这个也是从XXX.options的grammar section中获取的（这个在oss-fuzz中的项目中的options中没找到有这个section，是跟peach相关的，peach的模板的）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grammar = fuzzer.get_grammar(target_path)</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://pic.giantbranch.cn/pic/1611902846319.png" alt></p>
+<p>继续，是生成一个策略池，之后选择策略</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">strategy_pool = strategy_selection.generate_weighted_strategy_pool(</span><br><span class="line">        strategy_list=strategy.LIBFUZZER_STRATEGY_LIST,</span><br><span class="line">        use_generator=True,</span><br><span class="line">        engine_name=self.name)</span><br><span class="line">strategy_info = libfuzzer.pick_strategies(strategy_pool, target_path,</span><br><span class="line">                                              corpus_dir, arguments, grammar)</span><br></pre></td></tr></table></figure>
+
+<h3 id="generate-weighted-strategy-pool"><a href="#generate-weighted-strategy-pool" class="headerlink" title="generate_weighted_strategy_pool"></a>generate_weighted_strategy_pool</h3><p>首先generate_weighted_strategy_pool是根据经验设定好的概率生成策略池</p>
+<p>策略列表如下，还是很多的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">LIBFUZZER_STRATEGY_LIST = [</span><br><span class="line">    CORPUS_MUTATION_RADAMSA_STRATEGY,</span><br><span class="line">    RANDOM_MAX_LENGTH_STRATEGY,</span><br><span class="line">    CORPUS_MUTATION_ML_RNN_STRATEGY,</span><br><span class="line">    VALUE_PROFILE_STRATEGY,</span><br><span class="line">    FORK_STRATEGY,</span><br><span class="line">    CORPUS_SUBSET_STRATEGY,</span><br><span class="line">    RECOMMENDED_DICTIONARY_STRATEGY,</span><br><span class="line">    DATAFLOW_TRACING_STRATEGY,</span><br><span class="line">    MUTATOR_PLUGIN_STRATEGY,</span><br><span class="line">    MUTATOR_PLUGIN_RADAMSA_STRATEGY,</span><br><span class="line">    PEACH_GRAMMAR_MUTATION_STRATEGY,</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p>generate_weighted_strategy_pool函数首先获取环境变量</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">distribution = environment.get_value(&apos;STRATEGY_SELECTION_DISTRIBUTION&apos;)</span><br></pre></td></tr></table></figure>
+
+<p>之后从<code>STRATEGY_SELECTION_DISTRIBUTION</code>这里随机选取一个作为策略</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">strategy_selection = utils.random_weighted_choice(distribution_tuples,</span><br><span class="line">                                                    &apos;probability&apos;)</span><br></pre></td></tr></table></figure>
+
+<p>，否则使用默认的，调用<code>generate_default_strategy_pool</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">return generate_default_strategy_pool(strategy_list, use_generator)</span><br></pre></td></tr></table></figure>
+
+<p>一开始初始化一个StrategyPool类，之后选择生成器，最后就将<code>LIBFUZZER_STRATEGY_LIST</code>中非<code>GENERATORS</code>的策略都加到策略池</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">def generate_default_strategy_pool(strategy_list, use_generator):</span><br><span class="line">  &quot;&quot;&quot;Return a strategy pool representing a selection of strategies for launcher</span><br><span class="line">  to consider.</span><br><span class="line"></span><br><span class="line">  Select strategies according to default strategy selection method.&quot;&quot;&quot;</span><br><span class="line">  pool = StrategyPool()</span><br><span class="line"></span><br><span class="line">  # If use_generator is enabled, decide whether to include radamsa, ml rnn,</span><br><span class="line">  # or no generator (mutually exclusive).</span><br><span class="line">  if use_generator:</span><br><span class="line">    choose_generator(pool)</span><br><span class="line"></span><br><span class="line">  # Decide whether or not to add non-generator strategies according to</span><br><span class="line">  # probability parameters.</span><br><span class="line">  for value in [</span><br><span class="line">      strategy_entry for strategy_entry in strategy_list</span><br><span class="line">      if strategy_entry not in GENERATORS</span><br><span class="line">  ]:</span><br><span class="line">    if do_strategy(value):</span><br><span class="line">      pool.add_strategy(value)</span><br><span class="line"></span><br><span class="line">  logs.log(&apos;Strategy pool was generated according to default parameters. &apos;</span><br><span class="line">           &apos;Chosen strategies: &apos; + &apos;, &apos;.join(pool.strategy_names))</span><br><span class="line">  return pool</span><br></pre></td></tr></table></figure>
+
+<p>这个choose_generator的功能是通过生成随机数，跟radamsa_prob + ml_rnn_prob比较，假如生成的随机数比较大（比radamsa_prob + ml_rnn_prob大），那就都不选择，  不选用radamsa和ml_rnn（机器学习相关的），假如比较小再调用一次decide_with_probability进行选择radamsa或者是ml_rnn</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"># /src/python/bot/fuzzers/engine_common.py</span><br><span class="line">def decide_with_probability(probability):</span><br><span class="line">  &quot;&quot;&quot;Decide if we want to do something with the given probability.&quot;&quot;&quot;</span><br><span class="line">  return random.SystemRandom().random() &lt; probability</span><br><span class="line">  </span><br><span class="line"># /src/python/bot/fuzzers/strategy_selection.py</span><br><span class="line"> def choose_generator(strategy_pool):</span><br><span class="line">  &quot;&quot;&quot;Chooses whether to use radamsa, ml rnn, or no generator and updates the</span><br><span class="line">  strategy pool.&quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">  radamsa_prob = engine_common.get_strategy_probability(</span><br><span class="line">      strategy.CORPUS_MUTATION_RADAMSA_STRATEGY.name,</span><br><span class="line">      default=strategy.CORPUS_MUTATION_RADAMSA_STRATEGY.probability)</span><br><span class="line"></span><br><span class="line">  ml_rnn_prob = engine_common.get_strategy_probability(</span><br><span class="line">      strategy.CORPUS_MUTATION_ML_RNN_STRATEGY.name,</span><br><span class="line">      default=strategy.CORPUS_MUTATION_ML_RNN_STRATEGY.probability)</span><br><span class="line"></span><br><span class="line">  if engine_common.decide_with_probability(radamsa_prob + ml_rnn_prob):</span><br><span class="line">    if engine_common.decide_with_probability(</span><br><span class="line">        radamsa_prob / (radamsa_prob + ml_rnn_prob)):</span><br><span class="line">      strategy_pool.add_strategy(strategy.CORPUS_MUTATION_RADAMSA_STRATEGY)</span><br><span class="line">    else:</span><br><span class="line">      strategy_pool.add_strategy(strategy.CORPUS_MUTATION_ML_RNN_STRATEGY)</span><br></pre></td></tr></table></figure>
+
+<h3 id="libfuzzer-pick-strategies"><a href="#libfuzzer-pick-strategies" class="headerlink" title="libfuzzer.pick_strategies"></a>libfuzzer.pick_strategies</h3><p>接下来看<code>libfuzzer.pick_strategies</code>，里面就是对各种策略处理，实际将策略需要的工作完成，并返回StrategyInfo</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">StrategyInfo(fuzzing_strategies, arguments, additional_corpus_dirs,</span><br><span class="line">                      extra_env, use_dataflow_tracing, is_mutations_run)</span><br></pre></td></tr></table></figure>
+
+<h4 id="DATAFLOW-TRACING-STRATEGY"><a href="#DATAFLOW-TRACING-STRATEGY" class="headerlink" title="DATAFLOW_TRACING_STRATEGY"></a>DATAFLOW_TRACING_STRATEGY</h4><p>对于有DFSAN构建的程序以及策略池中有DATAFLOW_TRACING_STRATEGY，先获取dataflow_binary_path（DFSAN的二进制fuzzer路径），之后判断dataflow_trace_dir是否存在，不存在就不执行这个策略了，存在则添加参数 <code>-data_flow_trace=dataflow_trace_dir</code>，后面再加参数<code>-focus_function=auto</code>，最后将策略的名字添加到fuzzing_strategies</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"># Depends on the presense of DFSan instrumented build.</span><br><span class="line">  dataflow_build_dir = environment.get_value(&apos;DATAFLOW_BUILD_DIR&apos;)</span><br><span class="line">  use_dataflow_tracing = (</span><br><span class="line">      dataflow_build_dir and</span><br><span class="line">      strategy_pool.do_strategy(strategy.DATAFLOW_TRACING_STRATEGY))</span><br><span class="line">  if use_dataflow_tracing:</span><br><span class="line">    dataflow_binary_path = os.path.join(</span><br><span class="line">        dataflow_build_dir, os.path.relpath(fuzzer_path, build_directory))</span><br><span class="line">    dataflow_trace_dir = dataflow_binary_path + DATAFLOW_TRACE_DIR_SUFFIX</span><br><span class="line">    if os.path.exists(dataflow_trace_dir):</span><br><span class="line">      arguments.append(</span><br><span class="line">          &apos;%s%s&apos; % (constants.DATA_FLOW_TRACE_FLAG, dataflow_trace_dir))</span><br><span class="line">      arguments.append(&apos;%s%s&apos; % (constants.FOCUS_FUNCTION_FLAG, &apos;auto&apos;))</span><br><span class="line">      fuzzing_strategies.append(strategy.DATAFLOW_TRACING_STRATEGY.name)</span><br><span class="line">    else:</span><br><span class="line">      logs.log_warn(</span><br><span class="line">          &apos;Dataflow trace is not found in dataflow build, skipping strategy.&apos;)</span><br><span class="line">      use_dataflow_tracing = False</span><br></pre></td></tr></table></figure>
+
+<h4 id="CORPUS-MUTATION"><a href="#CORPUS-MUTATION" class="headerlink" title="CORPUS_MUTATION"></a>CORPUS_MUTATION</h4><p>接下来是Generate new testcase mutations的</p>
+<p>首先看看strategy_pool中是否有CORPUS_MUTATION_ML_RNN_STRATEGY或者CORPUS_MUTATION_RADAMSA_STRATEGY（ML_RNN的优先级高于RADAMSA），有的话is_mutations_run就为True</p>
+<p>is_mutations_run为True，先create_corpus_directory(‘mutations’)创建样本目录，之后生成样本，将使用的策略的名字添加到fuzzing_strategies，最后将new_testcase_mutations_directory添加到additional_corpus_dirs</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># Select a generator to attempt to use for existing testcase mutations.</span><br><span class="line">  candidate_generator = engine_common.select_generator(strategy_pool,</span><br><span class="line">                                                       fuzzer_path)</span><br><span class="line">  is_mutations_run = (not environment.is_ephemeral() and</span><br><span class="line">                      candidate_generator != engine_common.Generator.NONE)</span><br><span class="line">					  </span><br><span class="line"></span><br><span class="line">	# Generate new testcase mutations using radamsa, etc.</span><br><span class="line">  if is_mutations_run:</span><br><span class="line">    new_testcase_mutations_directory = create_corpus_directory(&apos;mutations&apos;)</span><br><span class="line">    generator_used = engine_common.generate_new_testcase_mutations(</span><br><span class="line">        corpus_directory, new_testcase_mutations_directory,</span><br><span class="line">        project_qualified_fuzzer_name, candidate_generator)</span><br><span class="line"></span><br><span class="line">    # Add the used generator strategy to our fuzzing strategies list.</span><br><span class="line">    if generator_used:</span><br><span class="line">      if candidate_generator == engine_common.Generator.RADAMSA:</span><br><span class="line">        fuzzing_strategies.append(</span><br><span class="line">            strategy.CORPUS_MUTATION_RADAMSA_STRATEGY.name)</span><br><span class="line">      elif candidate_generator == engine_common.Generator.ML_RNN:</span><br><span class="line">        fuzzing_strategies.append(strategy.CORPUS_MUTATION_ML_RNN_STRATEGY.name)</span><br><span class="line"></span><br><span class="line">    additional_corpus_dirs.append(new_testcase_mutations_directory)</span><br></pre></td></tr></table></figure>
+
+<p>策略的核心函数是generate_new_testcase_mutations，根据candidate_generator使用generate_new_testcase_mutations_using_radamsa（RADAMSA会随机选择corpus_directory中符合大小的样，循环编译2000次）或者generate_new_testcase_mutations_using_ml_rnn函数去生成新的样本，假如生成的样本的数量比原来多，才会返回true</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">def generate_new_testcase_mutations(corpus_directory,</span><br><span class="line">                                    new_testcase_mutations_directory,</span><br><span class="line">                                    fuzzer_name, candidate_generator):</span><br><span class="line">  &quot;&quot;&quot;Generate new testcase mutations, using existing corpus directory or other</span><br><span class="line">  methods.</span><br><span class="line"></span><br><span class="line">  Returns true if mutations are successfully generated using radamsa or ml rnn.</span><br><span class="line">  A false return signifies either no generator use or unsuccessful generation of</span><br><span class="line">  testcase mutations.&quot;&quot;&quot;</span><br><span class="line">  generation_timeout = get_new_testcase_mutations_timeout()</span><br><span class="line">  pre_mutations_filecount = shell.get_directory_file_count(</span><br><span class="line">      new_testcase_mutations_directory)</span><br><span class="line"></span><br><span class="line">  # Generate new testcase mutations using Radamsa.</span><br><span class="line">  if candidate_generator == Generator.RADAMSA:</span><br><span class="line">    generate_new_testcase_mutations_using_radamsa(</span><br><span class="line">        corpus_directory, new_testcase_mutations_directory, generation_timeout)</span><br><span class="line">  # Generate new testcase mutations using ML RNN model.</span><br><span class="line">  elif candidate_generator == Generator.ML_RNN:</span><br><span class="line">    generate_new_testcase_mutations_using_ml_rnn(</span><br><span class="line">        corpus_directory, new_testcase_mutations_directory, fuzzer_name,</span><br><span class="line">        generation_timeout)</span><br><span class="line"></span><br><span class="line">  # If new mutations are successfully generated, return true.</span><br><span class="line">  if shell.get_directory_file_count(</span><br><span class="line">      new_testcase_mutations_directory) &gt; pre_mutations_filecount:</span><br><span class="line">    return True</span><br><span class="line"></span><br><span class="line">  return False</span><br></pre></td></tr></table></figure>
+
+<h4 id="RANDOM-MAX-LENGTH-STRATEGY"><a href="#RANDOM-MAX-LENGTH-STRATEGY" class="headerlink" title="RANDOM_MAX_LENGTH_STRATEGY"></a>RANDOM_MAX_LENGTH_STRATEGY</h4><p>这个就是最大长度策略，首先判断是否已经存在-max_len=参数了，存在就不做任何操作</p>
+<p>假如不存在，则生成一个0到10000范围内的数，作为-max_len的值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">if strategy_pool.do_strategy(strategy.RANDOM_MAX_LENGTH_STRATEGY):</span><br><span class="line">    max_len_argument = fuzzer_utils.extract_argument(</span><br><span class="line">        existing_arguments, constants.MAX_LEN_FLAG, remove=False)</span><br><span class="line">    if not max_len_argument:</span><br><span class="line">      max_length = random.SystemRandom().randint(1, MAX_VALUE_FOR_MAX_LENGTH)</span><br><span class="line">      arguments.append(&apos;%s%d&apos; % (constants.MAX_LEN_FLAG, max_length))</span><br><span class="line">      fuzzing_strategies.append(strategy.RANDOM_MAX_LENGTH_STRATEGY.name)</span><br></pre></td></tr></table></figure>
+
+<h4 id="RECOMMENDED-DICTIONARY-STRATEGY"><a href="#RECOMMENDED-DICTIONARY-STRATEGY" class="headerlink" title="RECOMMENDED_DICTIONARY_STRATEGY"></a>RECOMMENDED_DICTIONARY_STRATEGY</h4><p>这是推荐字典策略，函数add_recommended_dictionary</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if (strategy_pool.do_strategy(strategy.RECOMMENDED_DICTIONARY_STRATEGY) and</span><br><span class="line">      add_recommended_dictionary(arguments, project_qualified_fuzzer_name,</span><br><span class="line">                                 fuzzer_path)):</span><br><span class="line">    fuzzing_strategies.append(strategy.RECOMMENDED_DICTIONARY_STRATEGY.name)</span><br></pre></td></tr></table></figure>
+
+<p>add_recommended_dictionary就是从谷歌云下载recommended_dictionary.dict，假如原来有字典则与原来的字典合并，并使用合并后的字典</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">def add_recommended_dictionary(arguments, fuzzer_name, fuzzer_path):</span><br><span class="line">  &quot;&quot;&quot;Add recommended dictionary from GCS to existing .dict file or create</span><br><span class="line">  a new one and update the arguments as needed.</span><br><span class="line">  This function modifies |arguments| list in some cases.&quot;&quot;&quot;</span><br><span class="line">  recommended_dictionary_path = os.path.join(</span><br><span class="line">      fuzzer_utils.get_temp_dir(),</span><br><span class="line">      dictionary_manager.RECOMMENDED_DICTIONARY_FILENAME)</span><br><span class="line"></span><br><span class="line">  dict_manager = dictionary_manager.DictionaryManager(fuzzer_name)</span><br><span class="line"></span><br><span class="line">  try:</span><br><span class="line">    # Bail out if cannot download recommended dictionary from GCS.</span><br><span class="line">    if not dict_manager.download_recommended_dictionary_from_gcs(</span><br><span class="line">        recommended_dictionary_path):</span><br><span class="line">      return False</span><br><span class="line">  except Exception as ex:</span><br><span class="line">    logs.log_error(</span><br><span class="line">        &apos;Exception downloading recommended dictionary:\n%s.&apos; % str(ex))</span><br><span class="line">    return False</span><br><span class="line"></span><br><span class="line">  # Bail out if the downloaded dictionary is empty.</span><br><span class="line">  if not os.path.getsize(recommended_dictionary_path):</span><br><span class="line">    return False</span><br><span class="line"></span><br><span class="line">  # Check if there is an existing dictionary file in arguments.</span><br><span class="line">  original_dictionary_path = fuzzer_utils.extract_argument(</span><br><span class="line">      arguments, constants.DICT_FLAG)</span><br><span class="line">  merged_dictionary_path = (</span><br><span class="line">      original_dictionary_path or</span><br><span class="line">      dictionary_manager.get_default_dictionary_path(fuzzer_path))</span><br><span class="line">  merged_dictionary_path += MERGED_DICT_SUFFIX</span><br><span class="line"></span><br><span class="line">  dictionary_manager.merge_dictionary_files(original_dictionary_path,</span><br><span class="line">                                            recommended_dictionary_path,</span><br><span class="line">                                            merged_dictionary_path)</span><br><span class="line">  arguments.append(constants.DICT_FLAG + merged_dictionary_path)</span><br><span class="line">  return True</span><br></pre></td></tr></table></figure>
+
+<h4 id="VALUE-PROFILE-STRATEGY"><a href="#VALUE-PROFILE-STRATEGY" class="headerlink" title="VALUE_PROFILE_STRATEGY"></a>VALUE_PROFILE_STRATEGY</h4><p>这个简单，就是添加参数-use_value_profile=1，下面是帮助信息，应该是使用特殊的值来指导模糊测试</p>
+<p>Experimental. Use value profile to guide fuzzing.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if strategy_pool.do_strategy(strategy.VALUE_PROFILE_STRATEGY):</span><br><span class="line">    arguments.append(constants.VALUE_PROFILE_ARGUMENT)</span><br><span class="line">    fuzzing_strategies.append(strategy.VALUE_PROFILE_STRATEGY.name)</span><br></pre></td></tr></table></figure>
+
+<h4 id="FORK-STRATEGY"><a href="#FORK-STRATEGY" class="headerlink" title="FORK_STRATEGY"></a>FORK_STRATEGY</h4><p>这个是fork策略，从MAX_FUZZ_THREADS获取max_fuzz_threads，默认值是1，</p>
+<p>-fork=的参数是cpu的核心数除以max_fuzz_threads，最小为1</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># Do not use fork mode for DFT-based fuzzing. This is needed in order to</span><br><span class="line"> # collect readable and actionable logs from fuzz targets running with DFT.</span><br><span class="line"> if (not is_fuchsia and not is_android and not is_ephemeral and</span><br><span class="line">     not use_dataflow_tracing and</span><br><span class="line">     strategy_pool.do_strategy(strategy.FORK_STRATEGY)):</span><br><span class="line">   max_fuzz_threads = environment.get_value(&apos;MAX_FUZZ_THREADS&apos;, 1)</span><br><span class="line">   num_fuzz_processes = max(1, utils.cpu_count() // max_fuzz_threads)</span><br><span class="line">   arguments.append(&apos;%s%d&apos; % (constants.FORK_FLAG, num_fuzz_processes))</span><br><span class="line">   fuzzing_strategies.append(</span><br><span class="line">       &apos;%s_%d&apos; % (strategy.FORK_STRATEGY.name, num_fuzz_processes))</span><br></pre></td></tr></table></figure>
+
+<h4 id="MUTATOR-PLUGIN-STRATEGY"><a href="#MUTATOR-PLUGIN-STRATEGY" class="headerlink" title="MUTATOR_PLUGIN_STRATEGY"></a>MUTATOR_PLUGIN_STRATEGY</h4><p>这个是use_mutator_plugin函数通过设置<code>extra_env[&#39;LD_PRELOAD&#39;] = mutator_plugin_path</code>来生效的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">extra_env = &#123;&#125;</span><br><span class="line">if (strategy_pool.do_strategy(strategy.MUTATOR_PLUGIN_STRATEGY) and</span><br><span class="line">    use_mutator_plugin(target_name, extra_env)):</span><br><span class="line">  fuzzing_strategies.append(strategy.MUTATOR_PLUGIN_STRATEGY.name)</span><br></pre></td></tr></table></figure>
+
+<h4 id="PEACH-GRAMMAR-MUTATION-STRATEGY"><a href="#PEACH-GRAMMAR-MUTATION-STRATEGY" class="headerlink" title="PEACH_GRAMMAR_MUTATION_STRATEGY"></a>PEACH_GRAMMAR_MUTATION_STRATEGY</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (not has_existing_mutator_strategy(fuzzing_strategies) and</span><br><span class="line">      strategy_pool.do_strategy(strategy.PEACH_GRAMMAR_MUTATION_STRATEGY) and</span><br><span class="line">      use_peach_mutator(extra_env, grammar)):</span><br><span class="line">    fuzzing_strategies.append(</span><br><span class="line">        &apos;%s_%s&apos; % (strategy.PEACH_GRAMMAR_MUTATION_STRATEGY.name, grammar))</span><br></pre></td></tr></table></figure>
+
+<p>首先假如fuzzing_strategies已经有以下策略的其中一个，就不执行PEACH_GRAMMAR_MUTATION_STRATEGY策略了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">MUTATOR_STRATEGIES = [</span><br><span class="line">    strategy.PEACH_GRAMMAR_MUTATION_STRATEGY.name,</span><br><span class="line">    strategy.MUTATOR_PLUGIN_STRATEGY.name,</span><br><span class="line">    strategy.MUTATOR_PLUGIN_RADAMSA_STRATEGY.name</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p>PEACH_GRAMMAR_MUTATION_STRATEGY策略也是通过环境变量来生效的，在use_peach_mutator函数中主要是下面环境变量</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># Set title and pit environment variables</span><br><span class="line">  extra_env[&apos;PIT_FILENAME&apos;] = pit_path</span><br><span class="line">  extra_env[&apos;PIT_TITLE&apos;] = grammar</span><br><span class="line"># Set LD_PRELOAD.</span><br><span class="line">  peach_path = os.path.join(unzipped, &apos;peach_mutator&apos;, &apos;src&apos;, &apos;peach.so&apos;)</span><br><span class="line">  extra_env[&apos;LD_PRELOAD&apos;] = peach_path</span><br><span class="line"># Set Python path.</span><br><span class="line">  new_path = [</span><br><span class="line">      os.path.join(unzipped, &apos;peach_mutator&apos;, &apos;src&apos;),</span><br><span class="line">      os.path.join(unzipped, &apos;peach_mutator&apos;, &apos;third_party&apos;, &apos;peach&apos;),</span><br><span class="line">  ] + sys.path</span><br><span class="line"></span><br><span class="line">  extra_env[&apos;PYTHONPATH&apos;] = os.pathsep.join(new_path)</span><br></pre></td></tr></table></figure>
+
+<h4 id="MUTATOR-PLUGIN-RADAMSA-STRATEGY"><a href="#MUTATOR-PLUGIN-RADAMSA-STRATEGY" class="headerlink" title="MUTATOR_PLUGIN_RADAMSA_STRATEGY"></a>MUTATOR_PLUGIN_RADAMSA_STRATEGY</h4><p>这里的逻辑也是跟上面一样，MUTATOR_STRATEGIES其中之一已经存在，就不执行策略了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if (not has_existing_mutator_strategy(fuzzing_strategies) and</span><br><span class="line">      strategy_pool.do_strategy(strategy.MUTATOR_PLUGIN_RADAMSA_STRATEGY) and</span><br><span class="line">      use_radamsa_mutator_plugin(extra_env)):</span><br><span class="line">    fuzzing_strategies.append(strategy.MUTATOR_PLUGIN_RADAMSA_STRATEGY.name)</span><br></pre></td></tr></table></figure>
+
+<p>use_radamsa_mutator_plugin函数就是通过环境变量LD_PRELOAD生效的，<code>extra_env[&#39;LD_PRELOAD&#39;] = radamsa_path</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">def use_radamsa_mutator_plugin(extra_env):</span><br><span class="line">  &quot;&quot;&quot;Decide whether to use Radamsa in process. If yes, add the path to the</span><br><span class="line">  radamsa shared object to LD_PRELOAD in |extra_env| and return True.&quot;&quot;&quot;</span><br><span class="line">  # Radamsa will only work on LINUX ASAN jobs.</span><br><span class="line">  # TODO(mpherman): Include architecture info in job definition and exclude</span><br><span class="line">  # i386.</span><br><span class="line">  if environment.is_lib() or not is_linux_asan():</span><br><span class="line">    return False</span><br><span class="line"></span><br><span class="line">  radamsa_path = os.path.join(environment.get_platform_resources_directory(),</span><br><span class="line">                              &apos;radamsa&apos;, &apos;libradamsa.so&apos;)</span><br><span class="line"></span><br><span class="line">  logs.log(&apos;Using Radamsa mutator plugin : %s&apos; % radamsa_path)</span><br><span class="line">  extra_env[&apos;LD_PRELOAD&apos;] = radamsa_path</span><br><span class="line">  return True</span><br></pre></td></tr></table></figure>
+
+<h3 id="libfuzzer-pick-strategies之后"><a href="#libfuzzer-pick-strategies之后" class="headerlink" title="libfuzzer.pick_strategies之后"></a>libfuzzer.pick_strategies之后</h3><p>展开参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arguments.extend(strategy_info.arguments)</span><br></pre></td></tr></table></figure>
+
+<p>解压corpus</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># Check for seed corpus and add it into corpus directory.</span><br><span class="line">engine_common.unpack_seed_corpus_if_needed(target_path, corpus_dir)</span><br></pre></td></tr></table></figure>
+
+<p>假如策略里面有CORPUS_SUBSET_STRATEGY，选择一些数量的corpus作为初始的corpus</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># Pick a few testcases from our corpus to use as the initial corpus.</span><br><span class="line">subset_size = engine_common.random_choice(</span><br><span class="line">    engine_common.CORPUS_SUBSET_NUM_TESTCASES)</span><br><span class="line"></span><br><span class="line">if (not strategy_info.use_dataflow_tracing and</span><br><span class="line">    strategy_pool.do_strategy(strategy.CORPUS_SUBSET_STRATEGY) and</span><br><span class="line">    shell.get_directory_file_count(corpus_dir) &gt; subset_size):</span><br><span class="line">  # Copy |subset_size| testcases into &apos;subset&apos; directory.</span><br><span class="line">  corpus_subset_dir = self._create_temp_corpus_dir(&apos;subset&apos;)</span><br><span class="line">  libfuzzer.copy_from_corpus(corpus_subset_dir, corpus_dir, subset_size)</span><br><span class="line">  strategy_info.fuzzing_strategies.append(</span><br><span class="line">      strategy.CORPUS_SUBSET_STRATEGY.name + &apos;_&apos; + str(subset_size))</span><br><span class="line">  strategy_info.additional_corpus_dirs.append(corpus_subset_dir)</span><br><span class="line">else:</span><br><span class="line">  strategy_info.additional_corpus_dirs.append(corpus_dir)</span><br></pre></td></tr></table></figure>
+
+<p>存在字典参数，检查字典文件参数，并检查字典是否存在</p>
+<p>如果不存在字典参数，则检查%target_binary_name%.dict是否存在</p>
+<p>最后还检查字典的格式并尝试修复，比如缺少双引号</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"># Check dict argument to make sure that it&apos;s valid.</span><br><span class="line">   dict_path = fuzzer_utils.extract_argument(</span><br><span class="line">       arguments, constants.DICT_FLAG, remove=False)</span><br><span class="line">   if dict_path and not os.path.exists(dict_path):</span><br><span class="line">     logs.log_error(&apos;Invalid dict %s for %s.&apos; % (dict_path, target_path))</span><br><span class="line">     fuzzer_utils.extract_argument(arguments, constants.DICT_FLAG)</span><br><span class="line">  </span><br><span class="line"># If there&apos;s no dict argument, check for %target_binary_name%.dict file.</span><br><span class="line">   dict_path = fuzzer_utils.extract_argument(</span><br><span class="line">       arguments, constants.DICT_FLAG, remove=False)</span><br><span class="line">   if not dict_path:</span><br><span class="line">     dict_path = dictionary_manager.get_default_dictionary_path(target_path)</span><br><span class="line">     if os.path.exists(dict_path):</span><br><span class="line">       arguments.append(constants.DICT_FLAG + dict_path)</span><br><span class="line">	</span><br><span class="line"># If we have a dictionary, correct any items that are not formatted properly</span><br><span class="line">   # (e.g. quote items that are missing them).</span><br><span class="line">   dictionary_manager.correct_if_needed(dict_path)</span><br></pre></td></tr></table></figure>
+
+<p>prepare函数最后调用process_strategies，返回一个stats，哪个策略开没开，或者策略选择的值，就是strategies变量</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">strategies = stats.process_strategies(</span><br><span class="line">       strategy_info.fuzzing_strategies, name_modifier=lambda x: x)</span><br><span class="line">   return LibFuzzerOptions(</span><br><span class="line">       corpus_dir, arguments, strategies, strategy_info.additional_corpus_dirs,</span><br><span class="line">       strategy_info.extra_env, strategy_info.use_dataflow_tracing,</span><br><span class="line">       strategy_info.is_mutations_run)</span><br></pre></td></tr></table></figure>
+
+<h2 id="fuzz的最大时间"><a href="#fuzz的最大时间" class="headerlink" title="fuzz的最大时间"></a>fuzz的最大时间</h2><p>从环境变量获取要fuzz的时长，减去在fuzz中的其他操作的时间，比如合并样本，字典分析等</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">fuzz_test_timeout = environment.get_value(&apos;FUZZ_TEST_TIMEOUT&apos;)</span><br><span class="line">additional_processing_time = engine_impl.fuzz_additional_processing_timeout(</span><br><span class="line">    options)</span><br><span class="line">fuzz_test_timeout -= additional_processing_time</span><br><span class="line">if fuzz_test_timeout &lt;= 0:</span><br><span class="line">  raise FuzzTaskException(</span><br><span class="line">      f&apos;Invalid engine timeout: &apos;</span><br><span class="line">      f&apos;&#123;fuzz_test_timeout&#125; - &#123;additional_processing_time&#125;&apos;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="实际fuzz"><a href="#实际fuzz" class="headerlink" title="实际fuzz"></a>实际fuzz</h2><p>实际fuzz就是下面这行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result = engine_impl.fuzz(target_path, options, testcase_directory,</span><br><span class="line">                            fuzz_test_timeout)</span><br></pre></td></tr></table></figure>
+
+<p>跟进这个fuzz函数</p>
+<p>下面的第一行profiler是性能分析相关的，假如设置了USE_PYTHON_PROFILER，并且不是False，就会启动Google Cloud Profiler</p>
+<p>第二行就是通过libfuzzer.get_runner一般正常情况是返回的是LibFuzzerRunner(fuzzer_path)</p>
+<p>第三行是设置sanitizer_options，比如exitcode为77</p>
+<p>第四行创建一个临时的目录作为corpus的目录，之后地5行跟options.fuzz_corpus_dirs合并变成一个corpus_directories数组</p>
+<p>之后调用runner.fuzz，就是实际起fuzz了</p>
+<p>fuzz之后就简单概括下：<br>1、将fuzzer的输出splitlines<br>2、根据log看看有没有crash，并提取crash的文件的路径<br>3、如果libfuzzer的返回值非0，但是又没找到crash文件，那么这个应该是启动的时候就崩溃了，这时使用空文件作为crash文件<br>4、根据log_lines的信息，设置一些stats的值，比如crash_count，slow_unit_count，timeout_count，edges_total等<br>5、删除一些影响merge和字典分析的参数，比如-fork，-max_len，-runs等<br>6、给复现crash设置更大的超时时间<br>7、复制crash文件到主crash目录<br>8、从log中生成推荐字典<br>9、返回fuzz的结果</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line">profiler.start_if_needed(&apos;libfuzzer_fuzz&apos;)</span><br><span class="line">   runner = libfuzzer.get_runner(target_path)</span><br><span class="line">   libfuzzer.set_sanitizer_options(target_path, fuzz_options=options)</span><br><span class="line"></span><br><span class="line">   # Directory to place new units.</span><br><span class="line">   new_corpus_dir = self._create_temp_corpus_dir(&apos;new&apos;)</span><br><span class="line"></span><br><span class="line">   corpus_directories = [new_corpus_dir] + options.fuzz_corpus_dirs</span><br><span class="line">   fuzz_result = runner.fuzz(</span><br><span class="line">       corpus_directories,</span><br><span class="line">       fuzz_timeout=max_time,</span><br><span class="line">       additional_args=options.arguments,</span><br><span class="line">       artifact_prefix=reproducers_dir,</span><br><span class="line">       extra_env=options.extra_env)</span><br><span class="line"></span><br><span class="line">log_lines = fuzz_result.output.splitlines()</span><br><span class="line">   # Output can be large, so save some memory by removing reference to the</span><br><span class="line">   # original output which is no longer needed.</span><br><span class="line">   fuzz_result.output = None</span><br><span class="line"></span><br><span class="line">   # Check if we crashed, and get the crash testcase path.</span><br><span class="line">   crash_testcase_file_path = runner.get_testcase_path(log_lines)</span><br><span class="line"></span><br><span class="line">   # If we exited with a non-zero return code with no crash file in output from</span><br><span class="line">   # libFuzzer, this is most likely a startup crash. Use an empty testcase to</span><br><span class="line">   # to store it as a crash.</span><br><span class="line">   if not crash_testcase_file_path and fuzz_result.return_code:</span><br><span class="line">     crash_testcase_file_path = self._create_empty_testcase_file(</span><br><span class="line">         reproducers_dir)</span><br><span class="line"></span><br><span class="line">   # Parse stats information based on libFuzzer output.</span><br><span class="line">   parsed_stats = libfuzzer.parse_log_stats(log_lines)</span><br><span class="line"></span><br><span class="line">   # Extend parsed stats by additional performance features.</span><br><span class="line">   parsed_stats.update(</span><br><span class="line">       stats.parse_performance_features(log_lines, options.strategies,</span><br><span class="line">                                        options.arguments))</span><br><span class="line"></span><br><span class="line">   # Set some initial stat overrides.</span><br><span class="line">   timeout_limit = fuzzer_utils.extract_argument(</span><br><span class="line">       options.arguments, constants.TIMEOUT_FLAG, remove=False)</span><br><span class="line"></span><br><span class="line">   expected_duration = runner.get_max_total_time(max_time)</span><br><span class="line">   actual_duration = int(fuzz_result.time_executed)</span><br><span class="line">   fuzzing_time_percent = 100 * actual_duration / float(expected_duration)</span><br><span class="line">   parsed_stats.update(&#123;</span><br><span class="line">       &apos;timeout_limit&apos;: int(timeout_limit),</span><br><span class="line">       &apos;expected_duration&apos;: expected_duration,</span><br><span class="line">       &apos;actual_duration&apos;: actual_duration,</span><br><span class="line">       &apos;fuzzing_time_percent&apos;: fuzzing_time_percent,</span><br><span class="line">   &#125;)</span><br><span class="line"></span><br><span class="line">   # Remove fuzzing arguments before merge and dictionary analysis step.</span><br><span class="line">   merge_arguments = options.arguments[:]</span><br><span class="line">   libfuzzer.remove_fuzzing_arguments(merge_arguments, is_merge=True)</span><br><span class="line">   self._merge_new_units(target_path, options.corpus_dir, new_corpus_dir,</span><br><span class="line">                         options.fuzz_corpus_dirs, merge_arguments,</span><br><span class="line">                         parsed_stats)</span><br><span class="line"></span><br><span class="line">   fuzz_logs = &apos;\n&apos;.join(log_lines)</span><br><span class="line">   crashes = []</span><br><span class="line">   if crash_testcase_file_path:</span><br><span class="line">     reproduce_arguments = options.arguments[:]</span><br><span class="line">     libfuzzer.remove_fuzzing_arguments(reproduce_arguments)</span><br><span class="line"></span><br><span class="line">     # Use higher timeout for reproduction.</span><br><span class="line">     libfuzzer.fix_timeout_argument_for_reproduction(reproduce_arguments)</span><br><span class="line"></span><br><span class="line">     # Write the new testcase.</span><br><span class="line">     # Copy crash testcase contents into the main testcase path.</span><br><span class="line">     crashes.append(</span><br><span class="line">         engine.Crash(crash_testcase_file_path, fuzz_logs, reproduce_arguments,</span><br><span class="line">                      actual_duration))</span><br><span class="line"></span><br><span class="line">   libfuzzer.analyze_and_update_recommended_dictionary(</span><br><span class="line">       runner, project_qualified_fuzzer_name, log_lines, options.corpus_dir,</span><br><span class="line">       merge_arguments)</span><br><span class="line"></span><br><span class="line">   return engine.FuzzResult(fuzz_logs, fuzz_result.command, crashes,</span><br><span class="line">                            parsed_stats, fuzz_result.time_executed)</span><br></pre></td></tr></table></figure>
+
+<p>最后进去runner.fuzz函数看看，首先找到LibFuzzerRunner，发现fuzz函数实际调用的是LibFuzzerCommon.fuzz</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">class LibFuzzerRunner(new_process.UnicodeProcessRunner, LibFuzzerCommon):</span><br><span class="line">  &quot;&quot;&quot;libFuzzer runner (when minijail is not used).&quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">  def __init__(self, executable_path, default_args=None):</span><br><span class="line">    &quot;&quot;&quot;Inits the LibFuzzerRunner.</span><br><span class="line"></span><br><span class="line">    Args:</span><br><span class="line">      executable_path: Path to the fuzzer executable.</span><br><span class="line">      default_args: Default arguments to always pass to the fuzzer.</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    super().__init__(executable_path=executable_path, default_args=default_args)</span><br><span class="line"></span><br><span class="line">  def fuzz(self,</span><br><span class="line">           corpus_directories,</span><br><span class="line">           fuzz_timeout,</span><br><span class="line">           artifact_prefix=None,</span><br><span class="line">           additional_args=None,</span><br><span class="line">           extra_env=None):</span><br><span class="line">    &quot;&quot;&quot;LibFuzzerCommon.fuzz override.&quot;&quot;&quot;</span><br><span class="line">    additional_args = copy.copy(additional_args)</span><br><span class="line">    if additional_args is None:</span><br><span class="line">      additional_args = []</span><br><span class="line"></span><br><span class="line">    return LibFuzzerCommon.fuzz(self, corpus_directories, fuzz_timeout,</span><br><span class="line">                                artifact_prefix, additional_args, extra_env)</span><br></pre></td></tr></table></figure>
+
+<p>找到LibFuzzerCommon.fuzz，里面处理了一下-artifact_prefix ，加上-max_total_time=和-print_final_stats=1，最后再加corpus_directories列表，最后就调用run_and_wait函数了（就是最多等待fuzz_timeout时间就退出，或者libfuzzer自动退出）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">def fuzz(self,</span><br><span class="line">           corpus_directories,</span><br><span class="line">           fuzz_timeout,</span><br><span class="line">           artifact_prefix=None,</span><br><span class="line">           additional_args=None,</span><br><span class="line">           extra_env=None):</span><br><span class="line">    &quot;&quot;&quot;Running fuzzing command.</span><br><span class="line"></span><br><span class="line">    Args:</span><br><span class="line">      corpus_directories: List of corpus directory paths to be passed to</span><br><span class="line">          libFuzzer.</span><br><span class="line">      fuzz_timeout: The maximum time in seconds that libFuzzer is allowed to run</span><br><span class="line">          for.</span><br><span class="line">      artifact_prefix: The directory to store new fuzzing artifacts (crashes,</span><br><span class="line">          timeouts, slow units)</span><br><span class="line">      additional_args: A sequence of additional arguments to be passed to the</span><br><span class="line">          executable.</span><br><span class="line">      extra_env: A dictionary containing environment variables and their values.</span><br><span class="line">          These will be added to the environment of the new process.</span><br><span class="line"></span><br><span class="line">    Returns:</span><br><span class="line">      A process.ProcessResult.</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    additional_args = copy.copy(additional_args)</span><br><span class="line">    if additional_args is None:</span><br><span class="line">      additional_args = []</span><br><span class="line"></span><br><span class="line">    max_total_time = self.get_max_total_time(fuzz_timeout)</span><br><span class="line">    if any(arg.startswith(constants.FORK_FLAG) for arg in additional_args):</span><br><span class="line">      max_total_time -= self.LIBFUZZER_FORK_MODE_CLEAN_EXIT_TIME</span><br><span class="line">    assert max_total_time &gt; 0</span><br><span class="line"></span><br><span class="line">    # Old libFuzzer jobs specify -artifact_prefix through additional_args</span><br><span class="line">    if artifact_prefix:</span><br><span class="line">      additional_args.append(</span><br><span class="line">          &apos;%s%s&apos; % (constants.ARTIFACT_PREFIX_FLAG,</span><br><span class="line">                    self._normalize_artifact_prefix(artifact_prefix)))</span><br><span class="line"></span><br><span class="line">    additional_args.extend([</span><br><span class="line">        &apos;%s%d&apos; % (constants.MAX_TOTAL_TIME_FLAG, max_total_time),</span><br><span class="line">        constants.PRINT_FINAL_STATS_ARGUMENT,</span><br><span class="line">        # FIXME: temporarily disabled due to a lack of crash information in</span><br><span class="line">        # output.</span><br><span class="line">        # &apos;-close_fd_mask=3&apos;,</span><br><span class="line">    ])</span><br><span class="line"></span><br><span class="line">    additional_args.extend(corpus_directories)</span><br><span class="line">    return self.run_and_wait(</span><br><span class="line">        additional_args=additional_args,</span><br><span class="line">        timeout=fuzz_timeout - self.SIGTERM_WAIT_TIME,</span><br><span class="line">        terminate_before_kill=True,</span><br><span class="line">        terminate_wait_time=self.SIGTERM_WAIT_TIME,</span><br><span class="line">        max_stdout_len=MAX_OUTPUT_LEN,</span><br><span class="line">        extra_env=extra_env)</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/" title="ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读">https://www.giantbranch.cn/2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/集群fuzz/" rel="tag"># 集群fuzz</a>
+          
+            <a href="/tags/ClusterFuzz/" rel="tag"># ClusterFuzz</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/12/25/winafl编译与测试/" rel="next" title="winafl编译与测试">
+                <i class="fa fa-chevron-left"></i> winafl编译与测试
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/06/25/syzkaller的安装与运行/" rel="prev" title="syzkaller的安装与运行">
+                syzkaller的安装与运行 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#回顾与总览"><span class="nav-number">1.</span> <span class="nav-text">回顾与总览</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#libfuzzer"><span class="nav-number">2.</span> <span class="nav-text">libfuzzer</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#prepare"><span class="nav-number">2.1.</span> <span class="nav-text">prepare</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#generate-weighted-strategy-pool"><span class="nav-number">2.1.1.</span> <span class="nav-text">generate_weighted_strategy_pool</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#libfuzzer-pick-strategies"><span class="nav-number">2.1.2.</span> <span class="nav-text">libfuzzer.pick_strategies</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#DATAFLOW-TRACING-STRATEGY"><span class="nav-number">2.1.2.1.</span> <span class="nav-text">DATAFLOW_TRACING_STRATEGY</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CORPUS-MUTATION"><span class="nav-number">2.1.2.2.</span> <span class="nav-text">CORPUS_MUTATION</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RANDOM-MAX-LENGTH-STRATEGY"><span class="nav-number">2.1.2.3.</span> <span class="nav-text">RANDOM_MAX_LENGTH_STRATEGY</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RECOMMENDED-DICTIONARY-STRATEGY"><span class="nav-number">2.1.2.4.</span> <span class="nav-text">RECOMMENDED_DICTIONARY_STRATEGY</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#VALUE-PROFILE-STRATEGY"><span class="nav-number">2.1.2.5.</span> <span class="nav-text">VALUE_PROFILE_STRATEGY</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#FORK-STRATEGY"><span class="nav-number">2.1.2.6.</span> <span class="nav-text">FORK_STRATEGY</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MUTATOR-PLUGIN-STRATEGY"><span class="nav-number">2.1.2.7.</span> <span class="nav-text">MUTATOR_PLUGIN_STRATEGY</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#PEACH-GRAMMAR-MUTATION-STRATEGY"><span class="nav-number">2.1.2.8.</span> <span class="nav-text">PEACH_GRAMMAR_MUTATION_STRATEGY</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MUTATOR-PLUGIN-RADAMSA-STRATEGY"><span class="nav-number">2.1.2.9.</span> <span class="nav-text">MUTATOR_PLUGIN_RADAMSA_STRATEGY</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#libfuzzer-pick-strategies之后"><span class="nav-number">2.1.3.</span> <span class="nav-text">libfuzzer.pick_strategies之后</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fuzz的最大时间"><span class="nav-number">2.2.</span> <span class="nav-text">fuzz的最大时间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实际fuzz"><span class="nav-number">2.3.</span> <span class="nav-text">实际fuzz</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/';
+          this.page.identifier = '2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/';
+          this.page.title = 'ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

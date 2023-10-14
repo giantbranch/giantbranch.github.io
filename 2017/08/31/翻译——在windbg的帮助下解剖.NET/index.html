@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="giantbranch,漏洞分析,漏洞挖掘,二进制,CTF,Web安全">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="[toc] .NET是Microsoft生态系统中重要的组成部分，为不同语言和硬件平台之间的互操作性提供了共享框架。 许多Microsoft工具（如PowerShell）和其他管理功能依赖于.NET平台的功能。 这使得.NET成为恶意软件开发人员的诱人语言。 因此，恶意软件研究人员还必须熟悉该语言，并具有分析在平台上运行的恶意软件的必要技能。 诸如ILSpy之类的分析工具有助于研究人员从应用程序中">
+<meta property="og:type" content="article">
+<meta property="og:title" content="翻译——在windbg的帮助下解剖.NET">
+<meta property="og:url" content="https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="[toc] .NET是Microsoft生态系统中重要的组成部分，为不同语言和硬件平台之间的互操作性提供了共享框架。 许多Microsoft工具（如PowerShell）和其他管理功能依赖于.NET平台的功能。 这使得.NET成为恶意软件开发人员的诱人语言。 因此，恶意软件研究人员还必须熟悉该语言，并具有分析在平台上运行的恶意软件的必要技能。 诸如ILSpy之类的分析工具有助于研究人员从应用程序中">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/images/1504148142337.jpg">
+<meta property="og:image" content="https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/images/1504341767930.jpg">
+<meta property="og:image" content="https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/images/1504342222809.jpg">
+<meta property="og:image" content="https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/images/1504342200330.jpg">
+<meta property="og:image" content="https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/images/1504342172706.jpg">
+<meta property="og:image" content="https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/images/1504342491142.jpg">
+<meta property="og:image" content="https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/images/1504344533250.jpg">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.134Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="翻译——在windbg的帮助下解剖.NET">
+<meta name="twitter:description" content="[toc] .NET是Microsoft生态系统中重要的组成部分，为不同语言和硬件平台之间的互操作性提供了共享框架。 许多Microsoft工具（如PowerShell）和其他管理功能依赖于.NET平台的功能。 这使得.NET成为恶意软件开发人员的诱人语言。 因此，恶意软件研究人员还必须熟悉该语言，并具有分析在平台上运行的恶意软件的必要技能。 诸如ILSpy之类的分析工具有助于研究人员从应用程序中">
+<meta name="twitter:image" content="https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/images/1504148142337.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/">
+
+
+
+
+
+  <title>翻译——在windbg的帮助下解剖.NET | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">翻译——在windbg的帮助下解剖.NET</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-31T00:00:00+00:00">
+                2017-08-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/08/31/翻译——在windbg的帮助下解剖.NET/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/08/31/翻译——在windbg的帮助下解剖.NET/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>[toc]</p>
+<p>.NET是Microsoft生态系统中重要的组成部分，为不同语言和硬件平台之间的互操作性提供了共享框架。 许多Microsoft工具（如PowerShell）和其他管理功能依赖于.NET平台的功能。 这使得.NET成为恶意软件开发人员的诱人语言。 因此，恶意软件研究人员还必须熟悉该语言，并具有分析在平台上运行的恶意软件的必要技能。</p>
+<p>诸如ILSpy之类的分析工具有助于研究人员从应用程序中反编译代码，但不能用于自动分析许多样本。 在本文中，我们将介绍如何使用WinDBG来使用Microsoft提供的SOS扩展来分析.NET应用程序。</p>
+<p>本文主要介绍：<br>如何通过在.NET API中插入断点来分析PowerShell脚本。<br>如何轻松创建一个脚本，以便在分析加壳的逻辑后自动解压缩.NET样本。</p>
+<p>此外，您可以在我们的github上下载一个Python脚本（基于WinDBG <a href="https://pykd.codeplex.com/" target="_blank" rel="noopener">pykd扩展</a>），以自动分析.NET。 这个脚本也将在文章中描述。</p>
+<h1 id="SOS-扩展"><a href="#SOS-扩展" class="headerlink" title="SOS 扩展"></a>SOS 扩展</h1><p>SOS Extension为WinDBG提供.NET支持。 扩展提供了丰富的命令集; 在本文中，我们将仅介绍一些对分析有用的内容。</p>
+<p>首先，SOS扩展名不在同一个库中，这取决于你所使用的.NET的版本。 在我们能够使用SOS扩展之前，我们必须将库加载到WinDBG中。</p>
+<p>对于.NET 4，扩展名位于CLR.dll中，可以加载以下命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.loadby sos clr</span><br></pre></td></tr></table></figure>
+
+<p>而.NET 2 和 3的话：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.loadby sos mscorwks</span><br></pre></td></tr></table></figure>
+
+<p>以下是本文中使用的命令：<br>！bpmd：这个命令用于在.NET代码中设置断点。 该命令有两个参数。 第一个参数是函数所在的.NET dll，第二个是函数名。<br>！CLRStack：此命令显示CLR堆栈内容。 识别.NET函数的参数很有用。<br>！DumpObj：此命令显示有关参数中指定的特定对象的信息。</p>
+<p>在本文中，这3个命令将用于在特定的.NET API中创建断点，以获取传递给API的参数，并显示内容。</p>
+<h1 id="案例1：POWERSHELL分析"><a href="#案例1：POWERSHELL分析" class="headerlink" title="案例1：POWERSHELL分析"></a>案例1：POWERSHELL分析</h1><p>很少有人意识到PowerShell可以使用.NET框架。 通过检查.NET API使用情况，我们可以轻松自动化PowerShell分析。</p>
+<h2 id="示例1：启动过程API"><a href="#示例1：启动过程API" class="headerlink" title="示例1：启动过程API"></a>示例1：启动过程API</h2><p>在本例中，我们将分析以下PowerShell代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; start-process notepad.exe</span><br></pre></td></tr></table></figure>
+
+<p>执行此任务时，PowerShell将调用Process.Start 这个API。 所以，我们可以在这个API设置之断点：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">0:011&gt; .loadby sos clr</span><br><span class="line"></span><br><span class="line">0:011&gt; !bpmd system.dll System.Diagnostics.Process.Start</span><br><span class="line">Found 6 methods in module 00007fff97581000...</span><br><span class="line">breakpoint: bp 00007FFF977C96D9 [System.Diagnostics.Process.Start(System.Diagnostics.ProcessStartInfo)]</span><br><span class="line">breakpoint: bp 00007FFF97E8057D [System.Diagnostics.Process.Start(System.String, System.String)]</span><br><span class="line">breakpoint: bp 00007FFF97E80539 [System.Diagnostics.Process.Start(System.String)]</span><br><span class="line">breakpoint: bp 00007FFF97E804B6 [System.Diagnostics.Process.Start(System.String, System.String, breakpoint: bp 00007FFF977C72DA [System.Diagnostics.Process.Start()]</span><br><span class="line">Adding pending breakpoints...</span><br></pre></td></tr></table></figure>
+
+<p>断点设置完成后，我们可以输入命令“g”来执行PowerShell脚本。 执行Start-Process时，WinDBG将会停止：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Breakpoint 0 hit</span><br><span class="line">System_ni+0x2496d9:</span><br><span class="line">00007fff`977c96d9 488d0d08711e00  lea     rcx,[System_ni+0x4307e8 (00007fff`979b07e8)]</span><br></pre></td></tr></table></figure>
+
+<p>CLRStack命令会显示Process.Start API的参数。 在我们的例子中，参数是一个System.Diagnostics.ProcessStartInfo对象。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">0:008&gt; !CLRStack -p</span><br><span class="line">OS Thread Id: 0x2d34 (8)</span><br><span class="line">        Child SP               IP Call Site</span><br><span class="line">000000a7f9ace700 00007fff977c96d9 System.Diagnostics.Process.Start(System.Diagnostics.ProcessStartInfo)</span><br><span class="line">    PARAMETERS:</span><br><span class="line">        startInfo (&lt;CLR reg&gt;) = 0x0000028cbd5faa18</span><br></pre></td></tr></table></figure>
+
+<p>最后，DumpObj命令显示此对象的内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">0:008&gt; !DumpObj /d 0000028cbd5faa18</span><br><span class="line">Name:        System.Diagnostics.ProcessStartInfo</span><br><span class="line">MethodTable: 00007fff979ae380</span><br><span class="line">EEClass:     00007fff975e29f0</span><br><span class="line">Size:        144(0x90) bytes</span><br><span class="line">File:        C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System\v4.0_4.0.0.0__b77a5c561934e089\System.dll</span><br><span class="line">Fields:</span><br><span class="line">              MT    Field   Offset                 Type VT     Attr   Value Name</span><br><span class="line">00007fff9897de98  40027f3    8        System.String  0 instance 28cbd5fde18 fileName</span><br><span class="line">00007fff9897de98  40027f4   10        System.String  0 instance 000 arguments</span><br><span class="line">[...redacted...]</span><br><span class="line">00007fff9897ad70  4002806   58 System.WeakReference  0 instance 000 weakParentProces</span><br><span class="line">00007fff979af0a0  4002807   60 ....StringDictionary  0 instance 000 environmentVaria</span><br><span class="line">00007fff982e5ec0  4002808   68 ...tring, mscorlib]]  0 instance 000 environment</span><br></pre></td></tr></table></figure>
+
+<p>ProcessStartInfo对象的第一个字段是filename，类型是System.String对象。 我们可以使用DumpObj检索对象的内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">0:008&gt; !DumpObj /d 0000028cbd5fde18</span><br><span class="line">Name:        System.String</span><br><span class="line">MethodTable: 00007fff9897de98</span><br><span class="line">EEClass:     00007fff982d35f0</span><br><span class="line">Size:        88(0x58) bytes</span><br><span class="line">File:        C:\WINDOWS\Microsoft.Net\assembly\GAC_64\mscorlib\v4.0_4.0.0.0__b77a5c561934e089\mscorlib.dll</span><br><span class="line">String:      C:\WINDOWS\system32\notepad.exe</span><br></pre></td></tr></table></figure>
+
+<p>那我们就可以看到我们运行的程序的路径了</p>
+<h2 id="示例2：DownloadFile-API"><a href="#示例2：DownloadFile-API" class="headerlink" title="示例2：DownloadFile API"></a>示例2：DownloadFile API</h2><p>代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; $a = New-Object System.Net.WebClient</span><br><span class="line">PS&gt; $a.DownloadFile(&quot;http://blog.talosintelligence.com/&quot;,&quot;c:\users\lucifer\demo.txt&quot;)</span><br></pre></td></tr></table></figure>
+
+<p>此代码的目的是将文件下载并存储在硬盘驱动器上。 恶意软件经常使用这种技术来下载payload。</p>
+<p>如果是这种情况，我们必须在DownloadFile API上放上断点，然后按’g’来执行PowerShelI：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">0:008&gt; .loadby sos clr</span><br><span class="line">0:008&gt; !bpmd system.dll System.Net.WebClient.DownloadFile</span><br><span class="line">Found 2 methods in module 00007fff97581000...</span><br><span class="line">MethodDesc = 00007fff976c1fe8</span><br><span class="line">MethodDesc = 00007fff976c1ff8</span><br><span class="line">Setting breakpoint: bp 00007FFF97DCAE0C [System.Net.WebClient.DownloadFile(System.Uri, System.String)]</span><br><span class="line">Setting breakpoint: bp 00007FFF97DCADBC [System.Net.WebClient.DownloadFile(System.String, System.String)]</span><br><span class="line">Adding pending breakpoints…</span><br><span class="line">0:008&gt; g</span><br></pre></td></tr></table></figure>
+
+<p>之后便会断下来</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Breakpoint 7 hit</span><br><span class="line">System_ni+0x84adbc:</span><br><span class="line">00007fff`97dcadbc 4885d2          test    rdx,rdx</span><br></pre></td></tr></table></figure>
+
+<p>在这种情况下，我们可以像以前一样使用CLRStack和DumpObj命令。 还可以手动，我们直接从寄存器获取值（第一个字符串位于RDX + 0xC中，第二个字符串位于R8 + 0xC中）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">0:008&gt; du rdx+c</span><br><span class="line">0000028c`bd53f13c  &quot;http://blog.talosintelligence.co&quot;</span><br><span class="line">0000028c`bd53f17c  &quot;m/&quot;</span><br><span class="line">0:008&gt; du r8+c</span><br><span class="line">0000028c`bd53f3b4  &quot;c:\users\lucifer\desktop\demo.tx&quot;</span><br><span class="line">0000028c`bd53f3f4  &quot;t&quot;</span><br></pre></td></tr></table></figure>
+
+<p>截图如下：</p>
+<p><img src="./images/1504148142337.jpg" alt=" "></p>
+<p><strong>译者注：</strong> 32位的话如下（05083c88是第三个参数，对应上面的r8储存第3个参数）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">0:023&gt; du edx+8</span><br><span class="line">05083a24  &quot;http://blog.talosintelligence.co&quot;</span><br><span class="line">05083a64  &quot;m/&quot;</span><br><span class="line">0:023&gt; dd esp</span><br><span class="line">09e8ebac  05095ef8 09e8ebe4 07f35dbb 05083c88</span><br><span class="line">09e8ebbc  04ab53b8 050724b0 00000000 00000000</span><br><span class="line">09e8ebcc  00000000 00000000 0509328c 05095ef8</span><br><span class="line">09e8ebdc  05091d40 09e8ec30 09e8ec40 66a8e96b</span><br><span class="line">09e8ebec  05083c88 05083a1c 05073df4 00000000</span><br><span class="line">09e8ebfc  05095fbc 05095f40 050938b4 050b6bb4</span><br><span class="line">09e8ec0c  05095f50 0509328c 05073df4 05095ef8</span><br><span class="line">09e8ec1c  00000000 00000000 00000000 00000000</span><br><span class="line">0:023&gt; du 05083c88+8</span><br><span class="line">05083c90  &quot;c:\users\lucifer\demo.txt&quot;</span><br></pre></td></tr></table></figure>
+
+<h1 id="案例2-NET-UNPACK"><a href="#案例2-NET-UNPACK" class="headerlink" title="案例2:  .NET UNPACK"></a>案例2:  .NET UNPACK</h1><p>Talos每天处理包装恶意软件样本。 我们最近确定了一个包装的.NET可执行文件，它正在叙利亚政府网站上托管：<a href="http://www.syriantax.gov.sy/css/igfxCUIService.exe" target="_blank" rel="noopener">http://www.syriantax.gov.sy/css/igfxCUIService.exe</a>  最初我们想知道这是否是有针对性的攻击的一部分。 经过进一步的研究，我们现在认为，这个网站已被入侵，并被用来提供这种恶意软件。 恶意软件原来是njRAT，这是一个知名的远程管理工具，已经存在了很多年。 找到njRAT并不是特别有趣，我们认为写一个博客文章，看看njRAT的脱壳过程就相对有趣了。</p>
+<p>因此，此用例将解释如何使用静态分析来处理未知的.NET包装程序。 我们还将介绍使用WinDBG的动态分析，以及如何创建一个WinDBG脚本，以自动化这种类型的打包程序的拆包过程。</p>
+<h2 id="静态分析"><a href="#静态分析" class="headerlink" title="静态分析"></a>静态分析</h2><p>我们通过使用de4dot来开始我们对恶意软件样本的分析，因为它可以快速识别已知的壳。 这是一个开源分析平台（吾爱破解工具包2.0就有）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">C:&gt; de4dot-x64.exe -d -r c:\to_test</span><br><span class="line"></span><br><span class="line">de4dot v3.1.41592.3405 Copyright (C) 2011-2015 de4dot@gmail.com</span><br><span class="line"></span><br><span class="line">Latest version and source code: https://github.com/0xd4d/de4dot</span><br><span class="line">Detected Unknown Obfuscator (c:\to_test\21acd3457c1a58[...]1bfeeaf3c0cd79bfe)</span><br><span class="line">Detected Unknown Obfuscator (c:\to_test\344ce133363f09[...]bbd2257a298484051)</span><br><span class="line">Detected Unknown Obfuscator (c:\to_test\45c695e610d786[...]af65408fb6080300f)</span><br><span class="line">Detected Unknown Obfuscator (c:\to_test\61653b2811fb7c[...]04f9807a775f25773)</span><br><span class="line">Detected Unknown Obfuscator (c:\to_test\ac7bd77245bdf2[...]aee4d06563f057ca6)</span><br><span class="line">Detected Unknown Obfuscator (c:\to_test\b607e87acdcb2e[...]d30eddddffbeec320)</span><br><span class="line">Detected Unknown Obfuscator (c:\to_test\e93c0aed6bbb4a[...]6c2efe65942f83504)</span><br></pre></td></tr></table></figure>
+
+<p>在本节中，我们还将使用ILSpy———开源.NET反编译器。</p>
+<h3 id="XOR-变种"><a href="#XOR-变种" class="headerlink" title="XOR 变种"></a>XOR 变种</h3><p>样本SHA-256：45c695e610d78178ec5ca6f4e1993afacf4e435b566cd2caf65408fb6080300f</p>
+<p>入口点是ob6eaGgG7Bht6B35c0.G9puOotvCiNCkEEPD9.XHh0nc9pu，我们可以使用ILSpy获得此信息：</p>
+<p><img src="./images/1504341767930.jpg" alt></p>
+<p>首先，程序解码一个Base64编码的字符串（变量G9puOotvCiNCkEEPD9.EHQI8XHAH）。 该解码的字符串将传递给函数G9puOotvCiNCkEEPD9.vovYCiNCk的第二个参数，最终作为XOR（异或） 的key：</p>
+<p><img src="./images/1504342222809.jpg" alt></p>
+<p>通过向下看，我们可以通过查看ILSpy的反编译结果看到异或操作，就是这个符号”^”，我们可以确定这是XOR(异或)操作。</p>
+<p><img src="./images/1504342200330.jpg" alt></p>
+<p>最后，函数的输出作为参数传递给函数Assembly.Load。 此函数用于加载.NET二进制文件。</p>
+<p><img src="./images/1504342172706.jpg" alt></p>
+<h3 id="AES-变种"><a href="#AES-变种" class="headerlink" title="AES 变种"></a>AES 变种</h3><p>样本SHA-256：21acd3457c1a589e117988fe0456e50ed627f051a97ccd11bfeeaf3c0cd79bfe</p>
+<p>这个变种中包含的逻辑是相同的，但不是使用XOR混淆，而是使用AES加密（也称为Rijndael）：<br>（译者注：可以看到下面用到了RijndaelManaged类）</p>
+<p><img src="./images/1504342491142.jpg" alt></p>
+<p>最后，使用Assembly.Load函数将解密的数据加载到内存中。</p>
+<h3 id="共同点"><a href="#共同点" class="headerlink" title="共同点"></a>共同点</h3><p>虽然每个分析的样本使用的算法是不同的，但编码与加密的逻辑是完全相同的。 如果我们可以导出在Assembly.Load函数的参数中找到的字节数组变量，那么我们就可以获得脱壳了的恶意软件（译者注：因为调用Assembly.Load的时候，传递给该函数的参数就是解密后了程序数据）。</p>
+<h2 id="用windbg动态调试"><a href="#用windbg动态调试" class="headerlink" title="用windbg动态调试"></a>用windbg动态调试</h2><h3 id="先看-NET-4"><a href="#先看-NET-4" class="headerlink" title="先看 .NET 4"></a>先看 .NET 4</h3><p>为了动态分析 .NET 4样本，我们需要获得WinDBG SOS扩展。 此扩展允许使用Microsoft Debugger进行 .NET 4调试。(译者注：这个SOS.dll就在 .NET目录啊)</p>
+<p>让我们执行恶意软件吧…</p>
+<p>第一步是在加载CLRJIT库时停下来：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">0:000&gt; sxe ld clrjit</span><br><span class="line">0:000&gt; g</span><br><span class="line">(dc0.1594): Unknown exception - code 04242420 (first chance)</span><br><span class="line">ModLoad: 70fc0000 71040000   C:\Windows\Microsoft.NET\Framework\v4.0.30319\clrjit.dll</span><br><span class="line">eax=00000000 ebx=00800000 ecx=00000000 edx=00000000 esi=00000000 edi=0044e000</span><br><span class="line">eip=7736e85c esp=006fe4fc ebp=006fe558 iopl=0         nv up ei pl nz na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000206</span><br><span class="line"></span><br><span class="line">ntdll!NtMapViewOfSection+0xc:</span><br><span class="line">7736e85c c22800          ret     28h</span><br></pre></td></tr></table></figure>
+
+<p>然后，我们加载WinDBG SOS扩展以对.NET应用程序进行分析：<br>（译者注：不应该是这个么：<code>.loadby sos clr</code>）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0:000&gt; .load &quot;C:\\Psscor4\\x86\\x86\\psscor4.dll&quot;</span><br></pre></td></tr></table></figure>
+
+<p>我们现在有了与.NET调试相关的新的WinDBG命令。 我们可以基于.NET API使用设置断点。 在这种情况下，我们对Assembly.Load API感兴趣：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">0:000&gt; !bpmd mscorlib.dll System.Reflection.Assembly.Load</span><br><span class="line">Found 8 methods in module 71041000...</span><br><span class="line">MethodDesc = 71100b50</span><br><span class="line">MethodDesc = 71100b7c</span><br><span class="line">MethodDesc = 71100b88</span><br><span class="line">MethodDesc = 71100b94</span><br><span class="line">MethodDesc = 71100bb8</span><br><span class="line">MethodDesc = 71100bd0</span><br><span class="line">MethodDesc = 71100bdc</span><br><span class="line">MethodDesc = 71100be8</span><br><span class="line">Setting breakpoint: bp 71B29095 [System.Reflection.Assembly.Load(Byte[], Byte[], System.Security.Policy.Evidence)]</span><br><span class="line">Setting breakpoint: bp 71B29037 [System.Reflection.Assembly.Load(Byte[], Byte[], System.Security.SecurityContextSource)]</span><br><span class="line">Setting breakpoint: bp 71B28FFF [System.Reflection.Assembly.Load(Byte[], Byte[])]</span><br><span class="line">Setting breakpoint: bp 71B28F9C [System.Reflection.Assembly.Load(Byte[])]</span><br><span class="line">Setting breakpoint: bp 71395949 [System.Reflection.Assembly.Load(System.Reflection.AssemblyName, System.Security.Policy.Evidence)]</span><br><span class="line">Setting breakpoint: bp 713F3479 [System.Reflection.Assembly.Load(System.Reflection.AssemblyName)]</span><br><span class="line">Setting breakpoint: bp 71B28F3D [System.Reflection.Assembly.Load(System.String, System.Security.Policy.Evidence)]</span><br><span class="line">Setting breakpoint: bp 713C880D [System.Reflection.Assembly.Load(System.String)]</span><br><span class="line">Adding pending breakpoints...</span><br></pre></td></tr></table></figure>
+
+<p>（目前在扩展中有一个bug，需要执行两次命令）</p>
+<p>当执行Assembly.Load函数时，调试器就暂停下来了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">0:000&gt; g</span><br><span class="line"></span><br><span class="line">Breakpoint 3 hit</span><br><span class="line">eax=00000000 ebx=006ff2dc ecx=026b30b8 edx=0000000a esi=026b30b8 edi=006ff250</span><br><span class="line">eip=71b28f9c esp=006ff210 ebp=006ff218 iopl=0         nv up ei pl zr na pe nc</span><br><span class="line">cs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000246</span><br><span class="line"></span><br><span class="line">mscorlib_ni+0xae8f9c:</span><br><span class="line">71b28f9c e80368fdff      call    mscorlib_ni+0xabf7a4 (71aff7a4)</span><br></pre></td></tr></table></figure>
+
+<p>显然，我们可以使用CLRStack和DumpObj命令来完全获得前面用例中提到的参数。 在这个例子中，我们只会使用寄存器的内容——传递给Assembly.Load的参数可以通过esp寄存器找到：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">0:000&gt; dp esp</span><br><span class="line"></span><br><span class="line">006ff210  00000000 026b30b8 006ff238 009504ae</span><br><span class="line">006ff220  00000000 00000000 00000000 00000000</span><br><span class="line">006ff230  00000000 00000000 006ff244 7240ea56</span><br><span class="line">006ff240  00a149a8 006ff298 724293ef 006ff2dc</span><br><span class="line">006ff250  006ff288 725b24b0 006ff3b0 724293a8</span><br><span class="line">006ff260  ecebc740 006ff404 006ff370 006ff324</span><br><span class="line">006ff270  7246e611 006ff2dc 00000000 ecebc740</span><br><span class="line">006ff280  006ff250 006ff370 006ff424 725b0890</span><br></pre></td></tr></table></figure>
+
+<p>栈中的第二个值是指向字节数组的指针：0x026b30b8。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">0:000&gt; dp 026b30b8 </span><br><span class="line">026b30b8  71504448 00005e00 00905a4d 00000003</span><br><span class="line">026b30c8  00000004 0000ffff 000000b8 00000000</span><br><span class="line"></span><br><span class="line">0:000&gt; db 026b30b8+8 L16</span><br><span class="line">026b30c0  4d 5a 90 00 03 00 00 00-04 00 00 00 ff ff 00 00  MZ..............</span><br><span class="line">026b30d0  b8 00 00 00 00 00                                ......</span><br></pre></td></tr></table></figure>
+
+<p>第二个参数0x5e00是字节数组的大小，之后我们可以看到以MZ：0x4d 0x5a开头的PE文件的文件头。 我们现在可以直接从WinDBG中转储被加密代码解密完成的样本：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.writemem C:\\unpacked_sample.exe 026b30b8+8 L00005e00</span><br></pre></td></tr></table></figure>
+
+<h3 id="再看-NET-2-、3"><a href="#再看-NET-2-、3" class="headerlink" title="再看 .NET 2 、3"></a>再看 .NET 2 、3</h3><p>使用.NET版本2和3编译的恶意软件的动态分析过程是一样的。 不同的是参数如何传递给Assembly.Load  API。 在这种情况下，参数不使用堆栈，而是存储在ECX寄存器中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">0:000&gt; dp ecx</span><br><span class="line">024ba0b8  71504448 00005e00 00905a4d 00000003</span><br><span class="line">024ba0c8  00000004 0000ffff 000000b8 00000000</span><br><span class="line"></span><br><span class="line">0:000&gt; db ecx+8 L16</span><br><span class="line">024ba0c0  4d 5a 90 00 03 00 00 00-04 00 00 00 ff ff 00 00  MZ..............</span><br><span class="line">024ba0d0  b8 00 00 00 00 00</span><br></pre></td></tr></table></figure>
+
+<h1 id="自动脱壳"><a href="#自动脱壳" class="headerlink" title="自动脱壳"></a>自动脱壳</h1><p>得益于上述分析，我们可以创建一个通用的脱壳器。 您可以在附录2中找到.NET版本2,3和4的WinDBG脚本。</p>
+<p>可以使用以下语法调用此脚本：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;c:\Program Files (x86)\Windows Kits\10\Debuggers\x86\cdb.exe&quot; -c &quot;$$&gt;a&lt; C:\unpack.script C:\unpacked_sample.exe&quot; &quot;c:\sample.exe&quot;</span><br></pre></td></tr></table></figure>
+
+<p>以下是脚本执行的截图：</p>
+<p><img src="./images/1504344533250.jpg" alt></p>
+<h1 id="python-脚本"><a href="#python-脚本" class="headerlink" title="python 脚本"></a>python 脚本</h1><p>您可以从我们的<a href="https://github.com/Cisco-Talos/dotNET_WinDBG" target="_blank" rel="noopener">github</a>中下载一个python脚本来自动化的.NET分析。 该脚本需要<a href="https://pykd.codeplex.com/" target="_blank" rel="noopener">pykd扩展</a>才能在WinDBG中执行python。 该脚本使用本文前面提到的SOS命令，目的是获得更好的输出。 配置位于脚本的开头：</p>
+<p>bp_list变量包含断点列表。 在该示例中，该脚本将在3个 .NET API（System.Diagnotics.Process.Start，System.Net.WebClient.Download.File和Sysyem.Reflection.Assembly.Load）上下断点。 3个函数的参数将显示在WinDBG中。</p>
+<p>如果dump_byte_array变量设置为1，脚本将自动转储分析函数（其中有断点的位置）的参数中提供的字节数组。 转储将位于dump_byte_array_path目录中。</p>
+<p>该脚本允许文本或json输出。 本文中的示例输出文本，但我们可以通过将JsonDebug变量设置为“True”来切换json。</p>
+<h2 id="示例1"><a href="#示例1" class="headerlink" title="示例1"></a>示例1</h2><p>下面是当调用Assembly.Load函数时脚本的输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">0:000&gt; .loadby sos clr</span><br><span class="line">0:000&gt; .load pykd.dll</span><br><span class="line">0:000&gt; !py C:\Users\lucifer\NET_plugin.py</span><br><span class="line">[.NET plugin] Beginning, setting breakpoints...</span><br><span class="line">[.NET plugin] breakpoint: mscorlib.dll System.Reflection.Assembly.Load mscorlib_ni+0xb4fa65</span><br><span class="line">[.NET plugin] breakpoint: mscorlib.dll System.Reflection.Assembly.Load mscorlib_ni+0xb4fa07</span><br><span class="line">[.NET plugin] breakpoint: mscorlib.dll System.Reflection.Assembly.Load mscorlib_ni+0xb4f9cf</span><br><span class="line">[.NET plugin] breakpoint: mscorlib.dll System.Reflection.Assembly.Load mscorlib_ni+0xb4f96c</span><br><span class="line">[.NET plugin] breakpoint: mscorlib.dll System.Reflection.Assembly.Load mscorlib_ni+0x38a5a1</span><br><span class="line">[.NET plugin] breakpoint: mscorlib.dll System.Reflection.Assembly.Load mscorlib_ni+0x3bda7d</span><br><span class="line">[.NET plugin] breakpoint: mscorlib.dll System.Reflection.Assembly.Load mscorlib_ni+0xb4f90d</span><br><span class="line">[.NET plugin] breakpoint: mscorlib.dll System.Reflection.Assembly.Load mscorlib_ni+0x3968dd</span><br><span class="line">[.NET plugin] Let&apos;s go...</span><br><span class="line"></span><br><span class="line">[.NET plugin] Breakpoint: System.Reflection.Assembly.Load(Byte[])</span><br><span class="line">[.NET plugin] Argument 0: rawAssembly</span><br><span class="line">[.NET plugin] !DumpObj /d 0x02f67e04</span><br><span class="line">        Name:        System.Byte[]</span><br><span class="line">        MethodTable: 6b5f60f8</span><br><span class="line">        EEClass:     6b190878</span><br><span class="line">        Size:        5644(0x160c) bytes</span><br><span class="line">        Array:       Rank 1, Number of elements 5632, Type Byte (Print Array)</span><br><span class="line">        Content:     MZ......................@...............................................!..L.!This program cannot</span><br><span class="line">        Fields:</span><br><span class="line">        None</span><br><span class="line">        </span><br><span class="line">        [.NET plugin] let&apos;s dump 0x02f67e04+8 Size:5644</span><br><span class="line">        .writemem c:\users\lucifer\Desktop\dump_1496942775_0x02f67e04_5644.dmp 0x02f67e04+8 L5644</span><br></pre></td></tr></table></figure>
+
+<p>Assembly.Load参数中的字节数组的内容将自动存储在c:\users\lucifer\Desktop\dump_1496942775_0x02f67e04_5644.dmp</p>
+<h2 id="示例2"><a href="#示例2" class="headerlink" title="示例2"></a>示例2</h2><p>以下是执行start-process的PowerShell脚本上的脚本输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">[.NET plugin] Breakpoint: System.Diagnostics.Process.Start(System.Diagnostics.ProcessStartInfo)</span><br><span class="line">[.NET plugin] Argument 0: startInfo</span><br><span class="line">[.NET plugin] !DumpObj /d 0x000001ad173cdb68</span><br><span class="line">        Name:        System.Diagnostics.ProcessStartInfo</span><br><span class="line">        MethodTable: 00007ffd7e3ee798</span><br><span class="line">        EEClass:     00007ffd7e0229f0</span><br><span class="line">        Size:        144(0x90) bytes</span><br><span class="line">        File:        C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System\v4.0_4.0.0.0__b77a5c561934e089\System.dll</span><br><span class="line">        Fields:</span><br><span class="line">           MT    Field   Offset                 Type VT     Attr      Value Name</span><br><span class="line">        07ffd69e969d0 40027fa   8     System.String  0 instance 01ad173d0f20 fileName</span><br><span class="line">        07ffd69e969d0 40027fb   10    System.String  0 instance 00000000000 arguments</span><br><span class="line">        07ffd69e969d0 40027fc   18    System.String  0 instance 1ad173d4bf8 directory</span><br><span class="line">        07ffd69e969d0 40027fd   20    System.String  0 instance 000000000000 verb</span><br><span class="line">        07ffd7e3c2a50 40027fe   78    System.Int32  1 instance          0 windowStyle</span><br><span class="line">        07ffd69ea1fb0 40027ff   7c    System.Boolean  1 instance        0 errorDialog</span><br><span class="line">        07ffd69eafc48 4002800   70    System.IntPtr  1 instance     0 errorDialogPare</span><br><span class="line">        07ffd69ea1fb0 4002801   7d    System.Boolean  1 instance     1 useShellExecut</span><br><span class="line">        07ffd69e969d0 4002802   28    System.String  0 instance 000000000000 userName</span><br><span class="line">        07ffd69e969d0 4002803   30    System.String  0 instance 000000000000 domain</span><br><span class="line">        07ffd69ea4068 4002804   38 ...rity.SecureString  0 instance 00000000 password</span><br><span class="line">        07ffd69e969d0 4002805   40    System.String  0 instance 0 passwordInClearText</span><br><span class="line">        07ffd69ea1fb0 4002806   7e    System.Boolean  1 instance,  1  loadUserProfile</span><br><span class="line">        07ffd69ea1fb0 4002807   7f    System.Boolean  1 instance   0  redirectStandar</span><br><span class="line">        07ffd69ea1fb0 4002808   80    System.Boolean  1 instance   0 redirectStandard</span><br><span class="line">        07ffd69ea1fb0 4002809   81    System.Boolean  1 instance   0 redirectStandard</span><br><span class="line">        07ffd69e9b048 400280a   48    System.Text.Encoding  0 instance 0 standardOutp</span><br><span class="line">        07ffd69e9b048 400280b   50    System.Text.Encoding  0 instance 0 standardErro</span><br><span class="line">        07ffd69ea1fb0 400280c   82    System.Boolean  1 instance   0 createNoWindow</span><br><span class="line">        07ffd69eadec8 400280d   58 System.WeakReference  0 instance 0000 weakParentPr</span><br><span class="line">        07ffd7e3ef4b8 400280e   60 ....StringDictionary  0 instance 0000 envVariables</span><br><span class="line">        07ffd697a69f0 400280f   68 ...tring, mscorlib]]  0 instance 0000 environment</span><br><span class="line">        </span><br><span class="line">                [.NET plugin] !DumpObj /d 000001ad173d0f20</span><br><span class="line">                Name:        System.String</span><br><span class="line">                MethodTable: 00007ffd69e969d0</span><br><span class="line">                EEClass:     00007ffd697950e0</span><br><span class="line">                Size:        82(0x52) bytes</span><br><span class="line">                File:        C:\WINDOWS\Microsoft.Net\assembly\GAC_64\mscorlib\v4.0_4.0.0.0__b77a5c561934e089\mscorlib.dll</span><br><span class="line">                String:      C:\WINDOWS\system32\calc.exe</span><br></pre></td></tr></table></figure>
+
+<p>该脚本显示有趣字段的参数和内容（在该示例中为fileName字符串）。（译者注：可以看到C:\WINDOWS\system32\calc.exe）</p>
+<h2 id="示例3"><a href="#示例3" class="headerlink" title="示例3"></a>示例3</h2><p>以下是在Powershell中使用DownloadFile API时脚本的输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">[.NET plugin] Breakpoint: System.Net.WebClient.DownloadFile(System.Uri, System.String)</span><br><span class="line">[.NET plugin] Argument 1: address</span><br><span class="line">[.NET plugin] !DumpObj /d 0x000001ad17315e78</span><br><span class="line">        Name:        System.Uri</span><br><span class="line">        MethodTable: 00007ffd7e3f4cf0</span><br><span class="line">        EEClass:     00007ffd7dfc5fd0</span><br><span class="line">        Size:        72(0x48) bytes</span><br><span class="line">        File:        C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System\v4.0_4.0.0.0__b77a5c561934e089\System.dll</span><br><span class="line">        Fields:</span><br><span class="line">            MT    Field   Offset             Type VT     Attr            Value Name</span><br><span class="line">        07ffd69e969d0 400040b 8   System.String  0 instance 000001ad172c5ea8 m_String</span><br><span class="line">        07ffd69e969d0 400040c 10  System.String  0 instance 000000000 m_originalUnico</span><br><span class="line">        07ffd7e3f51d8 400040d 18  System.UriParser  0 instance 001ad17032b40 m_Syntax</span><br><span class="line">        07ffd69e969d0 400040e 20  System.String  0 instance 00000000000 m_DnsSafeHost</span><br><span class="line">        07ffd7e3c2788 400040f 30  System.UInt64  1 instance 37615763456 m_Flags</span><br><span class="line">        07ffd7e3f5590 4000410 28  System.Uri+UriInfo  0 instance 01ad17315f00 m_Info</span><br><span class="line">        07ffd69ea1fb0 4000411 38  System.Boolean  1 instance          0 m_iriParsing</span><br><span class="line">        07ffd69e969d0 40003fb 220 System.String  0   shared     static UriSchemeFile</span><br><span class="line">        07ffd69e969d0 40003fc 228 System.String  0   shared     static UriSchemeFtp</span><br><span class="line">        07ffd69e969d0 40003fd 230 System.String  0   shared     static UriSchemeGoph</span><br><span class="line">        07ffd69e969d0 40003fe 238 System.String  0   shared     static UriSchemeHttp</span><br><span class="line">        07ffd69e969d0 40003ff 240 System.String  0   shared     static UriSchemeHttps</span><br><span class="line">        07ffd69e969d0 4000400 248 System.String  0   shared     static UriSchemeWs</span><br><span class="line">        07ffd69e969d0 4000401 250 System.String  0   shared     static UriSchemeWss</span><br><span class="line">        07ffd69e969d0 4000402 258 System.String  0   shared     static UriSchemeMail</span><br><span class="line">        07ffd69e969d0 4000403 260 System.String  0   shared     static UriSchemeNews</span><br><span class="line">        07ffd69e969d0 4000404 268 System.String  0   shared     static UriSchemeNntp</span><br><span class="line">        07ffd69e969d0 4000405 270 System.String  0   shared     static UriSchemeNet</span><br><span class="line">        07ffd69e969d0 4000406 278 System.String  0   shared     static UriSchemeNetP</span><br><span class="line">        07ffd69e969d0 4000407 280 System.String  0   shared     static SchemeDelimit</span><br><span class="line">        07ffd7e3b4bd0 4000412 288 ...etSecurityManager  0       static s_ManagerRef</span><br><span class="line">        07ffd69e96fb0 4000413 290 System.Object  0   shared     static s_IntranetLock</span><br><span class="line">        07ffd69ea1fb0 4000414 9c4 System.Boolean  1   shared    static s_ConfigInitia</span><br><span class="line">        07ffd69ea1fb0 4000415 9c5 System.Boolean  1   shared    static s_ConfigInitia</span><br><span class="line">        07ffd7e3afef8 4000416 9c0 System.Int32  1   shared      static s_IdnScope</span><br><span class="line">        07ffd69ea1fb0 4000417 9c6 System.Boolean  1   shared    static s_IriParsing</span><br><span class="line">        07ffd69e96fb0 4000418 298 System.Object  0   shared     static s_initLock</span><br><span class="line">        07ffd69e97b20 400041c 2a0 System.Char[]  0   shared     static HexLowerChars</span><br><span class="line">        07ffd69e97b20 400041d 2a8 System.Char[]  0   shared     static _WSchars</span><br><span class="line">        </span><br><span class="line">                [.NET plugin] !DumpObj /d 000001ad172c5ea8</span><br><span class="line">                Name:        System.String</span><br><span class="line">                MethodTable: 00007ffd69e969d0</span><br><span class="line">                EEClass:     00007ffd697950e0</span><br><span class="line">                Size:        94(0x5e) bytes</span><br><span class="line">                File:        C:\WINDOWS\Microsoft.Net\assembly\GAC_64\mscorlib\v4.0_4.0.0.0__b77a5c561934e089\mscorlib.dll</span><br><span class="line">                String:      http://blog.talosintelligence.com/</span><br><span class="line">                Fields:</span><br><span class="line">                   MT    Field   Offset           Type VT     Attr         Value Name</span><br><span class="line">               07ffd69e99310  400026f  8  System.Int32  1 instance  34 m_stringLength</span><br><span class="line">               07ffd69e97b88  400027   c  System.Char   1 instance  68 m_firstChar</span><br><span class="line">               07ffd69e969d0  4000274  90 System.String 0   shared  static Empty</span><br><span class="line"></span><br><span class="line">[.NET plugin] Argument 2: fileName</span><br><span class="line">[.NET plugin] !DumpObj /d 0x000001ad172c61c8</span><br><span class="line">        Name:        System.String</span><br><span class="line">        MethodTable: 00007ffd69e969d0</span><br><span class="line">        EEClass:     00007ffd697950e0</span><br><span class="line">        Size:        92(0x5c) bytes</span><br><span class="line">        File:        C:\WINDOWS\Microsoft.Net\assembly\GAC_64\mscorlib\v4.0_4.0.0.0__b77a5c561934e089\mscorlib.dll</span><br><span class="line">        String:      c:\users\lucifer\desktop\demo.txt</span><br><span class="line">        Fields:</span><br><span class="line">             MT    Field   Offset                 Type VT     Attr      Value Name</span><br><span class="line">        07ffd69e99310  400026f  8    System.Int32  1 instance       33 m_stringLength</span><br><span class="line">        07ffd69e97b88  4000270  c    System.Char  1 instance        63 m_firstChar</span><br><span class="line">        07ffd69e969d0  4000274  90   System.String  0   shared      static Empty</span><br></pre></td></tr></table></figure>
+
+<p>第一个参数是System.URI对象。 对象自动解析，相关内容显示在WinDBG中。 在这种情况下，显示第一个字段（字符串m_string）。 此字符串包含URL。 第二个参数是也显示的字符串（译者注：下载到的位置）。</p>
+<h2 id="示例4"><a href="#示例4" class="headerlink" title="示例4"></a>示例4</h2><p>这是JSON启用的输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">0:020&gt; .loadby sos clr</span><br><span class="line">0:020&gt; .load pykd</span><br><span class="line">0:020&gt; !py c:\Users\lucifer\DotNETPlugin.py</span><br><span class="line">&#123;</span><br><span class="line">  &quot;date&quot;: 1500306926,</span><br><span class="line">  &quot;bp&quot;: &quot;System.Diagnostics.Process.Start(System.Diagnostics.ProcessStartInfo)&quot;,</span><br><span class="line">  &quot;arguments&quot;: &#123;</span><br><span class="line">    &quot;0&quot;: &#123;</span><br><span class="line">      &quot;fields&quot;: &#123;</span><br><span class="line">        &quot;0&quot;: &#123;</span><br><span class="line">          &quot;Type&quot;: &quot;System.String&quot;,</span><br><span class="line">          &quot;Name&quot;: &quot;fileName&quot;,</span><br><span class="line">          &quot;string&quot;: &quot;C:\\WINDOWS\\system32\\calc.exe&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;1&quot;: &#123;</span><br><span class="line">          &quot;Type&quot;: &quot;System.String&quot;,</span><br><span class="line">          &quot;Name&quot;: &quot;arguments&quot;,</span><br><span class="line">          &quot;string&quot;: &quot;&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;2&quot;: &#123;</span><br><span class="line">          &quot;Type&quot;: &quot;System.String&quot;,</span><br><span class="line">          &quot;Name&quot;: &quot;directory&quot;,</span><br><span class="line">          &quot;string&quot;: &quot;C:\\Users\\lucifer&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;3&quot;: &#123;</span><br><span class="line">          &quot;Type&quot;: &quot;System.String&quot;,</span><br><span class="line">          &quot;Name&quot;: &quot;verb&quot;,</span><br><span class="line">          &quot;string&quot;: &quot;&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        [...redacted...]</span><br><span class="line">        &quot;20&quot;: &#123;</span><br><span class="line">          &quot;Type&quot;: &quot;....StringDictionary&quot;,</span><br><span class="line">          &quot;Name&quot;: &quot;environmentVariables&quot;,</span><br><span class="line">          &quot;value&quot;: &quot;0000000000000000&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;21&quot;: &#123;</span><br><span class="line">          &quot;Type&quot;: &quot;...tring,&quot;,</span><br><span class="line">          &quot;Name&quot;: &quot;environment&quot;,</span><br><span class="line">          &quot;value&quot;: &quot;instance&quot;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;name&quot;: &quot;startInfo&quot;,</span><br><span class="line">      &quot;offset&quot;: &quot;0x0000025c1c572170&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>WinDBG是由Microsoft提供的一个非常强大的工具。 如果不熟悉windbg的语法和界面意味你将忽略这么一个这么好的恶意软件分析工具。 有了正确的扩展，它可以很容易地用于分析.NET等类似代码。</p>
+<p>我们希望这篇文章引导您的好奇心，并且您将在下一次分析.NET等类是代码时考虑WinDBG。</p>
+<h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h1><p>加壳样本 SHA256</p>
+<ul>
+<li>21acd3457c1a589e117988fe0456e50ed627f051a97ccd11bfeeaf3c0cd79bfe</li>
+<li>344ce133363f005346210611d5abd2513934a32739bc6e1bbd2257a298484051</li>
+<li>45c695e610d78178ec5ca6f4e1993afacf4e435b566cd2caf65408fb6080300f</li>
+<li>61653b2811fb7c672584d00417cbc1a56c8372331f1913104f9807a775f25773</li>
+<li>ac7bd77245bdf284d36ce1f9e2cb6a21d2dbd38aa1964dbaee4d06563f057ca6</li>
+<li>b607e87acdcb2ef0f102298decc57ca3ea20fabbf02375fd30eddddffbeec320</li>
+<li>e93c0aed6bbb4af734403e02d399c124f2d07f8e701fb716c2efe65942f83504</li>
+</ul>
+<p>脱壳样本 SHA256</p>
+<ul>
+<li>35dee9106e4521e5adf295cc945355d72eb359d610230142e5dd4adda9678dee</li>
+<li>b5ce02ee3dfccf28e86f737a6dde85e9d30ff0549ec611d115a1d575b5291c2e</li>
+<li>d9a732dcf87764a87f17c95466f557fac33f041ac6f244dba006ba155d8e9aea</li>
+<li>fe068ce56b258762c10cc66525c309e79026c0e44103ca9b223c51382722cb09</li>
+</ul>
+<h2 id="WinDBG-脚本"><a href="#WinDBG-脚本" class="headerlink" title="WinDBG 脚本"></a>WinDBG 脚本</h2><p>.NET4之前</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">sxe ld mscorjit</span><br><span class="line">g</span><br><span class="line">.loadby sos mscorwks</span><br><span class="line">!bpmd mscorlib.dll System.Reflection.Assembly.Load</span><br><span class="line">.echo &quot;Weird bug... bp twice...&quot;</span><br><span class="line">!bpmd mscorlib.dll System.Reflection.Assembly.Load</span><br><span class="line">g</span><br><span class="line">r $t1 = ecx</span><br><span class="line">.printf &quot;Byte array: &quot;;r $t1</span><br><span class="line">r $t2 = poi($t1+4)</span><br><span class="line">.printf &quot;Size: &quot;;r $t2</span><br><span class="line">db $t1+8 L$t2</span><br><span class="line">.echo &quot;dump in the file: $&#123;$arg1&#125;&quot;</span><br><span class="line">.writemem $&#123;$arg1&#125; $t1+8 L$t2</span><br><span class="line">.kill</span><br><span class="line">q</span><br></pre></td></tr></table></figure>
+
+<p>.NET4</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">sxe ld clrjit</span><br><span class="line">g</span><br><span class="line">.load &quot;C:\\Psscor4\\x86\\x86\\psscor4.dll&quot;</span><br><span class="line">!bpmd mscorlib.dll System.Reflection.Assembly.Load</span><br><span class="line">.echo &quot;Weird bug... bp twice...&quot;</span><br><span class="line">!bpmd mscorlib.dll System.Reflection.Assembly.Load</span><br><span class="line">g</span><br><span class="line">r $t1 = poi(esp+4)</span><br><span class="line">.printf &quot;Byte array: &quot;;r $t1</span><br><span class="line">r $t2 = poi($t1+4)</span><br><span class="line">.printf &quot;Size: &quot;;r $t2</span><br><span class="line">db $t1+8 L$t2</span><br><span class="line">.echo &quot;dump in the file: $&#123;$arg1&#125;&quot;</span><br><span class="line">.writemem $&#123;$arg1&#125; $t1+8 L$t2</span><br><span class="line">.kill</span><br><span class="line">q</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/" title="翻译——在windbg的帮助下解剖.NET">https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/26/Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比/" rel="next" title="Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比">
+                <i class="fa fa-chevron-left"></i> Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/31/Eternalsynergy利用的漏洞分析（CVE-2017-0143）/" rel="prev" title="Eternalsynergy利用的漏洞分析（CVE-2017-0143）">
+                Eternalsynergy利用的漏洞分析（CVE-2017-0143） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#SOS-扩展"><span class="nav-number">1.</span> <span class="nav-text">SOS 扩展</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#案例1：POWERSHELL分析"><span class="nav-number">2.</span> <span class="nav-text">案例1：POWERSHELL分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#示例1：启动过程API"><span class="nav-number">2.1.</span> <span class="nav-text">示例1：启动过程API</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例2：DownloadFile-API"><span class="nav-number">2.2.</span> <span class="nav-text">示例2：DownloadFile API</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#案例2-NET-UNPACK"><span class="nav-number">3.</span> <span class="nav-text">案例2:  .NET UNPACK</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#静态分析"><span class="nav-number">3.1.</span> <span class="nav-text">静态分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#XOR-变种"><span class="nav-number">3.1.1.</span> <span class="nav-text">XOR 变种</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AES-变种"><span class="nav-number">3.1.2.</span> <span class="nav-text">AES 变种</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#共同点"><span class="nav-number">3.1.3.</span> <span class="nav-text">共同点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用windbg动态调试"><span class="nav-number">3.2.</span> <span class="nav-text">用windbg动态调试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#先看-NET-4"><span class="nav-number">3.2.1.</span> <span class="nav-text">先看 .NET 4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#再看-NET-2-、3"><span class="nav-number">3.2.2.</span> <span class="nav-text">再看 .NET 2 、3</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#自动脱壳"><span class="nav-number">4.</span> <span class="nav-text">自动脱壳</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#python-脚本"><span class="nav-number">5.</span> <span class="nav-text">python 脚本</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#示例1"><span class="nav-number">5.1.</span> <span class="nav-text">示例1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例2"><span class="nav-number">5.2.</span> <span class="nav-text">示例2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例3"><span class="nav-number">5.3.</span> <span class="nav-text">示例3</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例4"><span class="nav-number">5.4.</span> <span class="nav-text">示例4</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#附录"><span class="nav-number">7.</span> <span class="nav-text">附录</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#WinDBG-脚本"><span class="nav-number">7.1.</span> <span class="nav-text">WinDBG 脚本</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/';
+          this.page.identifier = '2017/08/31/翻译——在windbg的帮助下解剖.NET/';
+          this.page.title = '翻译——在windbg的帮助下解剖.NET';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

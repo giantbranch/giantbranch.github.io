@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="fuzzing,集群fuzz,ClusterFuzz,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="获取代码123git clone https://github.com/google/clusterfuzzcd clusterfuzzgit pull  处于稳定性考虑，建议使用最新的发行版本，而不是master分支 1git checkout tags/vX.Y.Z  通过git tag -l或者在github上面可以看到发行版本 12345678910111213141516171819$">
+<meta name="keywords" content="fuzzing,集群fuzz,ClusterFuzz">
+<meta property="og:type" content="article">
+<meta property="og:title" content="本地使用ClusterFuzz">
+<meta property="og:url" content="https://www.giantbranch.cn/2020/05/18/本地使用ClusterFuzz/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="获取代码123git clone https://github.com/google/clusterfuzzcd clusterfuzzgit pull  处于稳定性考虑，建议使用最新的发行版本，而不是master分支 1git checkout tags/vX.Y.Z  通过git tag -l或者在github上面可以看到发行版本 12345678910111213141516171819$">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1589859650957.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1589857858928.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1589858484769.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1589860036051.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1590118948172.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1590461412884.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1590463028347.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1590463077790.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1590464251581.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1590465999387.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1590466461007.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1590466672810.png">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.134Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="本地使用ClusterFuzz">
+<meta name="twitter:description" content="获取代码123git clone https://github.com/google/clusterfuzzcd clusterfuzzgit pull  处于稳定性考虑，建议使用最新的发行版本，而不是master分支 1git checkout tags/vX.Y.Z  通过git tag -l或者在github上面可以看到发行版本 12345678910111213141516171819$">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1589859650957.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2020/05/18/本地使用ClusterFuzz/">
+
+
+
+
+
+  <title>本地使用ClusterFuzz | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2020/05/18/本地使用ClusterFuzz/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">本地使用ClusterFuzz</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-05-18T00:00:00+00:00">
+                2020-05-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/05/18/本地使用ClusterFuzz/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/05/18/本地使用ClusterFuzz/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="获取代码"><a href="#获取代码" class="headerlink" title="获取代码"></a>获取代码</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/google/clusterfuzz</span><br><span class="line">cd clusterfuzz</span><br><span class="line">git pull</span><br></pre></td></tr></table></figure>
+
+<p>处于稳定性考虑，建议使用最新的发行版本，而不是master分支</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout tags/vX.Y.Z</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>git tag -l</code>或者在github上面可以看到发行版本</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ git tag -l</span><br><span class="line">1.2.0</span><br><span class="line">1.2.1</span><br><span class="line">reproduce-tool-stable</span><br><span class="line">v1.0.0</span><br><span class="line">v1.0.1</span><br><span class="line">v1.1.0</span><br><span class="line">v1.3.0</span><br><span class="line">v1.4.0</span><br><span class="line">v1.5.0</span><br><span class="line">v1.5.1</span><br><span class="line">v1.6.0</span><br><span class="line">v1.6.1</span><br><span class="line">v1.7.0</span><br><span class="line">v1.7.1</span><br><span class="line">v1.8.0</span><br><span class="line">v1.9.0</span><br><span class="line">v2.0.0</span><br><span class="line">v2.0.1</span><br></pre></td></tr></table></figure>
+
+<p>我用v2.0.1</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout tags/v2.0.1`</span><br></pre></td></tr></table></figure>
+
+<h1 id="依赖"><a href="#依赖" class="headerlink" title="依赖"></a>依赖</h1><p>首先谷歌建议使用python 3.7，python2已经不支持</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ python butler.py</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;butler.py&quot;, line 33, in &lt;module&gt;</span><br><span class="line">    guard.check()</span><br><span class="line">  File &quot;src/local/butler/guard.py&quot;, line 41, in check</span><br><span class="line">    check_virtualenv()</span><br><span class="line">  File &quot;src/local/butler/guard.py&quot;, line 30, in check_virtualenv</span><br><span class="line">    &apos;You are not in a virtual env environment. Please install it with&apos;</span><br><span class="line">Exception: You are not in a virtual env environment. Please install it with `./local/install_deps.bash` or load it with `pipenv shell`. Then, you can re-run this command.</span><br></pre></td></tr></table></figure>
+
+<p>安装python 3.7：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">apt-get install -y apt-transport-https software-properties-common build-essential git curl \</span><br><span class="line">      libssl-dev zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev \</span><br><span class="line">      libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev liblzma-dev libffi-dev uuid-dev</span><br><span class="line">	  </span><br><span class="line">curl -sS https://www.python.org/ftp/python/3.7.7/Python-3.7.7.tgz | tar -C /tmp -xzv &amp;&amp; \</span><br><span class="line">      cd /tmp/Python-3.7.7 &amp;&amp; \</span><br><span class="line">      ./configure --enable-optimizations &amp;&amp; make altinstall &amp;&amp; \</span><br><span class="line">      rm -rf /tmp/Python-3.7.7</span><br></pre></td></tr></table></figure>
+
+<p><strong>安装golang</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo add-apt-repository ppa:longsleep/golang-backports</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install golang-go</span><br></pre></td></tr></table></figure>
+
+<p>修改./local/install_deps_linux.bash中的 <code>bower install</code> 为<code>bower install --allow-root</code>（因为bower install的时候默认不允许root用户）</p>
+<p>最后执行<code>./local/install_deps.bash</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./local/install_deps.bash</span><br></pre></td></tr></table></figure>
+
+<h1 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h1><p>运行<code>python3.7 -m pipenv shell</code>即可进入clusterfuzzer需要的环境</p>
+<p>我们运行<code>python butler.py</code>，就看到所有功能了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">usage: butler.py [-h]</span><br><span class="line">                 &#123;bootstrap,py_unittest,js_unittest,format,lint,package,deploy,run_server,run,run_bot,remote,clean_indexes,create_config,integration_tests,reproduce&#125;</span><br><span class="line">                 ...</span><br><span class="line"></span><br><span class="line">Butler is here to help you with command-line tasks.</span><br><span class="line"></span><br><span class="line">positional arguments:</span><br><span class="line">  &#123;bootstrap,py_unittest,js_unittest,format,lint,package,deploy,run_server,run,run_bot,remote,clean_indexes,create_config,integration_tests,reproduce&#125;</span><br><span class="line">    bootstrap           Install all required dependencies for running an</span><br><span class="line">                        appengine, a bot,and a mapreduce locally.</span><br><span class="line">    py_unittest         Run Python unit tests.</span><br><span class="line">    js_unittest         Run Javascript unit tests.</span><br><span class="line">    format              Format changed code in current branch.</span><br><span class="line">    lint                Lint changed code in current branch.</span><br><span class="line">    package             Package clusterfuzz with a staging revision</span><br><span class="line">    deploy              Deploy to Appengine</span><br><span class="line">    run_server          Run the local Clusterfuzz server.</span><br><span class="line">    run                 Run a one-off script against a datastore (e.g.</span><br><span class="line">                        migration).</span><br><span class="line">    run_bot             Run a local clusterfuzz bot.</span><br><span class="line">    remote              Run command-line tasks on a remote bot.</span><br><span class="line">    clean_indexes       Clean up undefined indexes (in index.yaml).</span><br><span class="line">    create_config       Create a new deployment config.</span><br><span class="line">    integration_tests   Run end-to-end integration tests.</span><br><span class="line">    reproduce           Reproduce a crash or error from a test case.</span><br><span class="line"></span><br><span class="line">optional arguments:</span><br><span class="line">  -h, --help            show this help message and exit</span><br></pre></td></tr></table></figure>
+
+<h1 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h1><p>第一次运行，初始化数据，试了下跟<code>python butler.py bootstrap</code>执行的功能一样。。。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python butler.py run_server --bootstrap</span><br></pre></td></tr></table></figure>
+
+<p>假如不是第一次就直接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python butler.py run_server</span><br></pre></td></tr></table></figure>
+
+<p>如果依赖早已安装好，使用下面的就可以跳过依赖的再次安装</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python butler.py run_server --skip-install-deps</span><br></pre></td></tr></table></figure>
+
+<p>最后终于起来了，访问9000端口即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">$ python butler.py run_server --skip-install-deps</span><br><span class="line">Running: pkill -KILL -f &quot;dev_appserver.py&quot;</span><br><span class="line">| Return code is non-zero (-9).</span><br><span class="line">Running: pkill -KILL -f &quot;CloudDatastore.jar&quot;</span><br><span class="line">| Return code is non-zero (-9).</span><br><span class="line">Running: pkill -KILL -f &quot;pubsub-emulator&quot;</span><br><span class="line">| Return code is non-zero (-9).</span><br><span class="line">Running: pkill -KILL -f &quot;run_bot&quot;</span><br><span class="line">| Return code is non-zero (-9).</span><br><span class="line">Created symlink: source: /root/clusterfuzz/configs/test, target /root/clusterfuzz/src/appengine/config.</span><br><span class="line">Created symlink: source: /root/clusterfuzz/src/protos, target /root/clusterfuzz/src/appengine/protos.</span><br><span class="line">Created symlink: source: /root/clusterfuzz/src/python, target /root/clusterfuzz/src/appengine/python.</span><br><span class="line">Running: python polymer_bundler.py (cwd=&apos;local&apos;)</span><br><span class="line">| App Engine templates are up to date.</span><br><span class="line">Created symlink: source: /root/clusterfuzz/local/storage/local_gcs, target /root/clusterfuzz/src/appengine/local_gcs.</span><br><span class="line">Running: gunicorn -b :9000 main:app (cwd=&apos;src/appengine&apos;)</span><br><span class="line">| [2020-05-18 22:51:55 +0800] [31835] [INFO] Starting gunicorn 20.0.4</span><br><span class="line">| [2020-05-18 22:51:55 +0800] [31835] [INFO] Listening at: http://0.0.0.0:9000 (31835)</span><br><span class="line">| [2020-05-18 22:51:55 +0800] [31835] [INFO] Using worker: sync</span><br><span class="line">| [2020-05-18 22:51:55 +0800] [31841] [INFO] Booting worker with pid: 31841</span><br></pre></td></tr></table></figure>
+
+<p>访问9000端口如下：</p>
+<p><img src="http://pic.giantbranch.cn/pic/1589859650957.png" alt></p>
+<p>之后启动bot<code>python butler.py run_bot --name my-bot /path/to/my-bot</code>，比如下面</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python butler.py run_bot --name my-fuzzing-bot `pwd`/my-fuzzing-bot</span><br></pre></td></tr></table></figure>
+
+<p>有时候空闲运行时间过长就退出了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[1]    1446 killed     python butler.py run_bot --name my-fuzzing-bot `pwd`/my-fuzzing-bot</span><br></pre></td></tr></table></figure>
+
+<p>我们执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python butler.py run_bot `pwd`/my-fuzzing-bot</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ python butler.py run_bot `pwd`/my-fuzzing-bot</span><br><span class="line">Created symlink: source: /root/clusterfuzz/configs/test, target /root/clusterfuzz/src/appengine/config.</span><br><span class="line">Bot directory already exists. Re-using...</span><br><span class="line">| /root/clusterfuzz/my-fuzzing-bot/clusterfuzz/src/python/crash_analysis/stack_parsing/stack_analyzer.py:84: FutureWarning: Possible nested set at position 4</span><br><span class="line">|   r&apos;\s*[[][^]]*[:]([^](]*).*[]].*Check failed[:]\s*(.*)&apos;)</span><br><span class="line">| /root/clusterfuzz/my-fuzzing-bot/clusterfuzz/src/python/crash_analysis/stack_parsing/stack_analyzer.py:202: FutureWarning: Possible nested set at position 3</span><br><span class="line">|   r&apos;.*[[][^]]*[:]([^](]*).*[]].*Security CHECK failed[:]\s*(.*)\.\s*&apos;)</span><br><span class="line">| /root/clusterfuzz/my-fuzzing-bot/clusterfuzz/src/python/crash_analysis/stack_parsing/stack_analyzer.py:204: FutureWarning: Possible nested set at position 3</span><br><span class="line">|   r&apos;.*[[][^]]*[:]([^](]*).*[]].*Security DCHECK failed[:]\s*(.*)\.\s*&apos;)</span><br></pre></td></tr></table></figure>
+
+<p>在网页上也可以看bot的状态</p>
+<p><img src="http://pic.giantbranch.cn/pic/1589857858928.png" alt></p>
+<p>可以看到bot应该是将clusterfuzz复制了一份</p>
+<p><img src="http://pic.giantbranch.cn/pic/1589858484769.png" alt></p>
+<p>查看bot的log</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /path/to/my-bot/clusterfuzz/bot/logs</span><br><span class="line">tail -f bot.log</span><br></pre></td></tr></table></figure>
+
+<p>可以看到先由于没有fuzzing任务所以显示<code>Failed to get any fuzzing tasks</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ tail bot.log</span><br><span class="line">2020-05-19 11:16:49,456 - run_bot - INFO - Using local source, skipping source code update.</span><br><span class="line">2020-05-19 11:16:49,457 - run_bot - INFO - Running platform initialization scripts.</span><br><span class="line">2020-05-19 11:16:49,993 - run_bot - INFO - Completed running platform initialization scripts.</span><br><span class="line">2020-05-19 11:16:50,374 - run_bot - ERROR - Failed to get any fuzzing tasks. This should not happen.</span><br><span class="line">NoneType: None</span><br><span class="line">2020-05-19 11:21:50,478 - run_bot - INFO - Using local source, skipping source code update.</span><br><span class="line">2020-05-19 11:21:50,478 - run_bot - INFO - Running platform initialization scripts.</span><br><span class="line">2020-05-19 11:21:51,009 - run_bot - INFO - Completed running platform initialization scripts.</span><br><span class="line">2020-05-19 11:21:51,194 - run_bot - ERROR - Failed to get any fuzzing tasks. This should not happen.</span><br><span class="line">NoneType: None</span><br></pre></td></tr></table></figure>
+
+<h1 id="实际fuzz实例"><a href="#实际fuzz实例" class="headerlink" title="实际fuzz实例"></a>实际fuzz实例</h1><p>ClusterFuzz支持覆盖率指导的模糊测试（libfuzzer和afl）和黑盒测试</p>
+<p>接下来我们以心脏出血漏洞Heartbleed为例</p>
+<p>使用这个平台，我们首先的编译出自己的fuzzer或者二进制程序</p>
+<p>文档已经提供了针对OpenSSL的构建libfuzzer的代码，这样我们就得到了<code>openssl-fuzzer-build.zip</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># Download and unpack a vulnerable version of OpenSSL:</span><br><span class="line">curl -O https://ftp.openssl.org/source/old/1.0.1/openssl-1.0.1f.tar.gz</span><br><span class="line">tar xf openssl-1.0.1f.tar.gz</span><br><span class="line"></span><br><span class="line"># Build OpenSSL with ASan and fuzzer instrumentation:</span><br><span class="line">cd openssl-1.0.1f/</span><br><span class="line">./config</span><br><span class="line"></span><br><span class="line"># $CC must be pointing to clang binary, see the &quot;compiler section&quot; link above.</span><br><span class="line">make CC=&quot;$CC -g -fsanitize=address,fuzzer-no-link&quot;</span><br><span class="line">cd ..</span><br><span class="line"></span><br><span class="line"># Download the fuzz target and its data dependencies:</span><br><span class="line">curl -O https://raw.githubusercontent.com/google/clusterfuzz/master/docs/setting-up-fuzzing/heartbleed/handshake-fuzzer.cc</span><br><span class="line">curl -O https://raw.githubusercontent.com/google/clusterfuzz/master/docs/setting-up-fuzzing/heartbleed/server.key</span><br><span class="line">curl -O https://raw.githubusercontent.com/google/clusterfuzz/master/docs/setting-up-fuzzing/heartbleed/server.pem</span><br><span class="line"></span><br><span class="line"># Build OpenSSL fuzz target for ClusterFuzz ($CXX points to clang++ binary):</span><br><span class="line">$CXX -g handshake-fuzzer.cc -fsanitize=address,fuzzer openssl-1.0.1f/libssl.a \</span><br><span class="line">  openssl-1.0.1f/libcrypto.a -std=c++17 -Iopenssl-1.0.1f/include/ -lstdc++fs   \</span><br><span class="line">  -ldl -lstdc++ -o handshake-fuzzer</span><br><span class="line"></span><br><span class="line">zip openssl-fuzzer-build.zip handshake-fuzzer server.key server.pem</span><br></pre></td></tr></table></figure>
+
+<p>之后回到平台（9000端口那个），来到Jobs，看到ADD NEW JOB表单</p>
+<p><img src="http://pic.giantbranch.cn/pic/1589860036051.png" alt></p>
+<p>依次填写：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">“libfuzzer_asan_linux_openssl” for the “Name”.</span><br><span class="line">“LINUX” for the “Platform”.</span><br><span class="line">“libfuzzer” and “engine_asan” for the “Templates”.</span><br><span class="line">CORPUS_PRUNE = True for the “Environment String”.</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>CORPUS_PRUNE = True</code>是开启语料库修剪</p>
+<p>最后将我们<code>openssl-fuzzer-build.zip</code>选择文件，再add即可</p>
+<p>下面这个是之前忘记装go，导致模板没有导入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">但是报错，Invalid template name</span><br><span class="line"></span><br><span class="line">不过好像确实我这个搭建完一个template也没有啊，不填template又上传不了</span><br><span class="line"></span><br><span class="line">不过看页面确实没有template，我在源码中找到了设置template的代码`src/local/butler/scripts/setup.py`</span><br><span class="line"></span><br><span class="line">可能是初始化失败了，导致没有template，所以我手动添加了libfuzzer和engine_asan</span><br><span class="line"></span><br><span class="line">![](http://pic.giantbranch.cn/pic/1589876155414.png)</span><br><span class="line"></span><br><span class="line">![](http://pic.giantbranch.cn/pic/1589876185250.png)</span><br></pre></td></tr></table></figure>
+
+<p>到后面是上传压缩包失败，抓包好像是请求是发给localhost的gcs的，但是服务器在远程，那当然失败了</p>
+<p>所以在服务器那边装个图形界面，终于ko了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1590118948172.png" alt></p>
+<p>还有一个解决方案，就是修改代码，让gcs监听0.0.0.0，请求的url也相应修改</p>
+<p><a href="https://github.com/lookfwd/getting-started-clusterfuzz-local-in-aws" target="_blank" rel="noopener">https://github.com/lookfwd/getting-started-clusterfuzz-local-in-aws</a></p>
+<p>上传成功后，就可以来到Fuzzer页面，选择libfuzzer那行的edit，将我们新建的jobs勾选上，之后提交即可</p>
+<p><img src="http://pic.giantbranch.cn/pic/1590461412884.png" alt></p>
+<p>可以看到libfuzzer这里也有updated</p>
+<p><img src="http://pic.giantbranch.cn/pic/1590463028347.png" alt></p>
+<p>查看bot这里，可以看到my-bot2先拿到了任务</p>
+<p><img src="http://pic.giantbranch.cn/pic/1590463077790.png" alt></p>
+<p>从log也可以看到</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ tail ./my-bot2/clusterfuzz/bot/logs/bot.log</span><br><span class="line">2020-05-26 11:16:22,389 - run_bot - INFO - Completed running platform initialization scripts.</span><br><span class="line">2020-05-26 11:16:23,509 - run_bot - INFO - Executing command &apos;fuzz libFuzzer libfuzzer_asan_linux_openssl&apos;</span><br><span class="line">2020-05-26 11:16:28,551 - run_bot - INFO - Setting up fuzzer and data bundles.</span><br><span class="line">2020-05-26 11:16:29,779 - run_bot - INFO - Retrieving custom binary build r1.</span><br><span class="line">2020-05-26 11:17:47,563 - run_bot - INFO - Unpacked 3/3.</span><br><span class="line">2020-05-26 11:17:47,578 - run_bot - INFO - Picked fuzz target handshake-fuzzer for fuzzing.</span><br><span class="line">2020-05-26 11:17:47,579 - run_bot - INFO - Retrieved custom binary build r1.</span><br><span class="line">2020-05-26 11:17:47,579 - run_bot - INFO - Setup application path.</span><br><span class="line">2020-05-26 11:17:48,461 - run_bot - INFO - Checking for bad build.</span><br><span class="line">2020-05-26 11:17:49,769 - run_bot - INFO - Recorded use of fuzz target libFuzzer_handshake-fuzzer.</span><br></pre></td></tr></table></figure>
+
+<p>但是报错了,<code>ERROR - libFuzzer: engine encountered an error (target=handshake-fuzzer).</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ tail bot.log</span><br><span class="line">2020-05-26 11:36:19,370 - run_bot - INFO - Strategy pool was generated according to default parameters. Chosen strategies: value_profile, corpus_mutations_ml_rnn, corpus_subset</span><br><span class="line">2020-05-26 11:36:19,583 - run_bot - INFO - Corpus is empty. Skip generation.</span><br><span class="line">2020-05-26 11:36:19,822 - run_bot - ERROR - libFuzzer: engine encountered an error (target=handshake-fuzzer).</span><br><span class="line">NoneType: None</span><br><span class="line">2020-05-26 11:36:19,824 - run_bot - INFO - Skipped corpus merge since no new units added by fuzzing.</span><br><span class="line">2020-05-26 11:36:19,824 - run_bot - INFO - Extracting and analyzing recommended dictionary for handshake-fuzzer.</span><br><span class="line">2020-05-26 11:36:19,825 - run_bot - INFO - No recommended dictionary in output from handshake-fuzzer.</span><br><span class="line">2020-05-26 11:36:19,825 - run_bot - INFO - Used strategies.</span><br><span class="line">2020-05-26 11:36:20,287 - run_bot - INFO - Uploaded file to logs bucket.</span><br><span class="line">2020-05-26 11:36:20,288 - run_bot - INFO - Uploaded file to logs bucket.</span><br></pre></td></tr></table></figure>
+
+<p>后来又分配给第一个bot了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1590464251581.png" alt></p>
+<p>一直没结果，我就换了一个简单的程序，命名项目为libfuzzer_asan_my_project</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdint.h&gt;</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">extern &quot;C&quot; int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) &#123;</span><br><span class="line">  uint8_t tmp = Data[10];</span><br><span class="line">  return 0;  // Non-zero return values are reserved for future use.</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>提交后，不一会就有minimize任务了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1590465999387.png" alt></p>
+<p>这个简单程序的结果就出来了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1590466461007.png" alt></p>
+<p>点进去可以查看更多信息</p>
+<p><img src="http://pic.giantbranch.cn/pic/1590466672810.png" alt></p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://google.github.io/clusterfuzz/" target="_blank" rel="noopener">https://google.github.io/clusterfuzz/</a><br><a href="https://github.com/lookfwd/getting-started-clusterfuzz-local-in-aws" target="_blank" rel="noopener">https://github.com/lookfwd/getting-started-clusterfuzz-local-in-aws</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2020/05/18/本地使用ClusterFuzz/" title="本地使用ClusterFuzz">https://www.giantbranch.cn/2020/05/18/本地使用ClusterFuzz/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/fuzzing/" rel="tag"># fuzzing</a>
+          
+            <a href="/tags/集群fuzz/" rel="tag"># 集群fuzz</a>
+          
+            <a href="/tags/ClusterFuzz/" rel="tag"># ClusterFuzz</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/04/17/git查看某个文件的提交记录/" rel="next" title="git查看某个文件的提交记录">
+                <i class="fa fa-chevron-left"></i> git查看某个文件的提交记录
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/05/22/ClusterFuzz的bot源码(fuzz task)阅读/" rel="prev" title="ClusterFuzz的bot源码(fuzz task)阅读">
+                ClusterFuzz的bot源码(fuzz task)阅读 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#获取代码"><span class="nav-number">1.</span> <span class="nav-text">获取代码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#依赖"><span class="nav-number">2.</span> <span class="nav-text">依赖</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#环境搭建"><span class="nav-number">3.</span> <span class="nav-text">环境搭建</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#初始化"><span class="nav-number">4.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实际fuzz实例"><span class="nav-number">5.</span> <span class="nav-text">实际fuzz实例</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2020/05/18/本地使用ClusterFuzz/';
+          this.page.identifier = '2020/05/18/本地使用ClusterFuzz/';
+          this.page.title = '本地使用ClusterFuzz';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

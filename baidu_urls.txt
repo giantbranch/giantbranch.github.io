@@ -1,0 +1,160 @@
+https://www.giantbranch.cn/2023/07/21/如何从活动的Linux恶意软件中恢复已删除的二进制文件/
+https://www.giantbranch.cn/2023/07/21/检测Linux二进制文件污染/
+https://www.giantbranch.cn/2023/07/20/使用Linux进程环境变量进行取证/
+https://www.giantbranch.cn/2023/06/29/pastis样本同步代码阅读记录/
+https://www.giantbranch.cn/2023/06/20/试用clusterfuzzlite/
+https://www.giantbranch.cn/2022/06/13/Kubernetes Goat：Kubernetes 漏洞靶场/
+https://www.giantbranch.cn/2022/04/26/AFL fuzz性能提升tips/
+https://www.giantbranch.cn/2022/04/21/BinAbsInspector插件的使用/
+https://www.giantbranch.cn/2021/11/02/使用go-fuzz进行简单的fuzzing实践/
+https://www.giantbranch.cn/2021/08/27/afl源码阅读之afl-showmap/
+https://www.giantbranch.cn/2021/07/09/libdislocator原理及afl++的更新/
+https://www.giantbranch.cn/2021/06/25/syzkaller的安装与运行/
+https://www.giantbranch.cn/2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/
+https://www.giantbranch.cn/2020/12/25/winafl编译与测试/
+https://www.giantbranch.cn/2020/09/08/通过编译器转换(llvm pass)规避模糊测试的一些障碍/
+https://www.giantbranch.cn/2020/08/25/使用afl来fuzz libtiff/
+https://www.giantbranch.cn/2020/08/21/冰蝎 Behinder_v3.0 Beta 3 重点更新简析/
+https://www.giantbranch.cn/2020/08/18/哥斯拉Godzilla PHP Webshell分析与检测特征提取/
+https://www.giantbranch.cn/2020/08/17/冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测/
+https://www.giantbranch.cn/2020/05/24/一个2016年afl的议题记录：BSidesSF 2016 - Fuzz Smarter, Not Harder (An afl-fuzz Primer) (Craig Young)/
+https://www.giantbranch.cn/2020/05/22/ClusterFuzz的bot源码(fuzz task)阅读/
+https://www.giantbranch.cn/2020/05/18/本地使用ClusterFuzz/
+https://www.giantbranch.cn/2020/04/17/git查看某个文件的提交记录/
+https://www.giantbranch.cn/2020/03/18/FuzzManager配置与使用/
+https://www.giantbranch.cn/2020/03/08/libfuzzer 文档/
+https://www.giantbranch.cn/2020/03/06/libprotobuf-mutator学习/
+https://www.giantbranch.cn/2020/01/15/CTF QEMU 虚拟机逃逸总结/
+https://www.giantbranch.cn/2020/01/13/CTF QEMU 虚拟机逃逸之强网杯2019线上赛qwct/
+https://www.giantbranch.cn/2020/01/08/CTF QEMU 虚拟机逃逸之XNUCA 2018 SSD/
+https://www.giantbranch.cn/2020/01/06/CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3/
+https://www.giantbranch.cn/2020/01/05/QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读/
+https://www.giantbranch.cn/2020/01/02/CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu/
+https://www.giantbranch.cn/2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/
+https://www.giantbranch.cn/2019/11/04/windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞/
+https://www.giantbranch.cn/2019/10/28/CFG防护机制简单实践与介绍/
+https://www.giantbranch.cn/2019/10/28/ROP攻击缓解新思路——减少ROP Gadgets的数量/
+https://www.giantbranch.cn/2019/10/25/翻译——N种脱壳安卓恶意软件的方式/
+https://www.giantbranch.cn/2019/10/11/“远古时代”的隐秘网络通信简析/
+https://www.giantbranch.cn/2019/10/09/QEMU 虚拟机逃逸漏洞（CVE-2019-14378）漏洞分析/
+https://www.giantbranch.cn/2019/10/08/冰蝎动态二进制加密WebShell的检测/
+https://www.giantbranch.cn/2019/09/29/CVE-2019-0708 微软远程桌面服务远程代码执行漏洞之漏洞分析与漏洞利用/
+https://www.giantbranch.cn/2019/09/04/MITRE ATT&CK 入门/
+https://www.giantbranch.cn/2019/08/07/在ubuntu 18.04上编译VirtualBox/
+https://www.giantbranch.cn/2019/07/17/VM escape 之 QEMU Case Study/
+https://www.giantbranch.cn/2019/06/20/路由器0day漏洞挖掘实战/
+https://www.giantbranch.cn/2019/06/19/CVE-2019-5736 docker escape 简要分析/
+https://www.giantbranch.cn/2019/05/24/yara的安装与使用/
+https://www.giantbranch.cn/2019/05/15/CVE-2019-0708 微软远程桌面服务远程代码执行漏洞分析之补丁分析/
+https://www.giantbranch.cn/2019/03/06/美国国安局逆向工程框架——Ghidra的简单使用/
+https://www.giantbranch.cn/2019/03/01/Chrome浏览器打开PDF文件信息泄露漏洞简析/
+https://www.giantbranch.cn/2019/01/08/No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析/
+https://www.giantbranch.cn/2018/12/29/CTF PWN之house of orange/
+https://www.giantbranch.cn/2018/12/14/IO_FILE 利用的基础知识/
+https://www.giantbranch.cn/2018/12/13/CTF PWN之任意地址写NULL到house of force——myhouse/
+https://www.giantbranch.cn/2018/12/11/CTF PWN之堆漏洞转化为栈漏洞利用——bookstore/
+https://www.giantbranch.cn/2018/12/08/CTF PWN之fastbin实例——littlenote/
+https://www.giantbranch.cn/2018/12/01/从ida的flair工具去理解它是怎么识别出静态链接程序中的库函数的/
+https://www.giantbranch.cn/2018/11/26/理解别人写的简单的重定位程序/
+https://www.giantbranch.cn/2018/11/19/深入bash反弹shell的那条命令/
+https://www.giantbranch.cn/2018/11/09/车联网安全竞赛，汽车攻防大赛的比赛简介及攻略/
+https://www.giantbranch.cn/2018/11/07/CTF PWN专用虚拟机/
+https://www.giantbranch.cn/2018/10/09/通过chkrootkit学习如何在linux下检测RootKit/
+https://www.giantbranch.cn/2018/09/30/没有libc6-dbg的符号如何查找main_arena/
+https://www.giantbranch.cn/2018/09/30/评论系统更新为Disqus，原来的来必力太垃圾了/
+https://www.giantbranch.cn/2018/09/24/如何安全快速地部署多道ctf pwn比赛题目/
+https://www.giantbranch.cn/2018/09/17/ctf pwn题目的部署/
+https://www.giantbranch.cn/2018/09/12/Redis删库跑路加勒索？也有挖矿的呢/
+https://www.giantbranch.cn/2018/08/13/house of force —— BCTF 2016-bcloud/
+https://www.giantbranch.cn/2018/08/13/虚拟机中的kali linux没有了eth0，只有lo接口了怎么办/
+https://www.giantbranch.cn/2018/08/11/Linux Kernel Exploitation 理论学习/
+https://www.giantbranch.cn/2018/07/25/全端口监控的实现/
+https://www.giantbranch.cn/2018/07/24/安卓安全研究的list收集/
+https://www.giantbranch.cn/2018/07/22/docker学习笔记/
+https://www.giantbranch.cn/2018/07/16/angr 漏洞发现官方例子 —— strcpy_find/
+https://www.giantbranch.cn/2018/07/11/ARM中的进程内存和内存破坏/
+https://www.giantbranch.cn/2018/07/10/《不止代码》的要点/
+https://www.giantbranch.cn/2018/07/02/CVE-2013-3660-Windows win32k!EPATHOBJpprFlattenRec 指针未初始化本地提权漏洞/
+https://www.giantbranch.cn/2018/06/26/CTF PWN 做题环境一键搭建脚本/
+https://www.giantbranch.cn/2018/06/17/利用vps搭建离线下载服务器/
+https://www.giantbranch.cn/2018/06/13/CVE-2011-2005-Microsoft Windows Afd.sys 本地提权漏洞/
+https://www.giantbranch.cn/2018/06/12/Qihoo 360 Security Guard 6.1.5.1009 - breg device drivers Privilege Escalation/
+https://www.giantbranch.cn/2018/06/11/逆向一个简单的VM crackme/
+https://www.giantbranch.cn/2018/06/10/CVE-2014-0160-OpenSSL TLS 数组越界访问漏洞（“心脏出血”漏洞）/
+https://www.giantbranch.cn/2018/06/07/Fuzzing with Spike/
+https://www.giantbranch.cn/2018/06/06/CVE-2011-2110 Adobe Flash Player 数组越界索引漏洞/
+https://www.giantbranch.cn/2018/06/05/一道pwn题——aleph1/
+https://www.giantbranch.cn/2018/05/30/CVE-2015-0313 Adobe Flash Player Workers ByteArray 释放重引用漏洞/
+https://www.giantbranch.cn/2018/05/29/CVE-2013-3346-Adobe Reader ToolButton 释放重引用漏洞/
+https://www.giantbranch.cn/2018/05/28/CVE-2013-1347-Microsoft IE CGenericElement 释放重引用漏洞/
+https://www.giantbranch.cn/2018/05/21/BUGSCAM功能实现跟踪解读/
+https://www.giantbranch.cn/2018/05/15/路由器漏洞分析入门：D-Link Service.Cgi远程命令执行漏洞/
+https://www.giantbranch.cn/2018/05/13/DEFCON China 参会感受与要点记录/
+https://www.giantbranch.cn/2018/05/08/铁三数据赛+企业赛必看必收藏必实践的文章/
+https://www.giantbranch.cn/2018/05/06/AFL fuzz工具初探/
+https://www.giantbranch.cn/2018/05/03/D-Link_DIR-815_路由器多次溢出分析/
+https://www.giantbranch.cn/2018/04/16/一次qemu动态调试路由程序的记录/
+https://www.giantbranch.cn/2018/04/02/CTF线下赛的一些有用的东西/
+https://www.giantbranch.cn/2018/03/21/用Firmware Analysis Toolkit简单地启动一个模拟路由/
+https://www.giantbranch.cn/2018/03/12/CVE-2011-0065-Firefox 3.6.16 mChannel 释放重引用漏洞/
+https://www.giantbranch.cn/2018/03/11/PortDog端口扫描异常检测工具源码简析/
+https://www.giantbranch.cn/2018/02/06/POC 2017的一些要点记录/
+https://www.giantbranch.cn/2018/02/06/为什么我毕业后还偶尔打打ctf比赛/
+https://www.giantbranch.cn/2018/02/04/apache和nginx设置反向代理/
+https://www.giantbranch.cn/2018/02/02/简单实践Radare2/
+https://www.giantbranch.cn/2018/02/01/Murus 1.4.11 - Local Privilege Escalation 漏洞简析/
+https://www.giantbranch.cn/2018/02/01/读《如何做好首席安全官 》/
+https://www.giantbranch.cn/2018/01/28/搭建mhn蜜罐管理系统并部署蜜罐/
+https://www.giantbranch.cn/2018/01/22/简单实践传说中的2T每秒的DRDoS/
+https://www.giantbranch.cn/2018/01/21/使用远程线程注入DLL/
+https://www.giantbranch.cn/2018/01/21/调用dll里面的函数的两种方法/
+https://www.giantbranch.cn/2018/01/20/Windows服务编程/
+https://www.giantbranch.cn/2018/01/17/C++添加开机自启动的代码/
+https://www.giantbranch.cn/2018/01/17/Microsoft Excel CSV 文件代码执行/
+https://www.giantbranch.cn/2018/01/17/那些你用的到的C++注册表操作/
+https://www.giantbranch.cn/2018/01/11/一些加花软件的花指令收集/
+https://www.giantbranch.cn/2018/01/10/花指令编写基础之——如何让360认为helloworld是木马/
+https://www.giantbranch.cn/2018/01/09/对CPU漏洞Meltdown的理解/
+https://www.giantbranch.cn/2018/01/09/腾讯玄武实验室检测浏览器spectre的原理/
+https://www.giantbranch.cn/2018/01/02/CVE-2010-3974-Microsoft_Windows_传真封面编辑器双重释放漏洞/
+https://www.giantbranch.cn/2017/12/31/QEMU简单使用的笔记/
+https://www.giantbranch.cn/2017/12/31/3DSCTF RE Scared Flag/
+https://www.giantbranch.cn/2017/12/29/IDA mipsrop 简单使用/
+https://www.giantbranch.cn/2017/12/29/MIPS PWN 实例 —— UCTF 2016 ADD/
+https://www.giantbranch.cn/2017/12/28/CTF PWN 总结/
+https://www.giantbranch.cn/2017/12/26/0x00sec Memo Manager/
+https://www.giantbranch.cn/2017/12/24/3DSCTF Malware 3道题 writeup/
+https://www.giantbranch.cn/2017/12/24/UAF实例——RHme3 CTF 的一道题/
+https://www.giantbranch.cn/2017/12/22/3DSCTF PWN —— Cupheap/
+https://www.giantbranch.cn/2017/12/20/3DSCTF PWN —— Mr. Robof/
+https://www.giantbranch.cn/2017/12/19/SECCON 2017 baby_stack/
+https://www.giantbranch.cn/2017/12/18/rop emporium challenges wp/
+https://www.giantbranch.cn/2017/12/17/3dsctf Malware 第三题开机-锁机-分析及恢复方法/
+https://www.giantbranch.cn/2017/12/14/tmux简单使用/
+https://www.giantbranch.cn/2017/12/11/HBCTF whatiscanary/
+https://www.giantbranch.cn/2017/12/11/WHCTF 2017 note_sys/
+https://www.giantbranch.cn/2017/12/10/SECCON CTF 2017 Powerful_Shell/
+https://www.giantbranch.cn/2017/12/04/HITCON CTF 2014 stkof/
+https://www.giantbranch.cn/2017/11/23/CVE-2012-3569-VMWare OVF Tools 格式化字符串漏洞/
+https://www.giantbranch.cn/2017/11/16/CIA hive CRC16算法简述与C,python实现/
+https://www.giantbranch.cn/2017/11/07/heetianre300/
+https://www.giantbranch.cn/2017/11/06/在kali下使用gdb以源码方式调试glibc/
+https://www.giantbranch.cn/2017/10/31/CVE-2012-0809-Sudo格式化字符串漏洞/
+https://www.giantbranch.cn/2017/10/19/CVE-2017-11780补丁对比/
+https://www.giantbranch.cn/2017/10/13/驱动编程——字符串与链表/
+https://www.giantbranch.cn/2017/10/12/CVE-2013-2551-Microsoft Internet Explorer COALineDashStyleArray 整数溢出漏洞/
+https://www.giantbranch.cn/2017/10/11/在Windows下编译 Firefox/
+https://www.giantbranch.cn/2017/09/29/how2heap学习/
+https://www.giantbranch.cn/2017/09/27/Microsoft Windows CVE-2017-8710 XXE Information Disclosure 漏洞分析/
+https://www.giantbranch.cn/2017/09/18/gdb命令总结/
+https://www.giantbranch.cn/2017/08/31/Eternalsynergy利用的漏洞分析（CVE-2017-0143）/
+https://www.giantbranch.cn/2017/08/31/翻译——在windbg的帮助下解剖.NET/
+https://www.giantbranch.cn/2017/08/26/Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比/
+https://www.giantbranch.cn/2017/08/24/内核缓冲区溢出学习之第一个内核缓冲区溢出提权/
+https://www.giantbranch.cn/2017/08/22/从Exploit-Exercises Fusion Level02看linux绕过ASLR和NX的三种利用方式/
+https://www.giantbranch.cn/2017/08/19/CVE-2012-1876 IE MSHTML.DLL CalculateMinMax 堆溢出漏洞/
+https://www.giantbranch.cn/2017/08/19/windbg 调试笔记/
+https://www.giantbranch.cn/2017/08/19/当gflag不“奏效”——CVE-2013-0077 Microsoft DirectShow quartz.dll m2p文件堆溢出漏洞/
+https://www.giantbranch.cn/2017/08/03/Exploit Exercises Protostar Stack Part 0-7/
+https://www.giantbranch.cn/2017/05/20/我的安全之路——二进制与逆向篇/
+https://www.giantbranch.cn/2017/04/07/我的安全之路——Web安全篇/

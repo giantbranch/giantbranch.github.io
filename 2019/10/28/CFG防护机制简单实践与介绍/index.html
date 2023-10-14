@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="CFG,Control Flow Guard,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="简介Control Flow Guard（CFG）是较新的windows漏洞利用缓解措施，旨在解决内存损坏漏洞。 针对的是间接跳转的保护，比如call eax，jmp eax等。 CFG扩展了先前的漏洞缓解技术，例如GS，DEP和ASLR。 这个保护措施从Microsoft Visual Studio 2015及以上开始支持。 系统的话是从windows 8.1开始吧 简单来说就是在call ea">
+<meta name="keywords" content="CFG,Control Flow Guard">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CFG防护机制简单实践与介绍">
+<meta property="og:url" content="https://www.giantbranch.cn/2019/10/28/CFG防护机制简单实践与介绍/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="简介Control Flow Guard（CFG）是较新的windows漏洞利用缓解措施，旨在解决内存损坏漏洞。 针对的是间接跳转的保护，比如call eax，jmp eax等。 CFG扩展了先前的漏洞缓解技术，例如GS，DEP和ASLR。 这个保护措施从Microsoft Visual Studio 2015及以上开始支持。 系统的话是从windows 8.1开始吧 简单来说就是在call ea">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572249059150.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572249252901.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572249606995.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572249780529.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572249785150.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572249814969.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572249824741.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572249874450.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572249900124.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572250150577.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572250196484.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572250287858.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1572250312008.jpg">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.050Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CFG防护机制简单实践与介绍">
+<meta name="twitter:description" content="简介Control Flow Guard（CFG）是较新的windows漏洞利用缓解措施，旨在解决内存损坏漏洞。 针对的是间接跳转的保护，比如call eax，jmp eax等。 CFG扩展了先前的漏洞缓解技术，例如GS，DEP和ASLR。 这个保护措施从Microsoft Visual Studio 2015及以上开始支持。 系统的话是从windows 8.1开始吧 简单来说就是在call ea">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1572249059150.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2019/10/28/CFG防护机制简单实践与介绍/">
+
+
+
+
+
+  <title>CFG防护机制简单实践与介绍 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2019/10/28/CFG防护机制简单实践与介绍/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">CFG防护机制简单实践与介绍</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-28T00:00:00+00:00">
+                2019-10-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/10/28/CFG防护机制简单实践与介绍/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/10/28/CFG防护机制简单实践与介绍/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>Control Flow Guard（CFG）是较新的windows漏洞利用缓解措施，旨在解决内存损坏漏洞。 针对的是间接跳转的保护，比如call eax，jmp eax等。 CFG扩展了先前的漏洞缓解技术，例如GS，DEP和ASLR。</p>
+<p>这个保护措施从Microsoft Visual Studio 2015及以上开始支持。</p>
+<p>系统的话是从windows 8.1开始吧</p>
+<p>简单来说就是在call eax等间接跳转之前加个验证。</p>
+<h1 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h1><p>使用的示例代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">typedef int(*fun_t)(int);</span><br><span class="line"></span><br><span class="line">int foo(int a)</span><br><span class="line">&#123;</span><br><span class="line">    printf(&quot;hellow world %d\n&quot;,a);</span><br><span class="line">    return a;</span><br><span class="line">&#125;</span><br><span class="line">class CTargetObject</span><br><span class="line">&#123;</span><br><span class="line">public:</span><br><span class="line">    fun_t fun;</span><br><span class="line">&#125;;</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    int i = 0;</span><br><span class="line">    CTargetObject *o_array = new CTargetObject[5];</span><br><span class="line">    for (i = 0; i &lt; 5 ; i++)</span><br><span class="line">        o_array[i].fun = foo;</span><br><span class="line">    o_array[0].fun(1);  </span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>修改编译选项</p>
+<p><img src="http://pic.giantbranch.cn/pic/1572249059150.jpg" alt></p>
+<p>上面改了可能报错：</p>
+<p>命令行 error D8016: “/ZI”和“/guard:cf”命令行选项不兼容</p>
+<p>就是CFG与这个ZI不兼容，所以我们得关闭ZI</p>
+<p><img src="http://pic.giantbranch.cn/pic/1572249252901.jpg" alt></p>
+<p>编译完成我们可以使用winchecksec工具查看是否开启了CFG</p>
+<p><a href="https://github.com/trailofbits/winchecksec" target="_blank" rel="noopener">https://github.com/trailofbits/winchecksec</a></p>
+<p><img src="http://pic.giantbranch.cn/pic/1572249606995.jpg" alt></p>
+<p>或者使用VS自带的工具dumpbin.exe，命令如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dumpbin.exe /headers /loadconfig E:\VS2017\learnCFG\Debug\learnCFG.exe</span><br></pre></td></tr></table></figure>
+
+<p>开启了CFG，OPTIONAL HEADER VALUES里面应该有Control Flow Guard</p>
+<p>Section contains the following load config那里有“CF Instrumented”和“FID table present”等</p>
+<p><img src="http://pic.giantbranch.cn/pic/1572249780529.jpg" alt></p>
+<p><img src="http://pic.giantbranch.cn/pic/1572249785150.jpg" alt></p>
+<p>我们看看开了CFG和没有开的区别</p>
+<p>首先是没开的</p>
+<p><img src="http://pic.giantbranch.cn/pic/1572249814969.jpg" alt></p>
+<p>接下来是开了的</p>
+<p><img src="http://pic.giantbranch.cn/pic/1572249824741.jpg" alt></p>
+<p>双击跟过去那个检查函数是没有代码的，这应该是运行程序的时候再填充了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1572249874450.jpg" alt></p>
+<p>运行时，实际调用的是下面的ntdll!LdrpValidateUserCallTarget</p>
+<p><img src="http://pic.giantbranch.cn/pic/1572249900124.jpg" alt></p>
+<h1 id="原理分析"><a href="#原理分析" class="headerlink" title="原理分析"></a>原理分析</h1><p>首先说说CFGBitmap</p>
+<p>pCFG检查基于CFGBitmap，它表示在进程空间内所有函数的起始位置。在进程空间内每8个字节的状态对应CFGBitmap中的一位。如果函数的地址是合法有效的，那么这个函数对应在CFGbitmap的位置会被设置位1，否则是0。 p p一个Bitmap的大小是4字节</p>
+<p>下面以地址0x00b01030为例（这是先知参考文章的例子）</p>
+<p><img src="http://pic.giantbranch.cn/pic/1572250150577.jpg" alt></p>
+<p><img src="http://pic.giantbranch.cn/pic/1572250196484.jpg" alt></p>
+<p>具体调试结果跟解析如下了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">ntdll!LdrpValidateUserCallTarget:</span><br><span class="line">77408be0 8b15f8124a77    mov     edx,dword ptr [ntdll!LdrSystemDllInitBlock+0xb0 (774a12f8)] ds:002b:774a12f8=00730000</span><br><span class="line">;获取CFGBitmap基址</span><br><span class="line">77408be6 8bc1            mov     eax,ecx    ;ecx为要检验的函数地址，给到eax (ecx=007113a0)</span><br><span class="line">77408be8 c1e808          shr     eax,8      ;取地址的高3个字节 (eax = 00007113)</span><br><span class="line">ntdll!LdrpValidateUserCallTargetBitMapCheck:</span><br><span class="line">77408beb 8b1482          mov     edx,dword ptr [edx+eax*4] ds:002b:0074c44c=10100444 ;获取该地址对应的bitmap </span><br><span class="line">77408bee 8bc1            mov     eax,ecx</span><br><span class="line">77408bf0 c1e803          shr     eax,3                          ;舍弃最低3个bit</span><br><span class="line">77408bf3 f6c10f          test    cl,0Fh                         ;判断目标地址是否以0x10对齐，跟0xf与运算，判断是否等于 0</span><br><span class="line">77408bf6 7506            jne     ntdll!LdrpValidateUserCallTargetBitMapRet+0x1 (77408bfe)   ;不等于0则跳转到77408bfe</span><br><span class="line">; bt系列指令它们的结果影响CF标志位</span><br><span class="line">;BT:把指定位传送给CF；</span><br><span class="line">;BTC:把指定位传送给CF后还使该位变反；</span><br><span class="line">;BTR:把指定位传送给CF后还使该位变为0；</span><br><span class="line">;BTS:把指定位传送给CF后还使该位变为1;</span><br><span class="line">77408bf8 0fa3c2          bt      edx,eax                        ;将edx的第eax位，给到CF（其实bt指令最多取eax的低5个bit）</span><br><span class="line">;假如bt的第二个参数很大，32位取低3bit，64位取低5bit，参考http://faydoc.tripod.com/cpu/bt.htm的Description的第二段</span><br><span class="line">;edx为00010000 00010000 00000100 01000100，eax的最低5bit为10100，即20，可以看到索引20位置为1，置CF为1，所以是有效的</span><br><span class="line">77408bfb 730a            jae     ntdll!LdrpValidateUserCallTargetBitMapRet+0xa (77408c07) ;CF等于0才跳</span><br><span class="line">ntdll!LdrpValidateUserCallTargetBitMapRet:</span><br><span class="line">77408bfd c3              ret                             ;正常情况下在这就返回执行正常代码了</span><br><span class="line">77408bfe 0fbaf000        btr     eax,0                          ;跟0x10不对齐跳到这，将eax的最低bit给到CF，之后将最低bit置0</span><br><span class="line">77408c02 0fa3c2          bt      edx,eax                        ;跟上面的一样，取低5bit作为edx的bit的索引，给到CF</span><br><span class="line">77408c05 7309            jae     ntdll!LdrpValidateUserCallTargetBitMapRet+0x13 (77408c10) ;这就跳到失败的流程了</span><br><span class="line">77408c07 83c801          or      eax,1                          ;上面77408bfb判断无效后，来到这将eax最低位置1后再判断</span><br><span class="line">77408c0a 0fa3c2          bt      edx,eax</span><br><span class="line">77408c0d 7301            jae     ntdll!LdrpValidateUserCallTargetBitMapRet+0x13 (77408c10) ;这就跳到失败的流程了</span><br><span class="line">77408c0f c3              ret</span><br><span class="line">77408c10 51              push    ecx</span><br><span class="line">77408c11 8d642480        lea     esp,[esp-80h]</span><br><span class="line">77408c15 0f110424        movups  xmmword ptr [esp],xmm0</span><br><span class="line">77408c19 0f114c2410      movups  xmmword ptr [esp+10h],xmm1</span><br><span class="line">77408c1e 0f11542420      movups  xmmword ptr [esp+20h],xmm2</span><br><span class="line">77408c23 0f115c2430      movups  xmmword ptr [esp+30h],xmm3</span><br><span class="line">77408c28 0f11642440      movups  xmmword ptr [esp+40h],xmm4</span><br><span class="line">77408c2d 0f116c2450      movups  xmmword ptr [esp+50h],xmm5</span><br><span class="line">77408c32 0f11742460      movups  xmmword ptr [esp+60h],xmm6</span><br><span class="line">77408c37 0f117c2470      movups  xmmword ptr [esp+70h],xmm7</span><br><span class="line">77408c3c e8e7460500      call    ntdll!RtlpHandleInvalidUserCallTarget (7745d328)</span><br><span class="line">77408c41 0f100424        movups  xmm0,xmmword ptr [esp]</span><br><span class="line">77408c45 0f104c2410      movups  xmm1,xmmword ptr [esp+10h]</span><br><span class="line">77408c4a 0f10542420      movups  xmm2,xmmword ptr [esp+20h]</span><br><span class="line">77408c4f 0f105c2430      movups  xmm3,xmmword ptr [esp+30h]</span><br><span class="line">77408c54 0f10642440      movups  xmm4,xmmword ptr [esp+40h]</span><br><span class="line">77408c59 0f106c2450      movups  xmm5,xmmword ptr [esp+50h]</span><br><span class="line">77408c5e 0f10742460      movups  xmm6,xmmword ptr [esp+60h]</span><br><span class="line">77408c63 0f107c2470      movups  xmm7,xmmword ptr [esp+70h]</span><br><span class="line">77408c68 8da42480000000  lea     esp,[esp+80h]</span><br><span class="line">77408c6f 59              pop     ecx</span><br><span class="line">77408c70 c3              ret</span><br></pre></td></tr></table></figure>
+
+<p>那么最终假如校验失败，那就会跳到</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">77408c3c e8e7460500      call    ntdll!RtlpHandleInvalidUserCallTarget (7745d328)</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://pic.giantbranch.cn/pic/1572250287858.jpg" alt></p>
+<p>最终int 0x29抛出异常</p>
+<p><img src="http://pic.giantbranch.cn/pic/1572250312008.jpg" alt></p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://blog.trendmicro.com/trendlabs-security-intelligence/exploring-control-flow-guard-in-windows-10/" target="_blank" rel="noopener">https://blog.trendmicro.com/trendlabs-security-intelligence/exploring-control-flow-guard-in-windows-10/</a><br><a href="https://docs.microsoft.com/en-us/windows/win32/secbp/control-flow-guard" target="_blank" rel="noopener">https://docs.microsoft.com/en-us/windows/win32/secbp/control-flow-guard</a><br><a href="https://xz.aliyun.com/t/2587" target="_blank" rel="noopener">https://xz.aliyun.com/t/2587</a><br><a href="https://docs.microsoft.com/en-us/windows/win32/secbp/control-flow-guard#how-do-i-tell-that-a-binary-is-under-control-flow-guard" target="_blank" rel="noopener">https://docs.microsoft.com/en-us/windows/win32/secbp/control-flow-guard#how-do-i-tell-that-a-binary-is-under-control-flow-guard</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2019/10/28/CFG防护机制简单实践与介绍/" title="CFG防护机制简单实践与介绍">https://www.giantbranch.cn/2019/10/28/CFG防护机制简单实践与介绍/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/CFG/" rel="tag"># CFG</a>
+          
+            <a href="/tags/Control-Flow-Guard/" rel="tag"># Control Flow Guard</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/28/ROP攻击缓解新思路——减少ROP Gadgets的数量/" rel="next" title="ROP攻击缓解新思路——减少ROP Gadgets的数量">
+                <i class="fa fa-chevron-left"></i> ROP攻击缓解新思路——减少ROP Gadgets的数量
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/11/04/windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞/" rel="prev" title="windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞">
+                windbg时间穿梭——利用Time Travel Debugging更方便地调试漏洞 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实践"><span class="nav-number">2.</span> <span class="nav-text">实践</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#原理分析"><span class="nav-number">3.</span> <span class="nav-text">原理分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2019/10/28/CFG防护机制简单实践与介绍/';
+          this.page.identifier = '2019/10/28/CFG防护机制简单实践与介绍/';
+          this.page.title = 'CFG防护机制简单实践与介绍';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="ATT&CK,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="最近ATT&amp;amp;CK这个东西太火了，直观的就是由attack变换而来，那么可能是跟攻击相关的了，但实际是不是呢？ 入门的话就翻译一下官方的入门文档吧。 ATT&amp;amp;CK为什么建立ATT&amp;amp;CK代表对抗的战术，技术和常识（Common Knowledge）。 MITER于2013年启动了该项目，以记录针对Windows企业网络使用高级持久性威胁的常见策略，技术和过程（ tactics,">
+<meta name="keywords" content="ATT&amp;CK">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MITRE ATT&amp;CK 入门">
+<meta property="og:url" content="https://www.giantbranch.cn/2019/09/04/MITRE ATT&CK 入门/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="最近ATT&amp;amp;CK这个东西太火了，直观的就是由attack变换而来，那么可能是跟攻击相关的了，但实际是不是呢？ 入门的话就翻译一下官方的入门文档吧。 ATT&amp;amp;CK为什么建立ATT&amp;amp;CK代表对抗的战术，技术和常识（Common Knowledge）。 MITER于2013年启动了该项目，以记录针对Windows企业网络使用高级持久性威胁的常见策略，技术和过程（ tactics,">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.054Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MITRE ATT&amp;CK 入门">
+<meta name="twitter:description" content="最近ATT&amp;amp;CK这个东西太火了，直观的就是由attack变换而来，那么可能是跟攻击相关的了，但实际是不是呢？ 入门的话就翻译一下官方的入门文档吧。 ATT&amp;amp;CK为什么建立ATT&amp;amp;CK代表对抗的战术，技术和常识（Common Knowledge）。 MITER于2013年启动了该项目，以记录针对Windows企业网络使用高级持久性威胁的常见策略，技术和过程（ tactics,">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2019/09/04/MITRE ATT&CK 入门/">
+
+
+
+
+
+  <title>MITRE ATT&CK 入门 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2019/09/04/MITRE ATT&CK 入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">MITRE ATT&CK 入门</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-04T00:00:00+00:00">
+                2019-09-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/09/04/MITRE ATT&CK 入门/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/09/04/MITRE ATT&CK 入门/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近ATT&amp;CK这个东西太火了，直观的就是由attack变换而来，那么可能是跟攻击相关的了，但实际是不是呢？</p>
+<p>入门的话就翻译一下官方的入门文档吧。</p>
+<h1 id="ATT-amp-CK为什么建立"><a href="#ATT-amp-CK为什么建立" class="headerlink" title="ATT&amp;CK为什么建立"></a>ATT&amp;CK为什么建立</h1><p>ATT&amp;CK代表对抗的战术，技术和常识（Common Knowledge）。 MITER于2013年启动了该项目，以记录针对Windows企业网络使用高级持久性威胁的常见策略，技术和过程（ tactics, techniques, and procedures —— TTPs）。 ATT&amp;CK的创建是为了记录在攻击者的行为（这是在MITER研究项目FMX中的）。 FMX项目的目标是挖掘并分析终端的监测数据以改善在企业网络内对攻击者的检测。 这里有详细的文档：<a href="https://www.mitre.org/publications/technical-papers/finding-cyber-threats-with-attck-based-analytics" target="_blank" rel="noopener">使用基于ATT&amp;CK的分析和Cyber Analytics存储库查找威胁。</a></p>
+<p>根据我们的研究，我们需要一个框架来解决四个主要的问题：</p>
+<p>1、攻击者的行为。 基于攻击者的战术和技术使我们能够分析检测可疑的攻击者行为。域名，IP地址，文件哈希，注册表键等典型指标很容易被攻击者更改（换个域名，ip简单得不行），只对特定的时间点检测很有用 —— 它们并不代表攻击者如何与系统交互，只表示他们可能在某个时间在跟系统交互。</p>
+<p>2、生命周期模型不合适。现有的攻击生命周期和攻击链的概念太过抽象，无法将行为与防御联系起来——抽象的层次对于将TTPs映射到新的攻击感知没有什么帮助。</p>
+<p>3、适用于真实环境。 TTPs需要基于观察到的事件来证明这东西适用于真实环境。</p>
+<p>4、共同分类。 TTPs需要使用相同的术语以便在不同类型的攻击者之间进行比较。</p>
+<p>我们坚信进攻是防守的最佳驱动力。 通过维持强大的攻击和防御团队的协同工作，那么检测和阻止入侵的能力会大大提高。 在FMX项目中，ATT&amp;CK是用于构建模拟攻击场景的框架。 模拟攻击团队使用这些场景将真实世界的攻击注入网络。 然后，团队使用测试用例来验证监测设备和分析是否检测到生产网络中的攻击行为。 该方法可使检测能力快速提高。最重要的是，以可测量和可重复的方式不断进行。</p>
+<p>ATT&amp;CK成为了模拟攻击团队计划事件和检测团队验证其进度的首选工具。 对于MITRE的研究计划来说，这是一个非常有用的过程，我们觉得它应该被发布以使整个社区受益，因此MITER于2015年5月向公众发布了ATT&amp;CK。ATT&amp;CK已经大大扩展到采用针对macOS和Linux的技术，攻击者对移动设备的攻击行为，以及用于计划和实施漏洞利用的攻击战略。</p>
+<h1 id="什么是-ATT-amp-CK"><a href="#什么是-ATT-amp-CK" class="headerlink" title="什么是 ATT&amp;CK?"></a>什么是 ATT&amp;CK?</h1><p>ATT&amp;CK在很大程度上是对抗技术的知识库 - 可以用于特定平台（如Windows）的攻击性操作的细分和分类。 与此领域的先前工作不同，重点不在于对手使用的工具和恶意软件，而在于它们在操作期间如何与系统交互。</p>
+<p>ATT&amp;CK将这些技术组织成一套策略，以帮助解释并提供该技术的上下文。 每种技术都包含与红色团队或渗透测试人员相关的信息，用于理解攻击技术，以及防御者用于理解由这些攻击技术所生成的事件或人为制造的东西（原文是artifacts，直译是人工品）。</p>
+<p>战术代表了ATT&amp;CK技术的“why”。 战术是攻击者执行行动的战术目标。 战术是个人技术的范畴，涵盖了攻击者在操作期间所做事情的标准及更高级别的表示，例如持久化，信息发现，横向移动，执行文件和泄露数据。</p>
+<p>技术代表攻击者通过攻击行动实现战术目标的“方式”。 例如，攻击者可以转储凭证以获得对网络访问的有用凭证，该凭证可以在以后用于横向移动。 技术也可以表示攻击者通过行动而获得的“什么”。 这对于发现战术来说，这是一个有用区别，因为技术突出了攻击者在采取特定行动后所追求的信息类型。 实现战术目标的方法或技术可能有很多，因此每种战术类别都有多种技术。</p>
+<h1 id="ATT-amp-CK-Matrix™"><a href="#ATT-amp-CK-Matrix™" class="headerlink" title="ATT&amp;CK Matrix™"></a>ATT&amp;CK Matrix™</h1><p>战术和技术之间的关系可以在ATT&amp;CK矩阵中可视化。 例如，在持久化（Persistence）战术（这是攻击者的目标 - 持久存在于目标环境中）下面有一系列技术，包括AppInit DLL（在注册表有个AppInit_DLLs值，可以指定动态链接库（DLL）由user32.dll加载），New Service（创建新的服务）和Scheduled Task（计划任务）。 这些都是攻击者可用于实现持久性目标的单一技术。</p>
+<p>注：Persistence战术具体可以看这：<a href="https://attack.mitre.org/tactics/TA0003/" target="_blank" rel="noopener">https://attack.mitre.org/tactics/TA0003/</a></p>
+<p>ATT&amp;CK 矩阵可能是ATT&amp;CK中最广为人知的，因为它通常用于展示环境的防御覆盖情况，安全产品的检测能力以及事件的结果或是红队参与的结果。</p>
+<h1 id="网络威胁情报（Cyber-Threat-Intelligence）"><a href="#网络威胁情报（Cyber-Threat-Intelligence）" class="headerlink" title="网络威胁情报（Cyber Threat Intelligence）"></a>网络威胁情报（Cyber Threat Intelligence）</h1><p>ATT&amp;CK的另一个重要方面是它如何整合网络威胁情报（CTI）。 与先前主要用指标去消化CTI的方式不同，ATT&amp;CK记录了攻击者的行为概况，例如APT29，基于公开报告来显示哪些群体使用哪种技术。</p>
+<p>通常，单个报告用于记录一个特定事件或特定攻击组织，但这使得难以比较事件或攻击组织之间发生的事情，并得出哪些类型的防御最有效的结论。 通过ATT&amp;CK，分析师可以通过专注于技术本身来查看攻击活动。 在决定如何集中防御资源时，分析师可能希望从具有最高使用率的技术开始。</p>
+<p>攻击者如何使用技术的示例已经记录在ATT&amp;CK页面中，该页面表示该组使用该技术的过程。 该过程是一个特定的使用实例，对于准确理解该技术的使用方式以及使用模拟攻击复盘事件以及如何检测正在使用的实例的细节非常有用。</p>
+<h1 id="ATT-amp-CK-今天用在了哪里"><a href="#ATT-amp-CK-今天用在了哪里" class="headerlink" title="ATT&amp;CK 今天用在了哪里"></a>ATT&amp;CK 今天用在了哪里</h1><p>ATT&amp;CK在过去五年发展的非常好，包括从Windows到其他平台，还有各种技术。 它被许多不同的政府组织和行业部门使用，包括金融，医疗保健，零售和科技行业。 公众的采用和使用已经为ATT&amp;CK带来了重要贡献，使其保持最新并对社区有用。 我们希望继续这一趋势，因此MITER有很大的计划继续发展ATT&amp;CK，以确保其未来作为一个有价值的公共资源。</p>
+<h1 id="Continuing-This-Series"><a href="#Continuing-This-Series" class="headerlink" title="Continuing This Series"></a>Continuing This Series</h1><p>现在我们已经介绍了一些基础知识，您可以期待将来的博客文章更详细地介绍这篇文章中涉及的主题。 我们将讨论ATT&amp;CK与网络威胁情报，基于行为的检测分析和攻击者模拟攻击以及其他领域的使用。</p>
+<p>博客的话是这个：<a href="https://medium.com/mitre-attack" target="_blank" rel="noopener">https://medium.com/mitre-attack</a><br>官网是这个：<a href="https://attack.mitre.org/" target="_blank" rel="noopener">https://attack.mitre.org/</a></p>
+<p>最后摘录国内一个文章的片段：<a href="https://www.anquanke.com/post/id/185492" target="_blank" rel="noopener">https://www.anquanke.com/post/id/185492</a></p>
+<p>TTP的定义：（来源：美国国家标准技术研究所）</p>
+<p>TTP即对手的行为。战术是对此行为的最高级别描述，而技术在战术的上下文中提供更详细的行为描述，而过程是在技术的上下文中更低级别，更详细的描述。</p>
+<p>– 战术：对手的技术目标（如，横向移动）</p>
+<p>– 技术：如何实现目标（如，PsExec）</p>
+<p>– 过程：具体技术实施（如，使用PsExec实现横向移动的过程）</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://medium.com/mitre-attack/att-ck-101-17074d3bc62" target="_blank" rel="noopener">https://medium.com/mitre-attack/att-ck-101-17074d3bc62</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2019/09/04/MITRE ATT&CK 入门/" title="MITRE ATT&CK 入门">https://www.giantbranch.cn/2019/09/04/MITRE ATT&CK 入门/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ATT-CK/" rel="tag"># ATT&CK</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/08/07/在ubuntu 18.04上编译VirtualBox/" rel="next" title="在ubuntu 18.04上编译VirtualBox">
+                <i class="fa fa-chevron-left"></i> 在ubuntu 18.04上编译VirtualBox
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/29/CVE-2019-0708 微软远程桌面服务远程代码执行漏洞之漏洞分析与漏洞利用/" rel="prev" title="CVE-2019-0708 微软远程桌面服务远程代码执行漏洞之漏洞分析与漏洞利用">
+                CVE-2019-0708 微软远程桌面服务远程代码执行漏洞之漏洞分析与漏洞利用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ATT-amp-CK为什么建立"><span class="nav-number">1.</span> <span class="nav-text">ATT&amp;CK为什么建立</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#什么是-ATT-amp-CK"><span class="nav-number">2.</span> <span class="nav-text">什么是 ATT&amp;CK?</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ATT-amp-CK-Matrix™"><span class="nav-number">3.</span> <span class="nav-text">ATT&amp;CK Matrix™</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#网络威胁情报（Cyber-Threat-Intelligence）"><span class="nav-number">4.</span> <span class="nav-text">网络威胁情报（Cyber Threat Intelligence）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ATT-amp-CK-今天用在了哪里"><span class="nav-number">5.</span> <span class="nav-text">ATT&amp;CK 今天用在了哪里</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Continuing-This-Series"><span class="nav-number">6.</span> <span class="nav-text">Continuing This Series</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2019/09/04/MITRE ATT&CK 入门/';
+          this.page.identifier = '2019/09/04/MITRE ATT&CK 入门/';
+          this.page.title = 'MITRE ATT&CK 入门';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

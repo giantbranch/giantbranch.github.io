@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="test,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="概述二进制污染是篡改系统命令并用恶意版本替换它。这可以是全面替换为一个新文件，设计成像旧命令一样运行，或者篡改原地可执行文件，使其直接运行恶意代码。 如果一个毫不知情的用户运行了一个被污染的命令，就是以该用户身份运行攻击者想要执行的代码。 简单污染示例下面的shell模拟污染/bin/ls 注意：不要在生成环境中进行下面的实验操作！！！注意：不要在生成环境中进行下面的实验操作！！！注意：不要在生成">
+<meta name="keywords" content="test">
+<meta property="og:type" content="article">
+<meta property="og:title" content="检测Linux二进制文件污染">
+<meta property="og:url" content="https://www.giantbranch.cn/2023/07/21/检测Linux二进制文件污染/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="概述二进制污染是篡改系统命令并用恶意版本替换它。这可以是全面替换为一个新文件，设计成像旧命令一样运行，或者篡改原地可执行文件，使其直接运行恶意代码。 如果一个毫不知情的用户运行了一个被污染的命令，就是以该用户身份运行攻击者想要执行的代码。 简单污染示例下面的shell模拟污染/bin/ls 注意：不要在生成环境中进行下面的实验操作！！！注意：不要在生成环境中进行下面的实验操作！！！注意：不要在生成">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2023-10-13T13:38:31.898Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="检测Linux二进制文件污染">
+<meta name="twitter:description" content="概述二进制污染是篡改系统命令并用恶意版本替换它。这可以是全面替换为一个新文件，设计成像旧命令一样运行，或者篡改原地可执行文件，使其直接运行恶意代码。 如果一个毫不知情的用户运行了一个被污染的命令，就是以该用户身份运行攻击者想要执行的代码。 简单污染示例下面的shell模拟污染/bin/ls 注意：不要在生成环境中进行下面的实验操作！！！注意：不要在生成环境中进行下面的实验操作！！！注意：不要在生成">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2023/07/21/检测Linux二进制文件污染/">
+
+
+
+
+
+  <title>检测Linux二进制文件污染 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2023/07/21/检测Linux二进制文件污染/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">检测Linux二进制文件污染</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2023-07-21T00:00:00+00:00">
+                2023-07-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2023/07/21/检测Linux二进制文件污染/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2023/07/21/检测Linux二进制文件污染/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>二进制污染是篡改系统命令并用恶意版本替换它。这可以是全面替换为一个新文件，设计成像旧命令一样运行，或者篡改原地可执行文件，使其直接运行恶意代码。</p>
+<p>如果一个毫不知情的用户运行了一个被污染的命令，就是以该用户身份运行攻击者想要执行的代码。</p>
+<h1 id="简单污染示例"><a href="#简单污染示例" class="headerlink" title="简单污染示例"></a>简单污染示例</h1><p>下面的shell模拟污染/bin/ls</p>
+<p>注意：不要在生成环境中进行下面的实验操作！！！<br>注意：不要在生成环境中进行下面的实验操作！！！<br>注意：不要在生成环境中进行下面的实验操作！！！</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"># root @ ubuntu in ~/tmp [16:09:03]</span><br><span class="line">$ cat poison_test.sh </span><br><span class="line">#!/usr/bin/env bash</span><br><span class="line"># Linux binary poisoning example.</span><br><span class="line"># Based on backdoorme poison script.</span><br><span class="line"></span><br><span class="line">echo &quot;Poisoning ls command.&quot;</span><br><span class="line">echo &quot;Making backup of ls to /bin/ls.bak&quot;</span><br><span class="line">if [ ! -f /bin/ls.bak ]; then</span><br><span class="line">    cp /bin/ls /bin/ls.bak</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">echo &quot;Making /bin/.bin to hold original binary&quot;</span><br><span class="line">mkdir /bin/.bin</span><br><span class="line">echo &quot;Moving original binary to /bin/.bin&quot;</span><br><span class="line">mv /bin/ls /bin/.bin/</span><br><span class="line"></span><br><span class="line">echo &quot;Creating poisoned ls script in /bin&quot;</span><br><span class="line">echo &quot;#!/bin/bash&quot; &gt; /bin/ls</span><br><span class="line">echo &quot;( ls &amp; ) &gt; /dev/null 2&gt;&amp;1 &amp;&amp; /bin/.bin/ls \$@&quot; &gt;&gt; /bin/ls</span><br><span class="line">echo &quot;echo \&quot;POISONED /bin/ls active!\&quot;&quot; &gt;&gt; /bin/ls</span><br><span class="line">chmod +x /bin/ls</span><br><span class="line"></span><br><span class="line">echo &quot;Done&quot;</span><br><span class="line"># root @ ubuntu in ~/tmp [16:09:11]</span><br><span class="line">$ bash ./poison_test.sh </span><br><span class="line">Poisoning ls command.</span><br><span class="line">Making backup of ls to /bin/ls.bak</span><br><span class="line">Making /bin/.bin to hold original binary</span><br><span class="line">Moving original binary to /bin/.bin</span><br><span class="line">Creating poisoned ls script in /bin</span><br><span class="line">Done</span><br></pre></td></tr></table></figure>
+
+<p>当然上面是写了无害的<code>echo \&quot;POISONED /bin/ls active!\&quot;</code> ，我们可以做任何shell可以做的操作，添加crontab，往authorized_keys添加公钥，下载木马等等。</p>
+<p>可以看到ls已经被我们污染了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ ls /tmp/</span><br><span class="line">systemd-private-eac9d075027e4c038c766b9a8b7d0834-apache2.service-O1DAvq</span><br><span class="line">systemd-private-eac9d075027e4c038c766b9a8b7d0834-colord.service-txti0P</span><br><span class="line">systemd-private-eac9d075027e4c038c766b9a8b7d0834-ModemManager.service-CUXkDr</span><br><span class="line">systemd-private-eac9d075027e4c038c766b9a8b7d0834-rtkit-daemon.service-EkyD2v</span><br><span class="line">systemd-private-eac9d075027e4c038c766b9a8b7d0834-systemd-resolved.service-bRmKdM</span><br><span class="line">systemd-private-eac9d075027e4c038c766b9a8b7d0834-systemd-timesyncd.service-pcKTtw</span><br><span class="line">POISONED /bin/ls active!</span><br></pre></td></tr></table></figure>
+
+<h1 id="在Linux上手动查找被感染的命令"><a href="#在Linux上手动查找被感染的命令" class="headerlink" title="在Linux上手动查找被感染的命令"></a>在Linux上手动查找被感染的命令</h1><p>如果手动去寻找，非常耗时，且很难下手。在Ubuntu系统中，仅在/bin和/sbin目录下就有500多个命令。如果再加上/usr/bin和/usr/sbin目录，那就有数千个命令了。因此，首先要尝试的是运行软件包验证来加快这个过程。</p>
+<p>假如是Redhat based的系统，可以执行<code>rpm -Va | grep ^..5.</code></p>
+<p>假如是Debian/Ubuntu based的系统，可以apt安装debsums，执行<code>debsums -c</code></p>
+<p>下面我以Ubuntu为例，可以看到，debsums 很快发现了/bin/ls不对劲</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># root @ ubuntu in ~ [16:11:56]</span><br><span class="line">$ debsums -c</span><br><span class="line">/bin/ls</span><br></pre></td></tr></table></figure>
+
+<p>假如上面debsums 没有发现任何内容，接下来我们需要手动操作，查找不是ELF的可执行文件，当然攻击者可以用另一个编译好的二进制文件替换一个二进制文件。但是替换shell是最容易实现的</p>
+<p>比如针对/bin目录: <code>file /bin/* | grep -v ELF | grep -v link</code>, <code>grep -v link</code>是忽略掉软链接文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">$ file /bin/* | grep -v ELF | grep -v link</span><br><span class="line">/bin/bzdiff:                         POSIX shell script, ASCII text executable</span><br><span class="line">/bin/bzexe:                          POSIX shell script, ASCII text executable</span><br><span class="line">/bin/bzgrep:                         POSIX shell script, ASCII text executable</span><br><span class="line">/bin/bzmore:                         POSIX shell script, ASCII text executable</span><br><span class="line">/bin/egrep:                          POSIX shell script, ASCII text executable</span><br><span class="line">/bin/fgrep:                          POSIX shell script, ASCII text executable</span><br><span class="line">/bin/gunzip:                         POSIX shell script, ASCII text executable</span><br><span class="line">/bin/gzexe:                          POSIX shell script, ASCII text executable</span><br><span class="line">/bin/lesspipe:                       POSIX shell script, ASCII text executable</span><br><span class="line">/bin/ls:                             Bourne-Again shell script, ASCII text executable</span><br><span class="line">/bin/red:                            POSIX shell script, ASCII text executable</span><br><span class="line">/bin/setupcon:                       POSIX shell script, UTF-8 Unicode text executable</span><br><span class="line">/bin/uncompress:                     POSIX shell script, ASCII text executable</span><br><span class="line">/bin/unicode_start:                  POSIX shell script, ASCII text executable</span><br><span class="line">/bin/which:                          POSIX shell script, ASCII text executable</span><br><span class="line">/bin/zcat:                           POSIX shell script, ASCII text executable</span><br><span class="line">/bin/zcmp:                           POSIX shell script, ASCII text executable</span><br><span class="line">/bin/zdiff:                          POSIX shell script, ASCII text executable</span><br><span class="line">/bin/zegrep:                         POSIX shell script, ASCII text executable</span><br><span class="line">/bin/zfgrep:                         POSIX shell script, ASCII text executable</span><br><span class="line">/bin/zforce:                         POSIX shell script, ASCII text executable</span><br><span class="line">/bin/zgrep:                          POSIX shell script, ASCII text executable</span><br><span class="line">/bin/zless:                          POSIX shell script, ASCII text executable</span><br><span class="line">/bin/zmore:                          POSIX shell script, ASCII text executable</span><br><span class="line">/bin/znew:                           POSIX shell script, ASCII text executable</span><br></pre></td></tr></table></figure>
+
+<p>我们可以看到这里也有/bin/ls，而且还是个Bourne-Again shell script，这就很有问题了。</p>
+<p>如果你怀疑某个命令可能被篡改，请直接使用strings命令查看是否有任何可疑内容。不要对你认为可能是恶意文件的任何文件运行strace命令。我们将这一点用粗体标出，因为有些人可能想尝试strace命令，但实际上运行strace会在主机上运行实际的可执行文件，这是一个非常糟糕的想法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ strings /bin/ls</span><br><span class="line">#!/bin/bash</span><br><span class="line">( ls &amp; ) &gt; /dev/null 2&gt;&amp;1 &amp;&amp; /bin/.bin/ls $@</span><br><span class="line">echo &quot;POISONED /bin/ls active!&quot;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这里还有隐藏目录/bin/.bin/</p>
+<p>最后我们用<code>rm -rf /bin/.bin/ &amp;&amp; mv /bin/ls.bak /bin/ls</code>来恢复ls</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://sandflysecurity.com/blog/detecting-linux-binary-file-poisoning/" target="_blank" rel="noopener">https://sandflysecurity.com/blog/detecting-linux-binary-file-poisoning/</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2023/07/21/检测Linux二进制文件污染/" title="检测Linux二进制文件污染">https://www.giantbranch.cn/2023/07/21/检测Linux二进制文件污染/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/test/" rel="tag"># test</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2023/07/20/使用Linux进程环境变量进行取证/" rel="next" title="使用Linux进程环境变量进行取证">
+                <i class="fa fa-chevron-left"></i> 使用Linux进程环境变量进行取证
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2023/07/21/如何从活动的Linux恶意软件中恢复已删除的二进制文件/" rel="prev" title="如何从活动的Linux恶意软件中恢复已删除的二进制文件">
+                如何从活动的Linux恶意软件中恢复已删除的二进制文件 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#简单污染示例"><span class="nav-number">2.</span> <span class="nav-text">简单污染示例</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#在Linux上手动查找被感染的命令"><span class="nav-number">3.</span> <span class="nav-text">在Linux上手动查找被感染的命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2023/07/21/检测Linux二进制文件污染/';
+          this.page.identifier = '2023/07/21/检测Linux二进制文件污染/';
+          this.page.title = '检测Linux二进制文件污染';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

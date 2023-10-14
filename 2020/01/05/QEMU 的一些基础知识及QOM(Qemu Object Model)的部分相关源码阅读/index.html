@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="qemu,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="总览QEMU（quick emulator）是一款由Fabrice Bellard等人编写的免费开源的可执行硬件虚拟化的（hardware virtualization）开源托管虚拟机（VMM）。还可以为user-level的进程执行CPU仿真，进而允许了为一种架构编译的程序在另外一种架构上面运行。 qemu是一个进程启动一个虚拟机。guest关机，qemu进程就退出。为了方便可以重启guest而">
+<meta name="keywords" content="qemu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读">
+<meta property="og:url" content="https://www.giantbranch.cn/2020/01/05/QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="总览QEMU（quick emulator）是一款由Fabrice Bellard等人编写的免费开源的可执行硬件虚拟化的（hardware virtualization）开源托管虚拟机（VMM）。还可以为user-level的进程执行CPU仿真，进而允许了为一种架构编译的程序在另外一种架构上面运行。 qemu是一个进程启动一个虚拟机。guest关机，qemu进程就退出。为了方便可以重启guest而">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1576036722929.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1561713929357.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1576142023828.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1576142036946.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1576146375975.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1576232471733.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1576232480882.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1576467207502.png">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.058Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读">
+<meta name="twitter:description" content="总览QEMU（quick emulator）是一款由Fabrice Bellard等人编写的免费开源的可执行硬件虚拟化的（hardware virtualization）开源托管虚拟机（VMM）。还可以为user-level的进程执行CPU仿真，进而允许了为一种架构编译的程序在另外一种架构上面运行。 qemu是一个进程启动一个虚拟机。guest关机，qemu进程就退出。为了方便可以重启guest而">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1576036722929.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2020/01/05/QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读/">
+
+
+
+
+
+  <title>QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2020/01/05/QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-05T00:00:00+00:00">
+                2020-01-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/01/05/QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/01/05/QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="总览"><a href="#总览" class="headerlink" title="总览"></a>总览</h1><p>QEMU（quick emulator）是一款由Fabrice Bellard等人编写的免费开源的可执行硬件虚拟化的（hardware virtualization）开源托管虚拟机（VMM）。还可以为user-level的进程执行CPU仿真，进而允许了为一种架构编译的程序在另外一种架构上面运行。</p>
+<p>qemu是一个进程启动一个虚拟机。guest关机，qemu进程就退出。为了方便可以重启guest而不用重新启动qemu，当然guest关机后再启动qemu也是可以的。</p>
+<p><img src="http://pic.giantbranch.cn/pic/1576036722929.png" alt></p>
+<p>QEMU支持大端和小端的架构。 字节序转换是通过辅助函数来实现的，而不是直接访问guest的RAM。 这样就可以运行具有与host不同的字节序的目标了。</p>
+<h1 id="KVM"><a href="#KVM" class="headerlink" title="KVM"></a>KVM</h1><p>KVM（Kernel Virtual Machine）是Linux的一个内核驱动模块，让qemu之类的程序直接在host上的CPU安全地执行guest的代码。KVM现在支持x86, ARMv8, ppc, s390和MIPS的CPU。KVM内核模块使用的是Intel或者AMD的硬件虚拟化技术来执行guest的代码。它的作用主要是负责虚拟机的创建，虚拟内存的分配，虚拟CPU寄存器的读写和虚拟cpu的运行。</p>
+<p>那么怎么让KVM执行guest上面的代码呢？</p>
+<p>首先qemu进程打开/dev/kvm，之后调用 KVM_RUN ioctl。</p>
+<p>假如guest需要访问hardware device register，那就挂起guest的CPU，KVM就会退出，控制权回到qemu进程。</p>
+<p>代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">open(&quot;/dev/kvm&quot;)</span><br><span class="line">ioctl(KVM_CREATE_VM)</span><br><span class="line">ioctl(KVM_CREATE_VCPU)</span><br><span class="line">for (;;) &#123;</span><br><span class="line">     ioctl(KVM_RUN)</span><br><span class="line">     switch (exit_reason) &#123;</span><br><span class="line">     case KVM_EXIT_IO:  /* ... */</span><br><span class="line">     case KVM_EXIT_HLT: /* ... */</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在另一个博客看到一个更详细的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">// 第一步，获取到 KVM 句柄</span><br><span class="line">kvmfd = open(&quot;/dev/kvm&quot;, O_RDWR);</span><br><span class="line">// 第二步，创建虚拟机，获取到虚拟机句柄。</span><br><span class="line">vmfd = ioctl(kvmfd, KVM_CREATE_VM, 0);</span><br><span class="line">// 第三步，为虚拟机映射内存，还有其他的 PCI，信号处理的初始化。</span><br><span class="line">ioctl(kvmfd, KVM_SET_USER_MEMORY_REGION, &amp;mem);</span><br><span class="line">// 第四步，将虚拟机镜像映射到内存，相当于物理机的 boot 过程，把镜像映射到内存。</span><br><span class="line">// 第五步，创建 vCPU，并为 vCPU 分配内存空间。</span><br><span class="line">ioctl(kvmfd, KVM_CREATE_VCPU, vcpuid);</span><br><span class="line">vcpu-&gt;kvm_run_mmap_size = ioctl(kvm-&gt;dev_fd, KVM_GET_VCPU_MMAP_SIZE, 0);</span><br><span class="line">// 第五步，创建 vCPU 个数的线程并运行虚拟机。</span><br><span class="line">ioctl(kvm-&gt;vcpus-&gt;vcpu_fd, KVM_RUN, 0);</span><br><span class="line">// 第六步，线程进入循环，并捕获虚拟机退出原因，做相应的处理。</span><br><span class="line">for (;;) &#123;</span><br><span class="line">  ioctl(KVM_RUN)</span><br><span class="line">  switch (exit_reason) &#123;</span><br><span class="line">      case KVM_EXIT_IO:  /* ... */</span><br><span class="line">      case KVM_EXIT_HLT: /* ... */</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">// 这里的退出并不一定是虚拟机关机，</span><br><span class="line">// 虚拟机如果遇到 I/O 操作，访问硬件设备，缺页中断等都会退出执行，</span><br><span class="line">// 退出执行可以理解为将 CPU 执行上下文返回到 Qemu。</span><br></pre></td></tr></table></figure>
+
+<h1 id="内存"><a href="#内存" class="headerlink" title="内存"></a>内存</h1><p>guest虚拟机里面的内存，同样使用的虚拟内存，而guest所使用的物理内存，实际是对应的是启动它的那个qemu的虚拟内存的一部分。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">                        Guest&apos; processes</span><br><span class="line">                     +--------------------+</span><br><span class="line">Virtual addr space   |                    |</span><br><span class="line">                     +--------------------+</span><br><span class="line">                     |                    |</span><br><span class="line">                     \__   Page Table     \__</span><br><span class="line">                        \                    \</span><br><span class="line">                         |                    |  Guest kernel</span><br><span class="line">                    +----+--------------------+----------------+</span><br><span class="line">Guest&apos;s phy. memory |    |                    |                |</span><br><span class="line">                    +----+--------------------+----------------+</span><br><span class="line">                    |                                          |</span><br><span class="line">                    \__                                        \__</span><br><span class="line">                       \                                          \</span><br><span class="line">                        |             QEMU process                 |</span><br><span class="line">                   +----+------------------------------------------+</span><br><span class="line">Virtual addr space |    |                                          |</span><br><span class="line">                   +----+------------------------------------------+</span><br><span class="line">                   |                                               |</span><br><span class="line">                    \__                Page Table                   \__</span><br><span class="line">                       \                                               \</span><br><span class="line">                        |                                               |</span><br><span class="line">                   +----+-----------------------------------------------++</span><br><span class="line">Physical memory    |    |                                               ||</span><br><span class="line">                   +----+-----------------------------------------------++</span><br></pre></td></tr></table></figure>
+
+<p>比如我们qemu启动了一个2G内存的虚拟机，我们查看内存maps，可以发现有个内存就是2G，就是guest所使用的物理内存</p>
+<figure class="highlight plain"><figcaption><span>sudo cat</span><a href="/proc/5291/maps">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">55dad0b86000-55dad1124000 r-xp 00000000 08:01 665015                     /XXXXX/XXXXX/qemu-system-x86_64</span><br><span class="line">55dad1323000-55dad13ed000 r--p 0059d000 08:01 665015                     /XXXXX/XXXXX/qemu-system-x86_64</span><br><span class="line">55dad13ed000-55dad146a000 rw-p 00667000 08:01 665015                     /XXXXX/XXXXX/qemu-system-x86_64</span><br><span class="line">55dad146a000-55dad18d9000 rw-p 00000000 00:00 0 </span><br><span class="line">55dad1f65000-55dad3b83000 rw-p 00000000 00:00 0                          [heap]</span><br><span class="line">7f1a1c000000-7f1a1c022000 rw-p 00000000 00:00 0 </span><br><span class="line">7f1a1c022000-7f1a20000000 ---p 00000000 00:00 0 </span><br><span class="line">7f1a20000000-7f1aa0000000 rw-p 00000000 00:00 0 						//这个就是2G内存</span><br><span class="line">7f1aa0000000-7f1aa07a0000 rw-p 00000000 00:00 0 </span><br><span class="line">7f1aa07a0000-7f1aa4000000 ---p 00000000 00:00 0 </span><br><span class="line">7f1aa4acb000-7f1aa8000000 rw-p 00000000 00:00 0 </span><br><span class="line">7f1aa8000000-7f1aa809e000 rw-p 00000000 00:00 0 </span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<p>而我们在guest里面申请的虚拟内存可以转化到host的qemu进程中的虚拟内存（相当于guest所认为物理内存）</p>
+<p>漏洞利用的时候有些函数需要传递的是物理地址，所以需要将guest中的虚拟地址转化为物理地址。</p>
+<p>这有两层转换：<br>1、从guest 的虚拟机地址 to guest 的物理地址<br>2、从 guest 的物理地址 to host的QEMU进程虚拟地址</p>
+<p>对于第一层转换，通过pagemap页面映射文件来获取信息进行转换，具体可以参考下面的文档</p>
+<p><a href="https://www.kernel.org/doc/Documentation/vm/pagemap.txt" target="_blank" rel="noopener">https://www.kernel.org/doc/Documentation/vm/pagemap.txt</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">* Bits 0-54  page frame number (PFN) if present</span><br><span class="line">* Bits 0-4   swap type if swapped</span><br><span class="line">* Bits 5-54  swap offset if swapped</span><br><span class="line">* Bit  55    pte is soft-dirty (see Documentation/vm/soft-dirty.txt)</span><br><span class="line">* Bit  56    page exclusively mapped (since 4.2)</span><br><span class="line">* Bits 57-60 zero</span><br><span class="line">* Bit  61    page is file-page or shared-anon (since 3.5)</span><br><span class="line">* Bit  62    page swapped</span><br><span class="line">* Bit  63    page present</span><br></pre></td></tr></table></figure>
+
+<p>下面的代码来源于<code>http://phrack.org/papers/vm-escape-qemu-case-study.html</code>，而它参考的是<code>https://github.com/nelhage/virtunoid/blob/master/virtunoid.c</code>，我加了点注释</p>
+<p>核心的点是：<br>1、虚拟地址的低12位是页内偏移，而高位是物理帧在pagemap文件中的偏移，由于一个地址占用8个字节，所以获取在pagemap文件中的偏移需要乘8<br>2、在pagemap读取出来的是满足上面的规则，可以通过bit 63判断页面是否存在<br>3、最后0-54位返回就是物理帧的地址了，再或上低12位的页内偏移，那就是完整的物理地址了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;stdint.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;fcntl.h&gt;</span><br><span class="line">#include &lt;assert.h&gt;</span><br><span class="line">#include &lt;inttypes.h&gt;</span><br><span class="line"></span><br><span class="line">#define PAGE_SHIFT  12</span><br><span class="line">#define PAGE_SIZE   (1 &lt;&lt; PAGE_SHIFT)</span><br><span class="line">#define PFN_PRESENT (1ull &lt;&lt; 63)</span><br><span class="line">#define PFN_PFN     ((1ull &lt;&lt; 55) - 1)</span><br><span class="line"></span><br><span class="line">int fd;</span><br><span class="line">// 获取页内偏移</span><br><span class="line">uint32_t page_offset(uint32_t addr)</span><br><span class="line">&#123;</span><br><span class="line">	// addr &amp; 0xfff</span><br><span class="line">    return addr &amp; ((1 &lt;&lt; PAGE_SHIFT) - 1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint64_t gva_to_gfn(void *addr)</span><br><span class="line">&#123;</span><br><span class="line">    uint64_t pme, gfn;</span><br><span class="line">    size_t offset;</span><br><span class="line"></span><br><span class="line">    printf(&quot;pfn_item_offset : %p\n&quot;, (uintptr_t)addr &gt;&gt; 9);</span><br><span class="line">    offset = ((uintptr_t)addr &gt;&gt; 9) &amp; ~7;</span><br><span class="line"></span><br><span class="line">    ////下面是网上其他人的代码，只是为了理解上面的代码</span><br><span class="line">    //一开始除以 0x1000  （getpagesize=0x1000，4k对齐，而且本来低12位就是页内索引，需要去掉），即除以2**12, 这就获取了页号了，</span><br><span class="line">    //pagemap中一个地址64位，即8字节，也即sizeof(uint64_t)，所以有了页号后，我们需要乘以8去找到对应的偏移从而获得对应的物理地址</span><br><span class="line">    //最终  vir/2^12 * 8 = (vir / 2^9) &amp; ~7 </span><br><span class="line">    //这跟上面的右移9正好对应，但是为什么要 &amp; ~7 ,因为你  vir &gt;&gt; 12 &lt;&lt; 3 , 跟vir &gt;&gt; 9 是有区别的，vir &gt;&gt; 12 &lt;&lt; 3低3位肯定是0，所以通过&amp; ~7将低3位置0</span><br><span class="line">    // int page_size=getpagesize();</span><br><span class="line">    // unsigned long vir_page_idx = vir/page_size;</span><br><span class="line">    // unsigned long pfn_item_offset = vir_page_idx*sizeof(uint64_t);</span><br><span class="line"></span><br><span class="line">    lseek(fd, offset, SEEK_SET);</span><br><span class="line">    read(fd, &amp;pme, 8);</span><br><span class="line">    // 确保页面存在——page is present.</span><br><span class="line">    if (!(pme &amp; PFN_PRESENT))</span><br><span class="line">        return -1;</span><br><span class="line">    // physical frame number </span><br><span class="line">    gfn = pme &amp; PFN_PFN;</span><br><span class="line">    return gfn;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint64_t gva_to_gpa(void *addr)</span><br><span class="line">&#123;</span><br><span class="line">    uint64_t gfn = gva_to_gfn(addr);</span><br><span class="line">    assert(gfn != -1);</span><br><span class="line">    return (gfn &lt;&lt; PAGE_SHIFT) | page_offset((uint64_t)addr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    uint8_t *ptr;</span><br><span class="line">    uint64_t ptr_mem;</span><br><span class="line">    </span><br><span class="line">    fd = open(&quot;/proc/self/pagemap&quot;, O_RDONLY);</span><br><span class="line">    if (fd &lt; 0) &#123;</span><br><span class="line">        perror(&quot;open&quot;);</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ptr = malloc(256);</span><br><span class="line">    strcpy(ptr, &quot;Where am I?&quot;);</span><br><span class="line">    printf(&quot;%s\n&quot;, ptr);</span><br><span class="line">    ptr_mem = gva_to_gpa(ptr);</span><br><span class="line">    printf(&quot;Your physical address is at 0x%&quot;PRIx64&quot;\n&quot;, ptr_mem);</span><br><span class="line"></span><br><span class="line">    getchar();</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>将上面这个代码编译后，放到qemu运行（root权限）</p>
+<p>之后我们在主机gdb attach到qemu的pid（root权限）</p>
+<p>查看分配给qemu虚拟机对应的内存，我们分配的是2G，所以大小是0x8000000</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ info proc mappings</span><br><span class="line">process 2776</span><br><span class="line">Mapped address spaces:</span><br><span class="line"></span><br><span class="line">          Start Addr           End Addr       Size     Offset objfile</span><br><span class="line">      0x56154915f000     0x5615497a2000   0x643000        0x0 /XXXXXXXXXX/qemu/bin/debug/native/x86_64-softmmu/qemu-system-x86_64</span><br><span class="line">      0x5615499a1000     0x561549a71000    0xd0000   0x642000 /XXXXXXXXXX/qemu/bin/debug/native/x86_64-softmmu/qemu-system-x86_64</span><br><span class="line">      0x561549a71000     0x561549af7000    0x86000   0x712000 /XXXXXXXXXX/qemu/bin/debug/native/x86_64-softmmu/qemu-system-x86_64</span><br><span class="line">      0x561549af7000     0x561549f87000   0x490000        0x0</span><br><span class="line">      0x56154b0fc000     0x56154cd14000  0x1c18000        0x0 [heap]</span><br><span class="line">      0x7fcdd4000000     0x7fcdd40b8000    0xb8000        0x0</span><br><span class="line">      0x7fcdd40b8000     0x7fcdd8000000  0x3f48000        0x0</span><br><span class="line">      0x7fcdd86c9000     0x7fcddbe00000  0x3737000        0x0</span><br><span class="line">      0x7fcddbe00000     0x7fcddbe01000     0x1000        0x0</span><br><span class="line">      0x7fcddbeff000     0x7fcddc000000   0x101000        0x0</span><br><span class="line">      0x7fcddc000000     0x7fce5c000000 0x80000000        0x0            &lt;=========就这个      </span><br><span class="line">      0x7fce5c000000     0x7fce5c883000   0x883000        0x0</span><br><span class="line">      0x7fce5c883000     0x7fce60000000  0x377d000        0x0</span><br><span class="line">	  。。。。。。</span><br><span class="line">	  。。。。。。</span><br><span class="line">	  。。。。。。</span><br></pre></td></tr></table></figure>
+
+<p>确实可以在qemu的进程的虚拟地址看到我们字符串</p>
+<p><img src="http://pic.giantbranch.cn/pic/1561713929357.jpg" alt></p>
+<h1 id="PCI设备"><a href="#PCI设备" class="headerlink" title="PCI设备"></a>PCI设备</h1><p>PCI是一个外部链接（Peripheral Component Interconnect）标准，PCI设备就是符合这个标准的设备，且连接到PCI总线上。而PCI总线是CPU与外部设备沟通的桥梁。</p>
+<p>每个PCI设备对应备一个PCI配置空间(PCI Configuration Space)，它记录了关于此设备的信息。PCI配置空间最大256个字节，其中前64字节都是预定义好的标准。</p>
+<p>我们可以看下面的图，我copy过来了两张，其实都是一样的，不过第一张对于Base Address Registers更加细致。</p>
+<p><img src="http://pic.giantbranch.cn/pic/1576142023828.png" alt></p>
+<p><img src="http://pic.giantbranch.cn/pic/1576142036946.png" alt></p>
+<p>具体的数据结构如下（复制于一个文章，暂时没在qemu源码找到，不确定是否准确，仅供参考）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">   WORD   wBusNum;		// Bus No. input field</span><br><span class="line">   WORD   wDeviceNum;		// Device No. input field</span><br><span class="line">   WORD   wFunction;		// Function No. input field</span><br><span class="line">   WORD   wVendorId;		// Vendor ID input field</span><br><span class="line">   WORD   wDeviceId;		// Device ID input field</span><br><span class="line">   WORD   wDeviceIndex; 	// Device Search No. input field</span><br><span class="line">   WORD   wCommand;             // Command</span><br><span class="line">   WORD   wClassId; 		// Class ID</span><br><span class="line">   BYTE   byInterfaceId;        // Interface ID</span><br><span class="line">   BYTE   byRevId;              // Revision ID</span><br><span class="line">   BYTE   byCLS;                // Cache Line Size</span><br><span class="line">   BYTE   byLatency;            // Latency Timer</span><br><span class="line">   DWORD  dwBaseAddr[6];        // Base Address Register</span><br><span class="line">   DWORD  dwCIS;</span><br><span class="line">   WORD   wSubSystemVendorId;</span><br><span class="line">   WORD   wSubSystemId;</span><br><span class="line">   DWORD  dwRomBaseAddr;        // Extension ROM Base Address</span><br><span class="line">   BYTE   byIntLine;            // Interrupt Line</span><br><span class="line">   BYTE   byIntPin;             // Interrupt Pin </span><br><span class="line">   BYTE   byMaxLatency;         // Max Latency</span><br><span class="line">   BYTE   byMinGrant;           // Min Grant</span><br><span class="line">  &#125; PCIDEV, *LPPCIDEV;</span><br></pre></td></tr></table></figure>
+
+<p>前面就是一些制造商ID，设备ID，等信息.</p>
+<p>比较重要的就是那6个Base Address Registers，简称BAR。当然不是必须要有6个BAR。每个BAR记录了该设备映射的一段地址空间，映射的地址空间有Memory 空间和 I/O 空间。</p>
+<p><img src="http://pic.giantbranch.cn/pic/1576146375975.png" alt></p>
+<p>Memory 空间和 I/O 空间的区别是最低位，Memory 空间最低位是0， I/O 空间的最低位是1</p>
+<p><img src="http://pic.giantbranch.cn/pic/1576232471733.png" alt></p>
+<p><img src="http://pic.giantbranch.cn/pic/1576232480882.png" alt></p>
+<p>若是Memory 空间，1-2位表示内存的类型（type），bit 2为1表示采用64位地址，为0表示采用32位地址。bit1为1表示区间大小超过1M，为0表示不超过1M。bit3表示是否支持可预读取（Prefetchable）。</p>
+<p><img src="http://pic.giantbranch.cn/pic/1576467207502.png" alt></p>
+<p>比如下面的设备，第一个是Memory 空间，第二个是 I/O 空间，看到最后一列，0x0000000000040200的最低bit是0，而0x0000000000040101的最低bit是1（前两列是空间的其实地址，第一个Memory 空间是0xfebf1000到0xfebf10ff，而第二个I/O ports是从0xc050到0xc057共8个端口）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ cat /sys/devices/pci0000\:00/0000\:00\:03.0/resource</span><br><span class="line">0x00000000febf1000 0x00000000febf10ff 0x0000000000040200</span><br><span class="line">0x000000000000c050 0x000000000000c057 0x0000000000040101</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br></pre></td></tr></table></figure>
+
+<p>其实上面说Memory 空间和I/O 空间分别对应我们常见到的MMIO，PMIO</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">内存映射I/O （Memory-mapped I/O —— MMIO）</span><br><span class="line">端口映射I/O （port-mapped I/O —— PMIO）</span><br></pre></td></tr></table></figure>
+
+<p>通过Memory 空间访问设备I/O的方式称为memory mapped I/O，即MMIO，这种情况下，CPU直接使用普通访存指令即可访问设备I/O。<br>通过I/O 空间访问设备I/O的方式称为port mapped I/O，即PMIO，这种情况下CPU需要使用专门的I/O指令如IN/OUT访问I/O端口。</p>
+<p>MMIO，PMIO是PC机在中央处理器（CPU）和外部设备之间执行输入输出操作的两种方法，这两种方法互为补充。</p>
+<h2 id="查看PCI设备的信息"><a href="#查看PCI设备的信息" class="headerlink" title="查看PCI设备的信息"></a>查看PCI设备的信息</h2><p>以BlizzardCTF 2017 Strng为例</p>
+<p>查看当前虚拟机的pci设备</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ lspci</span><br><span class="line">00:00.0 Host bridge: Intel Corporation 440FX - 82441FX PMC [Natoma] (rev 02)</span><br><span class="line">00:01.0 ISA bridge: Intel Corporation 82371SB PIIX3 ISA [Natoma/Triton II]</span><br><span class="line">00:01.1 IDE interface: Intel Corporation 82371SB PIIX3 IDE [Natoma/Triton II]</span><br><span class="line">00:01.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 03)</span><br><span class="line">00:02.0 VGA compatible controller: Device 1234:1111 (rev 02)</span><br><span class="line">00:03.0 Unclassified device [00ff]: Device 1234:11e9 (rev 10)</span><br><span class="line">00:04.0 Ethernet controller: Intel Corporation 82540EM Gigabit Ethernet Controller (rev 03)</span><br></pre></td></tr></table></figure>
+
+<p>-v可以查看更加详细信息，看到内存是0xfebf1000的256字节大小的，PMIO端口是0xc050开始的8个端口号</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ lspci -v</span><br><span class="line">......</span><br><span class="line"></span><br><span class="line">00:03.0 Unclassified device [00ff]: Device 1234:11e9 (rev 10)</span><br><span class="line">	Subsystem: Red Hat, Inc Device 1100</span><br><span class="line">	Physical Slot: 3</span><br><span class="line">	Flags: fast devsel</span><br><span class="line">	Memory at febf1000 (32-bit, non-prefetchable) [size=256]</span><br><span class="line">	I/O ports at c050 [size=8]</span><br><span class="line">	</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<p>上面设备过多可能不太友好，可用-s指定</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ lspci -v  -s 00:03.0</span><br><span class="line">00:03.0 Unclassified device [00ff]: Device 1234:11e9 (rev 10)</span><br><span class="line">	Subsystem: Red Hat, Inc Device 1100</span><br><span class="line">	Physical Slot: 3</span><br><span class="line">	Flags: fast devsel</span><br><span class="line">	Memory at febf1000 (32-bit, non-prefetchable) [size=256]</span><br><span class="line">	I/O ports at c050 [size=8]</span><br></pre></td></tr></table></figure>
+
+<p>查看header的一些具体的值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ lspci -v -m -n -s 00:03.0</span><br><span class="line">Device:	00:03.0</span><br><span class="line">Class:	00ff</span><br><span class="line">Vendor:	1234</span><br><span class="line">Device:	11e9</span><br><span class="line">SVendor:	1af4</span><br><span class="line">SDevice:	1100</span><br><span class="line">PhySlot:	3</span><br><span class="line">Rev:	10</span><br></pre></td></tr></table></figure>
+
+<p>我们在文件系统中也可以看到这个设备的文件（linux一切皆文件）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ ll /sys/devices/pci0000\:00/0000:00:03.0/</span><br><span class="line">total 0</span><br><span class="line">drwxr-xr-x  3 root root    0 Nov 18 03:30 ./</span><br><span class="line">drwxr-xr-x 11 root root    0 Nov 18 03:30 ../</span><br><span class="line">-rw-r--r--  1 root root 4096 Nov 18 03:52 broken_parity_status</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:38 class</span><br><span class="line">-rw-r--r--  1 root root  256 Nov 18 03:38 config</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 consistent_dma_mask_bits</span><br><span class="line">-rw-r--r--  1 root root 4096 Nov 18 03:52 d3cold_allowed</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:38 device</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 dma_mask_bits</span><br><span class="line">-rw-r--r--  1 root root 4096 Nov 18 03:52 enable</span><br><span class="line">lrwxrwxrwx  1 root root    0 Nov 18 03:52 firmware_node -&gt; ../../LNXSYSTM:00/device:00/PNP0A03:00/device:06/</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:31 irq</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 local_cpulist</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 local_cpus</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 modalias</span><br><span class="line">-rw-r--r--  1 root root 4096 Nov 18 03:52 msi_bus</span><br><span class="line">drwxr-xr-x  2 root root    0 Nov 18 03:52 power/</span><br><span class="line">--w--w----  1 root root 4096 Nov 18 03:52 remove</span><br><span class="line">--w--w----  1 root root 4096 Nov 18 03:52 rescan</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:38 resource</span><br><span class="line">-rw-------  1 root root  256 Nov 18 03:52 resource0</span><br><span class="line">-rw-------  1 root root    8 Nov 18 03:52 resource1</span><br><span class="line">lrwxrwxrwx  1 root root    0 Nov 18 03:52 subsystem -&gt; ../../../bus/pci/</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 subsystem_device</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:52 subsystem_vendor</span><br><span class="line">-rw-r--r--  1 root root 4096 Nov 18 03:30 uevent</span><br><span class="line">-r--r--r--  1 root root 4096 Nov 18 03:38 vendor</span><br></pre></td></tr></table></figure>
+
+<p>查看设备id是device文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ cat /sys/devices/pci0000\:00/0000\:00\:03.0/device</span><br><span class="line">0x11e9</span><br></pre></td></tr></table></figure>
+
+<p>查看MMIO，PMIO映射可以看resource（三列分别是开始地址 结束地址 标志），第一行是MMIO，第二行是PMIO（有时候<code>lspci -v</code>看不到信息的时候可以通过resource文件查看）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ cat /sys/devices/pci0000\:00/0000:00:03.0/resource</span><br><span class="line">0x00000000febf1000 0x00000000febf10ff 0x0000000000040200</span><br><span class="line">0x000000000000c050 0x000000000000c057 0x0000000000040101</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br></pre></td></tr></table></figure>
+
+<p>查看ioports（有些虚拟机查看不到）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"># cat /proc/ioports</span><br><span class="line">0000-0cf7 : PCI Bus 0000:00</span><br><span class="line">  0000-001f : dma1</span><br><span class="line">  0020-0021 : pic1</span><br><span class="line">  0040-0043 : timer0</span><br><span class="line">  0050-0053 : timer1</span><br><span class="line">  0060-0060 : keyboard</span><br><span class="line">  0064-0064 : keyboard</span><br><span class="line">  0070-0071 : rtc0</span><br><span class="line">  0080-008f : dma page reg</span><br><span class="line">  00a0-00a1 : pic2</span><br><span class="line">  00c0-00df : dma2</span><br><span class="line">  00f0-00ff : fpu</span><br><span class="line">  0170-0177 : 0000:00:01.1</span><br><span class="line">    0170-0177 : ata_piix</span><br><span class="line">  01f0-01f7 : 0000:00:01.1</span><br><span class="line">    01f0-01f7 : ata_piix</span><br><span class="line">  0376-0376 : 0000:00:01.1</span><br><span class="line">    0376-0376 : ata_piix</span><br><span class="line">  03c0-03df : vga+</span><br><span class="line">  03f6-03f6 : 0000:00:01.1</span><br><span class="line">    03f6-03f6 : ata_piix</span><br><span class="line">  03f8-03ff : serial</span><br><span class="line">  0510-051b : QEMU0002:00[    9.062032] random: fast init done</span><br><span class="line"></span><br><span class="line">  0600-063f : 0000:00:01.3</span><br><span class="line">    0600-0603 : ACPI PM1a_EVT_BLK</span><br><span class="line">    0604-0605 : ACPI PM1a_CNT_BLK</span><br><span class="line">    0608-060b : ACPI PM_TMR</span><br><span class="line">  0700-070f : 0000:00:01.3</span><br><span class="line">0cf8-0cff : PCI conf1</span><br><span class="line">0d00-ffff : PCI Bus 0000:00</span><br><span class="line">  afe0-afe3 : ACPI GPE0_BLK</span><br><span class="line">  c000-c03f : 0000:00:03.0</span><br><span class="line">    c000-c03f : e1000</span><br><span class="line">  c040-c04f : 0000:00:01.1</span><br><span class="line">    c040-c04f : ata_piix</span><br></pre></td></tr></table></figure>
+
+<h2 id="访问PCI设备配置空间中的Memory-空间和-I-O-空间"><a href="#访问PCI设备配置空间中的Memory-空间和-I-O-空间" class="headerlink" title="访问PCI设备配置空间中的Memory 空间和 I/O 空间"></a>访问PCI设备配置空间中的Memory 空间和 I/O 空间</h2><p>PMIO端口的编址是独立于系统的地址空间，其实就是一段地址区域，所有外设的地址都映射到这段区域中。</p>
+<p>MMIO是直接把寄存器的地址空间直接映射到系统地址空间，系统地址空间往往会保留一段内存区用于这种MMIO的映射（当然肯定是位于系统内存区），这样系统可以直接使用普通的访存指令直接访问设备的寄存器，随着计算机内存容量的日益增大，这种方式更是显出独特的优势，在性能至上的理念下，使用MMIO可以最大限度满足日益增长的系统和外设存储的需要。所以当前其实大多数外设都是采用MMIO的方式。</p>
+<h3 id="MMIO"><a href="#MMIO" class="headerlink" title="MMIO"></a>MMIO</h3><p>MMIO示例代码：通过映射resource0文件实现对Memory 空间的访问</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;stdint.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;errno.h&gt;</span><br><span class="line">#include &lt;signal.h&gt;</span><br><span class="line">#include &lt;fcntl.h&gt;</span><br><span class="line">#include &lt;ctype.h&gt;</span><br><span class="line">#include &lt;termios.h&gt;</span><br><span class="line">#include &lt;assert.h&gt;</span><br><span class="line">#include &lt;sys/types.h&gt;</span><br><span class="line">#include &lt;sys/mman.h&gt;</span><br><span class="line">#include &lt;sys/io.h&gt;</span><br><span class="line"></span><br><span class="line">#define MAP_SIZE 4096UL</span><br><span class="line">#define MAP_MASK (MAP_SIZE - 1)</span><br><span class="line"></span><br><span class="line">char* pci_device_name = &quot;/sys/devices/pci0000:00/0000:00:04.0/resource0&quot;;</span><br><span class="line"></span><br><span class="line">unsigned char* mmio_base;</span><br><span class="line"></span><br><span class="line">unsigned char* getMMIOBase()&#123;</span><br><span class="line">    </span><br><span class="line">    int fd;</span><br><span class="line">    if((fd = open(pci_device_name, O_RDWR | O_SYNC)) == -1) &#123;</span><br><span class="line">        perror(&quot;open pci device&quot;);</span><br><span class="line">        exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    mmio_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);</span><br><span class="line">    if(mmio_base == (void *) -1) &#123;</span><br><span class="line">        perror(&quot;mmap&quot;);</span><br><span class="line">        exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    return mmio_base;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void mmio_write(uint64_t addr, uint64_t value)</span><br><span class="line">&#123;</span><br><span class="line">    *((uint64_t*)(mmio_base + addr)) = value;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">uint64_t mmio_read(uint64_t addr)</span><br><span class="line">&#123;</span><br><span class="line">    return *((uint64_t*)(mmio_base + addr));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(int argc, char const *argv[])</span><br><span class="line">&#123;</span><br><span class="line">    getMMIOBase();</span><br><span class="line">    printf(&quot;mmio_base Resource0Base: %p\n&quot;, mmio_base);</span><br><span class="line"></span><br><span class="line">    mmio_write(144, val);</span><br><span class="line">    mmio_read(144);</span><br><span class="line">    </span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>据说还可以这样，但是这个在用户空间好像不行，应该是只能编写内核模块，即驱动才能用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;asm/io.h&gt;</span><br><span class="line">#include &lt;linux/ioport.h&gt;</span><br><span class="line"></span><br><span class="line">long addr=ioremap(ioaddr,iomemsize);</span><br><span class="line">readb(addr);</span><br><span class="line">readw(addr);</span><br><span class="line">readl(addr);</span><br><span class="line">readq(addr);//qwords=8 btyes</span><br><span class="line"></span><br><span class="line">writeb(val,addr);</span><br><span class="line">writew(val,addr);</span><br><span class="line">writel(val,addr);</span><br><span class="line">writeq(val,addr);</span><br><span class="line">iounmap(addr);</span><br></pre></td></tr></table></figure>
+
+<h3 id="PMIO"><a href="#PMIO" class="headerlink" title="PMIO"></a>PMIO</h3><p>需要权限才能访问端口，0x000-0x3ff可以用ioperm(from, num, turn_on)</p>
+<p>比如ioperm(0x300,5,1); 获得 0x300 到 0x304 端口的访问权限</p>
+<p>但是更高的端口就要用iopl(3)来获得权限，这个可以获得范围所有端口权限。当然我们需要root用户来运行程序才行。</p>
+<p>in,out系列函数如下，分别是写入/读取一个字节（b结尾），两个字节（w结尾），四个字节（l结尾）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;sys/io.h &gt;</span><br><span class="line"></span><br><span class="line">iopl(3); </span><br><span class="line">inb(port); </span><br><span class="line">inw(port); </span><br><span class="line">inl(port);</span><br><span class="line"></span><br><span class="line">outb(val,port); </span><br><span class="line">outw(val,port); </span><br><span class="line">outl(val,port);</span><br></pre></td></tr></table></figure>
+
+<p>当然调试的时候可以通过dd来触发PMIO</p>
+<p>比如用dd命令向0xc050端口写入666吧，echo会自动加上换行，所以实际写入的是666加上换行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@ubuntu:~$ echo 666 &gt; test</span><br><span class="line">ubuntu@ubuntu:~$ sudo dd if=test of=/sys/devices/pci0000\:00/0000\:00\:03.0/resource1 bs=4 count=1</span><br></pre></td></tr></table></figure>
+
+<h1 id="QEMU中的对象模型"><a href="#QEMU中的对象模型" class="headerlink" title="QEMU中的对象模型"></a>QEMU中的对象模型</h1><p>QEMU提供了一套面向对象编程的模型——QOM，即QEMU Object Module，几乎所有的设备如CPU、内存、总线等都是利用这一面向对象的模型来实现的。</p>
+<p>而对象的初始化分为四步：</p>
+<ol>
+<li>将 TypeInfo 注册 TypeImpl</li>
+<li>实例化 ObjectClass</li>
+<li>实例化 Object</li>
+<li>添加 Property</li>
+</ol>
+<p>QOM模型的实现代码位于qom/文件夹下的文件中，这涉及了几个结构TypeImpl, ObjectClass, Object和TypeInfo。看了下它们的定义都在<code>https://github.com/qemu/qemu/blob/master/include/qom/object.h</code>可以找到，只有TypeImpl的具体结构是在<code>https://github.com/qemu/qemu/blob/master/qom/object.c</code>中。</p>
+<p>ObjectClass: 是所有类对象的基类，仅仅保存了一个整数 type 。<br>Object: 是所有对象的 基类Base Object ， 第一个成员变量为指向 ObjectClass 的指针。<br>TypeInfo：是用户用来定义一个 Type 的工具型的数据结构。<br>TypeImpl：对数据类型的抽象数据结构，TypeInfo的属性与TypeImpl的属性对应。</p>
+<h2 id="将-TypeInfo-注册-TypeImpl"><a href="#将-TypeInfo-注册-TypeImpl" class="headerlink" title="将 TypeInfo 注册 TypeImpl"></a>将 TypeInfo 注册 TypeImpl</h2><p>下面是TypeInfo</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">struct TypeInfo</span><br><span class="line">&#123;</span><br><span class="line">    const char *name;</span><br><span class="line">    const char *parent;</span><br><span class="line"></span><br><span class="line">    size_t instance_size;</span><br><span class="line">    void (*instance_init)(Object *obj);</span><br><span class="line">    void (*instance_post_init)(Object *obj);</span><br><span class="line">    void (*instance_finalize)(Object *obj);</span><br><span class="line"></span><br><span class="line">    bool abstract;</span><br><span class="line">    size_t class_size;</span><br><span class="line"></span><br><span class="line">    void (*class_init)(ObjectClass *klass, void *data);</span><br><span class="line">    void (*class_base_init)(ObjectClass *klass, void *data);</span><br><span class="line">    void *class_data;</span><br><span class="line"></span><br><span class="line">    InterfaceInfo *interfaces;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>2018年12月更新，删除了class_finalize函数</p>
+<p><a href="https://github.com/qemu/qemu/commit/37fdb2c56c603378b85466d1dd64fb4c95f9deb7" target="_blank" rel="noopener">https://github.com/qemu/qemu/commit/37fdb2c56c603378b85466d1dd64fb4c95f9deb7</a></p>
+<p> 注释对于里面的成员写得比较详细了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * TypeInfo:</span><br><span class="line"> * @name: The name of the type.</span><br><span class="line"> * @parent: The name of the parent type.</span><br><span class="line"> * @instance_size: The size of the object (derivative of #Object).  If</span><br><span class="line"> *   @instance_size is 0, then the size of the object will be the size of the</span><br><span class="line"> *   parent object.</span><br><span class="line"> * @instance_init: This function is called to initialize an object.  The parent</span><br><span class="line"> *   class will have already been initialized so the type is only responsible</span><br><span class="line"> *   for initializing its own members.</span><br><span class="line"> * @instance_post_init: This function is called to finish initialization of</span><br><span class="line"> *   an object, after all @instance_init functions were called.</span><br><span class="line"> * @instance_finalize: This function is called during object destruction.  This</span><br><span class="line"> *   is called before the parent @instance_finalize function has been called.</span><br><span class="line"> *   An object should only free the members that are unique to its type in this</span><br><span class="line"> *   function.</span><br><span class="line"> * @abstract: If this field is true, then the class is considered abstract and</span><br><span class="line"> *   cannot be directly instantiated.</span><br><span class="line"> * @class_size: The size of the class object (derivative of #ObjectClass)</span><br><span class="line"> *   for this object.  If @class_size is 0, then the size of the class will be</span><br><span class="line"> *   assumed to be the size of the parent class.  This allows a type to avoid</span><br><span class="line"> *   implementing an explicit class type if they are not adding additional</span><br><span class="line"> *   virtual functions.</span><br><span class="line"> * @class_init: This function is called after all parent class initialization</span><br><span class="line"> *   has occurred to allow a class to set its default virtual method pointers.</span><br><span class="line"> *   This is also the function to use to override virtual methods from a parent</span><br><span class="line"> *   class.</span><br><span class="line"> * @class_base_init: This function is called for all base classes after all</span><br><span class="line"> *   parent class initialization has occurred, but before the class itself</span><br><span class="line"> *   is initialized.  This is the function to use to undo the effects of</span><br><span class="line"> *   memcpy from the parent class to the descendants.</span><br><span class="line"> * @class_data: Data to pass to the @class_init,</span><br><span class="line"> *   @class_base_init. This can be useful when building dynamic</span><br><span class="line"> *   classes.</span><br><span class="line"> * @interfaces: The list of interfaces associated with this type.  This</span><br><span class="line"> *   should point to a static array that&apos;s terminated with a zero filled</span><br><span class="line"> *   element.</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+
+<p>其实包含了下面信息</p>
+<ol>
+<li>Name<br> 包括自己的Name，Parent的Name。</li>
+<li>Class（针对ObjectClass）<br> ObjectClass的信息包括，class_size，class_data，class相关函数：class_base_init，class_init，class_finalize。<br> 这些函数都是为了初始化，释放结构体ObjectClass。</li>
+<li>Instance（针对的是Object）<br> 对象Object信息包括：instance_size，instance相关函数：instance_post_init，instance_init，instance_finalize。<br> 这些函数都是为了初始化，释放结构体Object。</li>
+<li>其他信息<br> abstract是否为抽象。interface数组。</li>
+</ol>
+<p>一般是定义一个TypeInfo，然后调用 type_register(TypeInfo) 或者 type_register_static(TypeInfo) 函数（我看到的基本都是type_register_static比较多），就会生成相应的TypeImpl实例，将这个TypeInfo注册到全局的TypeImpl的hash表中。<br>TypeInfo的属性与TypeImpl的属性对应，实际上qemu就是通过用户提供的TypeInfo创建的TypeImpl的对象。</p>
+<p>我们看看<code>https://github.com/qemu/qemu/blob/master/include/qom/object.h</code>里面的注释，看看怎么定义一个TypeInfo，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">* &lt;example&gt;</span><br><span class="line">*   &lt;title&gt;Creating a minimal type&lt;/title&gt;</span><br><span class="line">*   &lt;programlisting&gt;</span><br><span class="line">* #include &quot;qdev.h&quot;</span><br><span class="line">*</span><br><span class="line">* #define TYPE_MY_DEVICE &quot;my-device&quot;</span><br><span class="line">*</span><br><span class="line">* // No new virtual functions: we can reuse the typedef for the</span><br><span class="line">* // superclass.</span><br><span class="line">* typedef DeviceClass MyDeviceClass;</span><br><span class="line">* typedef struct MyDevice</span><br><span class="line">* &#123;</span><br><span class="line">*     DeviceState parent;</span><br><span class="line">*</span><br><span class="line">*     int reg0, reg1, reg2;</span><br><span class="line">* &#125; MyDevice;</span><br><span class="line">*</span><br><span class="line">* static const TypeInfo my_device_info = &#123;</span><br><span class="line">*     .name = TYPE_MY_DEVICE,</span><br><span class="line">*     .parent = TYPE_DEVICE,</span><br><span class="line">*     .instance_size = sizeof(MyDevice),</span><br><span class="line">* &#125;;</span><br><span class="line">*</span><br><span class="line">* static void my_device_register_types(void)</span><br><span class="line">* &#123;</span><br><span class="line">*     type_register_static(&amp;my_device_info);</span><br><span class="line">* &#125;</span><br><span class="line">*</span><br><span class="line">* type_init(my_device_register_types)</span><br><span class="line">*   &lt;/programlisting&gt;</span><br><span class="line">* &lt;/example&gt;</span><br></pre></td></tr></table></figure>
+
+<p>或者我们去源码找一个实际的硬件<code>https://github.com/qemu/qemu/blob/1c5880e785807abcc715a7ee216706e02c1af689/hw/pci/pci.c#L2801</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">static const TypeInfo pci_device_type_info = &#123;</span><br><span class="line">    .name = TYPE_PCI_DEVICE,</span><br><span class="line">    .parent = TYPE_DEVICE,</span><br><span class="line">    .instance_size = sizeof(PCIDevice),</span><br><span class="line">    .abstract = true,</span><br><span class="line">    .class_size = sizeof(PCIDeviceClass),</span><br><span class="line">    .class_init = pci_device_class_init,</span><br><span class="line">    .class_base_init = pci_device_class_base_init,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">static void pci_register_types(void)</span><br><span class="line">&#123;</span><br><span class="line">    type_register_static(&amp;pci_bus_info);</span><br><span class="line">    type_register_static(&amp;pcie_bus_info);</span><br><span class="line">    type_register_static(&amp;conventional_pci_interface_info);</span><br><span class="line">    type_register_static(&amp;pcie_interface_info);</span><br><span class="line">    type_register_static(&amp;pci_device_type_info);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type_init(pci_register_types)</span><br></pre></td></tr></table></figure>
+
+<p>可以看到定义的时候不一定要初始化所有的成员，</p>
+<p><code>type_init</code>接收用户写好的XXX_register_types（里面使用type_register_static生成相应的TypeImpl实例）</p>
+<p>跟随type_register_static函数去看看</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">static TypeImpl *type_register_internal(const TypeInfo *info)</span><br><span class="line">&#123;</span><br><span class="line">    TypeImpl *ti;</span><br><span class="line">    ti = type_new(info);</span><br><span class="line"></span><br><span class="line">    type_table_add(ti);</span><br><span class="line">    return ti;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">TypeImpl *type_register(const TypeInfo *info)</span><br><span class="line">&#123;</span><br><span class="line">    assert(info-&gt;parent);</span><br><span class="line">    return type_register_internal(info);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">TypeImpl *type_register_static(const TypeInfo *info)</span><br><span class="line">&#123;</span><br><span class="line">    return type_register(info);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到最终进入<code>type_register_internal</code>，<code>type_new</code>就是将TypeInfo的信息传递给TypeImpl</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">static TypeImpl *type_new(const TypeInfo *info)</span><br><span class="line">&#123;</span><br><span class="line">    TypeImpl *ti = g_malloc0(sizeof(*ti));</span><br><span class="line">    int i;</span><br><span class="line"></span><br><span class="line">    g_assert(info-&gt;name != NULL);</span><br><span class="line"></span><br><span class="line">    if (type_table_lookup(info-&gt;name) != NULL) &#123;</span><br><span class="line">        fprintf(stderr, &quot;Registering `%s&apos; which already exists\n&quot;, info-&gt;name);</span><br><span class="line">        abort();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ti-&gt;name = g_strdup(info-&gt;name);</span><br><span class="line">    ti-&gt;parent = g_strdup(info-&gt;parent);</span><br><span class="line"></span><br><span class="line">    ti-&gt;class_size = info-&gt;class_size;</span><br><span class="line">    ti-&gt;instance_size = info-&gt;instance_size;</span><br><span class="line"></span><br><span class="line">    ti-&gt;class_init = info-&gt;class_init;</span><br><span class="line">    ti-&gt;class_base_init = info-&gt;class_base_init;</span><br><span class="line">    ti-&gt;class_data = info-&gt;class_data;</span><br><span class="line"></span><br><span class="line">    ti-&gt;instance_init = info-&gt;instance_init;</span><br><span class="line">    ti-&gt;instance_post_init = info-&gt;instance_post_init;</span><br><span class="line">    ti-&gt;instance_finalize = info-&gt;instance_finalize;</span><br><span class="line"></span><br><span class="line">    ti-&gt;abstract = info-&gt;abstract;</span><br><span class="line"></span><br><span class="line">    for (i = 0; info-&gt;interfaces &amp;&amp; info-&gt;interfaces[i].type; i++) &#123;</span><br><span class="line">        ti-&gt;interfaces[i].typename = g_strdup(info-&gt;interfaces[i].type);</span><br><span class="line">    &#125;</span><br><span class="line">    ti-&gt;num_interfaces = i;</span><br><span class="line"></span><br><span class="line">    return ti;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>之后的<code>type_table_add</code>就是将TypeImpl插入到一个哈希表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">static GHashTable *type_table_get(void)</span><br><span class="line">&#123;</span><br><span class="line">    static GHashTable *type_table;</span><br><span class="line"></span><br><span class="line">    if (type_table == NULL) &#123;</span><br><span class="line">        type_table = g_hash_table_new(g_str_hash, g_str_equal);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return type_table;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static bool enumerating_types;</span><br><span class="line"></span><br><span class="line">static void type_table_add(TypeImpl *ti)</span><br><span class="line">&#123;</span><br><span class="line">    assert(!enumerating_types);</span><br><span class="line">    g_hash_table_insert(type_table_get(), (void *)ti-&gt;name, ti);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的<code>g_hash_table_insert</code>是glib库中的函数，定义如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">gboolean</span><br><span class="line">g_hash_table_insert (GHashTable *hash_table,</span><br><span class="line">                     gpointer key,</span><br><span class="line">                     gpointer value);</span><br></pre></td></tr></table></figure>
+
+<p>首先第一个参数通过<code>type_table_get()</code>中的<code>g_hash_table_new</code>创建一个GHashTable，第二、三个参数就是key和value了，这里分别是name还有TypeImpl。</p>
+<p>有了一个TypeImpl的哈希表，下一步就是初始化每个type了，这一步可以看成是class的初始化，可以理解成每一个type对应了一个class，接下来会初始化class。</p>
+<p>我们回到<code>type_init</code>，这实际是个宏，代码在<code>https://github.com/qemu/qemu/blob/bb9bf94b3e8926553290bc9a7cb84315af422086/include/qemu/module.h#L21</code>，看着跟linux的驱动有点像的感觉，当肯定不是一回事，可以看到<code>do_qemu_init_ ## function(void)</code>前面有<code>__attribute__((constructor))</code>关键字，这个可以让函数在main函数之前执行！！！。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">#ifdef BUILD_DSO</span><br><span class="line">void DSO_STAMP_FUN(void);</span><br><span class="line">/* This is a dummy symbol to identify a loaded DSO as a QEMU module, so we can</span><br><span class="line"> * distinguish &quot;version mismatch&quot; from &quot;not a QEMU module&quot;, when the stamp</span><br><span class="line"> * check fails during module loading */</span><br><span class="line">void qemu_module_dummy(void);</span><br><span class="line"></span><br><span class="line">#define module_init(function, type)                                         \</span><br><span class="line">static void __attribute__((constructor)) do_qemu_init_ ## function(void)    \</span><br><span class="line">&#123;                                                                           \</span><br><span class="line">    register_dso_module_init(function, type);                               \</span><br><span class="line">&#125;</span><br><span class="line">#else</span><br><span class="line">/* This should not be used directly.  Use block_init etc. instead.  */</span><br><span class="line">#define module_init(function, type)                                         \</span><br><span class="line">static void __attribute__((constructor)) do_qemu_init_ ## function(void)    \</span><br><span class="line">&#123;                                                                           \</span><br><span class="line">    register_module_init(function, type);                                   \</span><br><span class="line">&#125;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">typedef enum &#123;</span><br><span class="line">    MODULE_INIT_BLOCK,</span><br><span class="line">    MODULE_INIT_OPTS,</span><br><span class="line">    MODULE_INIT_QOM,</span><br><span class="line">    MODULE_INIT_TRACE,</span><br><span class="line">    MODULE_INIT_MAX</span><br><span class="line">&#125; module_init_type;</span><br><span class="line"></span><br><span class="line">#define block_init(function) module_init(function, MODULE_INIT_BLOCK)</span><br><span class="line">#define opts_init(function) module_init(function, MODULE_INIT_OPTS)</span><br><span class="line">#define type_init(function) module_init(function, MODULE_INIT_QOM)</span><br><span class="line">#define trace_init(function) module_init(function, MODULE_INIT_TRACE)</span><br></pre></td></tr></table></figure>
+
+<p>可以看到是调用的<code>register_module_init</code>，<code>https://github.com/qemu/qemu/blob/810923480863c43ecb22ae124156298385439339/util/module.c#L62</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">static ModuleTypeList init_type_list[MODULE_INIT_MAX];</span><br><span class="line"></span><br><span class="line">static ModuleTypeList dso_init_list;</span><br><span class="line"></span><br><span class="line">static void init_lists(void)</span><br><span class="line">&#123;</span><br><span class="line">    static int inited;</span><br><span class="line">    int i;</span><br><span class="line"></span><br><span class="line">    if (inited) &#123;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    for (i = 0; i &lt; MODULE_INIT_MAX; i++) &#123;</span><br><span class="line">        QTAILQ_INIT(&amp;init_type_list[i]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    QTAILQ_INIT(&amp;dso_init_list);</span><br><span class="line"></span><br><span class="line">    inited = 1;</span><br><span class="line">&#125;</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">static ModuleTypeList *find_type(module_init_type type)</span><br><span class="line">&#123;</span><br><span class="line">    init_lists();</span><br><span class="line"></span><br><span class="line">    return &amp;init_type_list[type];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void register_module_init(void (*fn)(void), module_init_type type)</span><br><span class="line">&#123;</span><br><span class="line">    ModuleEntry *e;</span><br><span class="line">    ModuleTypeList *l;</span><br><span class="line"></span><br><span class="line">    e = g_malloc0(sizeof(*e));</span><br><span class="line">    e-&gt;init = fn;</span><br><span class="line">    e-&gt;type = type;</span><br><span class="line"></span><br><span class="line">    l = find_type(type);</span><br><span class="line"></span><br><span class="line">    QTAILQ_INSERT_TAIL(l, e, node);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到将<code>函数指针fn</code>给到了<code>ModuleEntry-&gt;init</code>，之后通过<code>find_type(MODULE_INIT_QOM)</code>找到对应的list，最后insert到MODULE_INIT_QOM对应的list——<code>QTAILQ_INSERT_TAIL(l, e, node);</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#define QTAILQ_INSERT_TAIL(head, elm, field) do &#123;                       \</span><br><span class="line">        (elm)-&gt;field.tqe_next = NULL;                                   \</span><br><span class="line">        (elm)-&gt;field.tqe_circ.tql_prev = (head)-&gt;tqh_circ.tql_prev;     \</span><br><span class="line">        (head)-&gt;tqh_circ.tql_prev-&gt;tql_next = (elm);                    \</span><br><span class="line">        (head)-&gt;tqh_circ.tql_prev = &amp;(elm)-&gt;field.tqe_circ;             \</span><br><span class="line">&#125; while (/*CONSTCOND*/0)</span><br></pre></td></tr></table></figure>
+
+<p>那么这个东西是怎么调用的呢？（经过一顿操作，我发现qemu-system的main函数代码在vl.c文件，通过qemu-system-x86_64的main函数的特征去grep源码）</p>
+<p>看到main函数<code>https://github.com/qemu/qemu/blob/aceeaa69d28e6f08a24395d0aa6915b687d0a681/vl.c#L2753</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, char **argv, char **envp)</span><br><span class="line">&#123;</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line"></span><br><span class="line">    os_set_line_buffering();</span><br><span class="line"></span><br><span class="line">    error_init(argv[0]);</span><br><span class="line">    module_call_init(MODULE_INIT_TRACE);</span><br><span class="line"></span><br><span class="line">    qemu_init_cpu_list();</span><br><span class="line">    qemu_init_cpu_loop();</span><br><span class="line"></span><br><span class="line">    qemu_mutex_lock_iothread();</span><br><span class="line"></span><br><span class="line">    atexit(qemu_run_exit_notifiers);</span><br><span class="line">    qemu_init_exec_dir(argv[0]);</span><br><span class="line"></span><br><span class="line">    module_call_init(MODULE_INIT_QOM);   &lt;================================ 这里</span><br><span class="line"></span><br><span class="line">    qemu_add_opts(&amp;qemu_drive_opts);</span><br><span class="line">    qemu_add_drive_opts(&amp;qemu_legacy_drive_opts);</span><br><span class="line">    qemu_add_drive_opts(&amp;qemu_common_drive_opts);</span><br><span class="line">    qemu_add_drive_opts(&amp;qemu_drive_opts);</span><br><span class="line">    qemu_add_drive_opts(&amp;bdrv_runtime_opts);</span><br><span class="line">    qemu_add_opts(&amp;qemu_chardev_opts);</span><br><span class="line">    qemu_add_opts(&amp;qemu_device_opts);</span><br><span class="line">    qemu_add_opts(&amp;qemu_netdev_opts);</span><br><span class="line">    qemu_add_opts(&amp;qemu_nic_opts);</span><br></pre></td></tr></table></figure>
+
+<p>看打上面，在main函数中调用了<code>module_call_init(MODULE_INIT_QOM);</code></p>
+<p>再去看看<code>module_call_init</code>的实现，这时候就很明了了，调用的ModuleEntry中的init函数，正好和之前的<code>register_module_init</code>将fn函数指针复制到init函数指针的操作连起来了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// https://github.com/qemu/qemu/blob/810923480863c43ecb22ae124156298385439339/util/module.c#L89</span><br><span class="line">void module_call_init(module_init_type type)</span><br><span class="line">&#123;</span><br><span class="line">    ModuleTypeList *l;</span><br><span class="line">    ModuleEntry *e;</span><br><span class="line"></span><br><span class="line">    l = find_type(type);</span><br><span class="line"></span><br><span class="line">    QTAILQ_FOREACH(e, l, node) &#123;</span><br><span class="line">        e-&gt;init();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总结一下：<br>1、首先<code>__attribute__((constructor))</code>的修饰让<code>type_init</code>在main之前执行，<code>type_init</code>的参数是<code>XXX_register_types</code>函数指针，将函数指针传递到<code>ModuleEntry</code>的init函数指针，最后就是将这个<code>ModuleEntry</code>插入到<code>ModuleTypeList</code><br>2、main函数中的<code>module_call_init(MODULE_INIT_QOM);</code>调用了<code>MODULE_INIT_QOM</code>类型的ModuleTypeList中的所有ModuleEntry中的init()函数，也就是第一步<code>type_init</code>的第一个参数<code>XXX_register_types</code>函数指针<br>3、那就下了就是<code>XXX_register_types</code>函数的操作了，就是创建TypeImpl的哈希表</p>
+<h2 id="ObjectClass的初始化"><a href="#ObjectClass的初始化" class="headerlink" title="ObjectClass的初始化"></a>ObjectClass的初始化</h2><p>main函数中的<code>module_call_init</code>调用了<code>MODULE_INIT_QOM list</code>中的<code>ModuleEntry</code>的init函数，init函数进行初始化（init函数就是上面说的<code>XXX_register_types</code>函数），创建TypeImpl的哈希表。</p>
+<p>main函数继续往下走我们看到调用了下面的<code>https://github.com/qemu/qemu/blob/dd5b0f95490883cd8bc7d070db8de70d5c979cbc/vl.c#L3804</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">machine_class = select_machine();</span><br></pre></td></tr></table></figure>
+
+<p>直接给出调用链，详细代码就不贴出来了，有兴趣可以自己找找</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">main-&gt;select_machine-&gt;object_class_get_list-&gt;object_class_foreach</span><br></pre></td></tr></table></figure>
+
+<p>看到object_class_foreach函数，调用参数贴上：<code>object_class_foreach(object_class_get_list_tramp,
+                         implements_type, include_abstract, &amp;list);</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">void object_class_foreach(void (*fn)(ObjectClass *klass, void *opaque),</span><br><span class="line">                          const char *implements_type, bool include_abstract,</span><br><span class="line">                          void *opaque)</span><br><span class="line">&#123;</span><br><span class="line">    OCFData data = &#123; fn, implements_type, include_abstract, opaque &#125;;</span><br><span class="line"></span><br><span class="line">    enumerating_types = true;</span><br><span class="line">    g_hash_table_foreach(type_table_get(), object_class_foreach_tramp, &amp;data);</span><br><span class="line">    enumerating_types = false;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>g_hash_table_foreach</code>的第一个参数是函数指针——type_table_get函数，看了下应该是之前创建的name为key,TypeImpl为value的GHashTable。</p>
+<p>上面的<code>g_hash_table_foreach</code>是对GHashTable中执行 GHFunc函数，也即执行<code>object_class_foreach_tramp</code>函数，它的参数除了key，value对，还有<code>gpointer user_data</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">void</span><br><span class="line">g_hash_table_foreach (GHashTable *hash_table,</span><br><span class="line">                      GHFunc func,</span><br><span class="line">                      gpointer user_data);</span><br></pre></td></tr></table></figure>
+
+<p>到<code>object_class_foreach_tramp</code>这里，这里已经出现了<code>ObjectClass</code>，通过调用<code>type_initialize</code>后，即可获得<code>ObjectClass *k</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">static void object_class_foreach_tramp(gpointer key, gpointer value,</span><br><span class="line">                                       gpointer opaque)</span><br><span class="line">&#123;</span><br><span class="line">    OCFData *data = opaque;</span><br><span class="line">    TypeImpl *type = value;</span><br><span class="line">    ObjectClass *k;</span><br><span class="line"></span><br><span class="line">    type_initialize(type);</span><br><span class="line">    k = type-&gt;class;</span><br><span class="line"></span><br><span class="line">    if (!data-&gt;include_abstract &amp;&amp; type-&gt;abstract) &#123;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (data-&gt;implements_type &amp;&amp; </span><br><span class="line">        !object_class_dynamic_cast(k, data-&gt;implements_type)) &#123;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    data-&gt;fn(k, data-&gt;opaque);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后调用的<code>data-&gt;fn(k, data-&gt;opaque);</code>，<code>data-&gt;fn函数</code>其实是<code>object_class_get_list_tramp</code>函数，<code>g_slist_prepend</code>是glib库的函数（非glibc库），<code>g_slist_prepend(*list, klass);</code>是将<code>klass</code>插入到<code>*list</code>的开头的地方，即将<code>ObjectClass *k</code>插入到<code>data-&gt;opaque</code>列表里面，<code>data-&gt;opaque</code>也即在<code>object_class_get_list</code>函数定义的局部变量<code>GSList *list = NULL;</code>列表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">static void object_class_get_list_tramp(ObjectClass *klass, void *opaque)</span><br><span class="line">&#123;</span><br><span class="line">    GSList **list = opaque;</span><br><span class="line"></span><br><span class="line">    *list = g_slist_prepend(*list, klass);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们进入到<code>type_initialize</code>函数看看，可以看到传入的正是TypeImpl</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line">static void type_initialize(TypeImpl *ti)</span><br><span class="line">&#123;</span><br><span class="line">    TypeImpl *parent;</span><br><span class="line">	// 假如ti-&gt;class不为空说明class已经初始化过了，直接返回</span><br><span class="line">    if (ti-&gt;class) &#123;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ti-&gt;class_size = type_class_get_size(ti);</span><br><span class="line">    ti-&gt;instance_size = type_object_get_size(ti);</span><br><span class="line">    /* Any type with zero instance_size is implicitly abstract.</span><br><span class="line">     * This means interface types are all abstract.</span><br><span class="line">     * instance_size为0说明这个TypeImpl是抽象的</span><br><span class="line">     */</span><br><span class="line">    if (ti-&gt;instance_size == 0) &#123;</span><br><span class="line">        ti-&gt;abstract = true;</span><br><span class="line">    &#125;</span><br><span class="line">    // 判断ti的祖先是否是type_interface（就是不断取ti的parent去判断是否跟type_interface相等）</span><br><span class="line">    if (type_is_ancestor(ti, type_interface)) &#123;</span><br><span class="line">        // assert(false)才会报错退出</span><br><span class="line">        assert(ti-&gt;instance_size == 0);</span><br><span class="line">        assert(ti-&gt;abstract);</span><br><span class="line">        assert(!ti-&gt;instance_init);</span><br><span class="line">        assert(!ti-&gt;instance_post_init);</span><br><span class="line">        assert(!ti-&gt;instance_finalize);</span><br><span class="line">        assert(!ti-&gt;num_interfaces);</span><br><span class="line">    &#125;</span><br><span class="line">    // 申请class_size大小的内存给到（ti-&gt;class就是ObjectClass类型的）</span><br><span class="line">    ti-&gt;class = g_malloc0(ti-&gt;class_size);</span><br><span class="line">	// 尝试获取parent，若不为空，就会递归调用type_initialize去尝试初始化，那这里就说明为啥开头要判断ti-&gt;class是否为空</span><br><span class="line">    parent = type_get_parent(ti);</span><br><span class="line">    if (parent) &#123;</span><br><span class="line">        type_initialize(parent);</span><br><span class="line">        GSList *e;</span><br><span class="line">        int i;</span><br><span class="line">        // ti的class_size得大于parent的class_size，将parent-&gt;class复制到ti-&gt;class</span><br><span class="line">        g_assert(parent-&gt;class_size &lt;= ti-&gt;class_size);</span><br><span class="line">        memcpy(ti-&gt;class, parent-&gt;class, parent-&gt;class_size);</span><br><span class="line">        ti-&gt;class-&gt;interfaces = NULL;</span><br><span class="line">        ti-&gt;class-&gt;properties = g_hash_table_new_full(</span><br><span class="line">            g_str_hash, g_str_equal, g_free, object_property_free);</span><br><span class="line"></span><br><span class="line">        for (e = parent-&gt;class-&gt;interfaces; e; e = e-&gt;next) &#123;</span><br><span class="line">            InterfaceClass *iface = e-&gt;data;</span><br><span class="line">            ObjectClass *klass = OBJECT_CLASS(iface);</span><br><span class="line">            // 初始化 ti-&gt;class-&gt;interfaces，这里是循环将父type的interface的一些信息添加到ti-&gt;class-&gt;interfaces列表上面去</span><br><span class="line">            type_initialize_interface(ti, iface-&gt;interface_type, klass-&gt;type);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        for (i = 0; i &lt; ti-&gt;num_interfaces; i++) &#123;</span><br><span class="line">            //上面是ti-&gt;class-&gt;interfaces，这里ti-&gt;interfaces，很容易搞混哦</span><br><span class="line">            // 这里通过typename获取TypeImpl</span><br><span class="line">            TypeImpl *t = type_get_by_name(ti-&gt;interfaces[i].typename);</span><br><span class="line">            for (e = ti-&gt;class-&gt;interfaces; e; e = e-&gt;next) &#123;</span><br><span class="line">                TypeImpl *target_type = OBJECT_CLASS(e-&gt;data)-&gt;type;</span><br><span class="line">                // 判断target_type的祖先否是是t，是的话就退出第一层for循环了</span><br><span class="line">                if (type_is_ancestor(target_type, t)) &#123;</span><br><span class="line">                    break;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            if (e) &#123;</span><br><span class="line">                continue;</span><br><span class="line">            &#125;</span><br><span class="line">            // 将t的信息同样添加到ti-&gt;class-&gt;interfaces列表上面去</span><br><span class="line">            type_initialize_interface(ti, t, t);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        // parent是空就初始化ti-&gt;class-&gt;properties</span><br><span class="line">        ti-&gt;class-&gt;properties = g_hash_table_new_full(</span><br><span class="line">            g_str_hash, g_str_equal, g_free, object_property_free);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ti-&gt;class-&gt;type = ti;</span><br><span class="line"></span><br><span class="line">    //循环调用parent的class_base_init进行初始化</span><br><span class="line">    while (parent) &#123;</span><br><span class="line">        if (parent-&gt;class_base_init) &#123;</span><br><span class="line">            parent-&gt;class_base_init(ti-&gt;class, ti-&gt;class_data);</span><br><span class="line">        &#125;</span><br><span class="line">        parent = type_get_parent(parent);</span><br><span class="line">    &#125;</span><br><span class="line">    //ti-&gt;class_init函数指针函数不为空，调用ti-&gt;class_init进行初始化</span><br><span class="line">    if (ti-&gt;class_init) &#123;</span><br><span class="line">        ti-&gt;class_init(ti-&gt;class, ti-&gt;class_data);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我就将一些说明直接写在源码里头，简要概括就是，将<code>parent-&gt;class-&gt;interfaces</code>的一些信息添加到<code>ti-&gt;class-&gt;interfaces</code>列表上面，<code>ti-&gt;interfaces[i].typename</code>对应的type的信息也添加到ti-&gt;class-&gt;interfaces列表，最后最重要的就是调用parent的class_base_init进行初始化，最后调用自己<code>ti-&gt;class_init</code>进行初始化。</p>
+<p>参考文章<code>https://terenceli.github.io/%E6%8A%80%E6%9C%AF/2017/01/08/qom-introduction</code>以vmxnet3为例给出了class的层次结构</p>
+<p>可以看到如下层次关系：<code>VMXNET3Class-&gt;PCIDeviceClass-&gt;DeviceClass-&gt;ObjectClass</code>，这是Class的集成关系</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">static const TypeInfo vmxnet3_info = &#123;</span><br><span class="line">    .name          = TYPE_VMXNET3,</span><br><span class="line">    .parent        = TYPE_PCI_DEVICE,</span><br><span class="line">    .class_size    = sizeof(VMXNET3Class),</span><br><span class="line">    .instance_size = sizeof(VMXNET3State),</span><br><span class="line">    .class_init    = vmxnet3_class_init,</span><br><span class="line">    .instance_init = vmxnet3_instance_init,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">typedef struct VMXNET3Class &#123;</span><br><span class="line">    PCIDeviceClass parent_class;</span><br><span class="line">    DeviceRealize parent_dc_realize;</span><br><span class="line">&#125; VMXNET3Class;</span><br><span class="line"></span><br><span class="line">typedef struct PCIDeviceClass &#123;</span><br><span class="line">    DeviceClass parent_class;</span><br><span class="line"></span><br><span class="line">    void (*realize)(PCIDevice *dev, Error **errp);</span><br><span class="line">    int (*init)(PCIDevice *dev);/* TODO convert to realize() and remove */</span><br><span class="line">    PCIUnregisterFunc *exit;</span><br><span class="line">    PCIConfigReadFunc *config_read;</span><br><span class="line">    PCIConfigWriteFunc *config_write;</span><br><span class="line"></span><br><span class="line">	...</span><br><span class="line">&#125; PCIDeviceClass;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">typedef struct DeviceClass &#123;</span><br><span class="line">    /*&lt; private &gt;*/</span><br><span class="line">    ObjectClass parent_class;</span><br><span class="line">    /*&lt; public &gt;*/</span><br><span class="line">	...</span><br><span class="line">&#125; DeviceClass;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">struct ObjectClass</span><br><span class="line">&#123;</span><br><span class="line">    /*&lt; private &gt;*/</span><br><span class="line">    Type type;</span><br><span class="line">    GSList *interfaces;</span><br><span class="line"></span><br><span class="line">    const char *object_cast_cache[OBJECT_CLASS_CAST_CACHE];</span><br><span class="line">    const char *class_cast_cache[OBJECT_CLASS_CAST_CACHE];</span><br><span class="line"></span><br><span class="line">    ObjectUnparent *unparent;</span><br><span class="line"></span><br><span class="line">    GHashTable *properties;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="对象的构造——实例化-Instance-Object"><a href="#对象的构造——实例化-Instance-Object" class="headerlink" title="对象的构造——实例化 Instance(Object)"></a>对象的构造——实例化 Instance(Object)</h2><p><code>https://github.com/qemu/qemu/blob/dd5b0f95490883cd8bc7d070db8de70d5c979cbc/vl.c#L4304</code><br>接下来main函数调用了qemu_opts_foreach，循环查找参数（options）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">qemu_opts_foreach(qemu_find_opts(&quot;device&quot;),</span><br><span class="line">                      device_init_func, NULL, &amp;error_fatal);</span><br></pre></td></tr></table></figure>
+
+<p>先看<code>qemu_opts_foreach</code>函数的定义，就是对于@list的每个成员——member，调用<code>@func(@opaque, member, @errp)</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int qemu_opts_foreach(QemuOptsList *list, qemu_opts_loopfunc func,</span><br><span class="line">                      void *opaque, Error **errp)</span><br></pre></td></tr></table></figure>
+
+<p>当然之前还调用上面的之前是调用了下面两个，看了下default_driver_check就是将<code>qemu_opt_get(opts, &quot;driver&quot;)</code>获取到的driver与<code>default_list[i].driver</code>中的比较，相等就将<code>*(default_list[i].flag) = 0;</code>，<code>default_list</code>可以看这：<code>https://github.com/qemu/qemu/blob/dd5b0f95490883cd8bc7d070db8de70d5c979cbc/vl.c#L220:3</code>；
+而第二个<code>device_help_func</code>实际里面调用了<code>qdev_device_help(opts);</code>，简单看了下<code>qdev_device_help</code>，首先调用<code>driver = qemu_opt_get(opts, &quot;driver&quot;);</code>，接下来就是输出那个driver的help信息，还有那些option什么的：<code>https://github.com/qemu/qemu/blob/dd5b0f95490883cd8bc7d070db8de70d5c979cbc/qdev-monitor.c#L253:5</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">qemu_opts_foreach(qemu_find_opts(&quot;device&quot;),</span><br><span class="line">                      default_driver_check, NULL, NULL);</span><br><span class="line">qemu_opts_foreach(qemu_find_opts(&quot;device&quot;),</span><br><span class="line">                          device_help_func, NULL, NULL)</span><br></pre></td></tr></table></figure>
+
+<p>扯远了，还是回到<code>device_init_func</code>，里面调用<code>qdev_device_add</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">static int device_init_func(void *opaque, QemuOpts *opts, Error **errp)</span><br><span class="line">&#123;</span><br><span class="line">    DeviceState *dev;</span><br><span class="line"></span><br><span class="line">    dev = qdev_device_add(opts, errp);</span><br><span class="line">    if (!dev &amp;&amp; *errp) &#123;</span><br><span class="line">        error_report_err(*errp);</span><br><span class="line">        return -1;</span><br><span class="line">    &#125; else if (dev) &#123;</span><br><span class="line">        object_unref(OBJECT(dev));</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而在<code>qdev_device_add</code>里面，重要的一行是调用了<code>dev = DEVICE(object_new(driver));</code>，而且上一行有个注释——<code>/* create device */</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line">DeviceState *qdev_device_add(QemuOpts *opts, Error **errp)</span><br><span class="line">&#123;</span><br><span class="line">    DeviceClass *dc;</span><br><span class="line">    const char *driver, *path;</span><br><span class="line">    DeviceState *dev = NULL;</span><br><span class="line">    BusState *bus = NULL;</span><br><span class="line">    Error *err = NULL;</span><br><span class="line">    bool hide;</span><br><span class="line">    // 获取-driver的参数值</span><br><span class="line">    driver = qemu_opt_get(opts, &quot;driver&quot;);</span><br><span class="line">    if (!driver) &#123;</span><br><span class="line">        error_setg(errp, QERR_MISSING_PARAMETER, &quot;driver&quot;);</span><br><span class="line">        return NULL;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /* find driver */ </span><br><span class="line">    dc = qdev_get_device_class(&amp;driver, errp);</span><br><span class="line">    if (!dc) &#123;</span><br><span class="line">        return NULL;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /* find bus 找总线*/</span><br><span class="line">    path = qemu_opt_get(opts, &quot;bus&quot;);</span><br><span class="line">    if (path != NULL) &#123;</span><br><span class="line">        bus = qbus_find(path, errp);</span><br><span class="line">        if (!bus) &#123;</span><br><span class="line">            return NULL;</span><br><span class="line">        &#125;</span><br><span class="line">        // 看看OBJECT(bus)及其parent是否有typename为dc-&gt;bus_type</span><br><span class="line">        if (!object_dynamic_cast(OBJECT(bus), dc-&gt;bus_type)) &#123;</span><br><span class="line">            error_setg(errp, &quot;Device &apos;%s&apos; can&apos;t go on %s bus&quot;,</span><br><span class="line">                       driver, object_get_typename(OBJECT(bus)));</span><br><span class="line">            return NULL;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; else if (dc-&gt;bus_type != NULL) &#123;</span><br><span class="line">        bus = qbus_find_recursive(sysbus_get_default(), NULL, dc-&gt;bus_type);</span><br><span class="line">        if (!bus || qbus_is_full(bus)) &#123;</span><br><span class="line">            error_setg(errp, &quot;No &apos;%s&apos; bus found for device &apos;%s&apos;&quot;,</span><br><span class="line">                       dc-&gt;bus_type, driver);</span><br><span class="line">            return NULL;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    hide = should_hide_device(opts);</span><br><span class="line"></span><br><span class="line">    if ((hide || qdev_hotplug) &amp;&amp; bus &amp;&amp; !qbus_is_hotpluggable(bus)) &#123;</span><br><span class="line">        error_setg(errp, QERR_BUS_NO_HOTPLUG, bus-&gt;name);</span><br><span class="line">        return NULL;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (hide) &#123;</span><br><span class="line">        return NULL;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (!migration_is_idle()) &#123;</span><br><span class="line">        error_setg(errp, &quot;device_add not allowed while migrating&quot;);</span><br><span class="line">        return NULL;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /* create device */</span><br><span class="line">    dev = DEVICE(object_new(driver));</span><br><span class="line"></span><br><span class="line">    /* Check whether the hotplug is allowed by the machine 检查机器是否允许热插拔*/</span><br><span class="line">    if (qdev_hotplug &amp;&amp; !qdev_hotplug_allowed(dev, &amp;err)) &#123;</span><br><span class="line">        /* Error must be set in the machine hook */</span><br><span class="line">        assert(err);</span><br><span class="line">        goto err_del_dev;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (bus) &#123;</span><br><span class="line">        qdev_set_parent_bus(dev, bus);</span><br><span class="line">    &#125; else if (qdev_hotplug &amp;&amp; !qdev_get_machine_hotplug_handler(dev)) &#123;</span><br><span class="line">        /* No bus, no machine hotplug handler --&gt; device is not hotpluggable */</span><br><span class="line">        error_setg(&amp;err, &quot;Device &apos;%s&apos; can not be hotplugged on this machine&quot;,</span><br><span class="line">                   driver);</span><br><span class="line">        goto err_del_dev;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    qdev_set_id(dev, qemu_opts_id(opts));</span><br><span class="line"></span><br><span class="line">    /* set properties */</span><br><span class="line">    if (qemu_opt_foreach(opts, set_property, dev, &amp;err)) &#123;</span><br><span class="line">        goto err_del_dev;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    dev-&gt;opts = opts;</span><br><span class="line">    object_property_set_bool(OBJECT(dev), true, &quot;realized&quot;, &amp;err);</span><br><span class="line">    if (err != NULL) &#123;</span><br><span class="line">        dev-&gt;opts = NULL;</span><br><span class="line">        goto err_del_dev;</span><br><span class="line">    &#125;</span><br><span class="line">    return dev;</span><br><span class="line"></span><br><span class="line">err_del_dev:</span><br><span class="line">    error_propagate(errp, err);</span><br><span class="line">    if (dev) &#123;</span><br><span class="line">        object_unparent(OBJECT(dev));</span><br><span class="line">        object_unref(OBJECT(dev));</span><br><span class="line">    &#125;</span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>DEVICE</code>是一个宏，实际是<code>OBJECT_CHECK</code>，而<code>OBJECT_CHECK</code>是A type safe version of @object_dynamic_cast_assert.，看了下<code>object_dynamic_cast_assert</code>的代码，主要是是看看obj是否是TYPE_DEVICE的一个实例（an instance of TYPE_DEVICE）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">#define DEVICE(obj) OBJECT_CHECK(DeviceState, (obj), TYPE_DEVICE)</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * OBJECT_CHECK:</span><br><span class="line"> * @type: The C type to use for the return value.</span><br><span class="line"> * @obj: A derivative of @type to cast.</span><br><span class="line"> * @name: The QOM typename of @type</span><br><span class="line"> *</span><br><span class="line"> * A type safe version of @object_dynamic_cast_assert.  Typically each class</span><br><span class="line"> * will define a macro based on this type to perform type safe dynamic_casts to</span><br><span class="line"> * this object type.</span><br><span class="line"> *</span><br><span class="line"> * If an invalid object is passed to this function, a run time assert will be</span><br><span class="line"> * generated.</span><br><span class="line"> */</span><br><span class="line">#define OBJECT_CHECK(type, obj, name) \</span><br><span class="line">    ((type *)object_dynamic_cast_assert(OBJECT(obj), (name), \</span><br><span class="line">                                        __FILE__, __LINE__, __func__))</span><br></pre></td></tr></table></figure>
+
+<p>扯远了，重点是在<code>object_new</code>啊，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Object *object_new(const char *typename)</span><br><span class="line">&#123;</span><br><span class="line">	//在HashTable中查找name为typename的TypeImpl（这个HashTable是name跟TypeImpl一一对应的表）</span><br><span class="line">    TypeImpl *ti = type_get_by_name(typename);</span><br><span class="line"></span><br><span class="line">    return object_new_with_type(ti);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>向下继续看<code>object_new_with_type</code>，首先<code>type_initialize</code>之前说过，主要是调用parent的<code>class_base_init</code>进行初始化，最后调用自己<code>class_init</code>进行初始化</p>
+<p>而<code>object_initialize_with_type</code>的话，不知为何又一次调用<code>type_initialize</code>，接下来就是一些判断，对obj的class和properties成员进行初始化，而<code>object_ref</code>看了下是对&amp;obj-&gt;ref进行+1，主要还是看下<code>object_init_with_type</code>和<code>object_init_with_type</code>函数吧</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">static Object *object_new_with_type(Type type)</span><br><span class="line">&#123;</span><br><span class="line">    Object *obj;</span><br><span class="line"></span><br><span class="line">    g_assert(type != NULL);</span><br><span class="line">    type_initialize(type);</span><br><span class="line">	// 申请内存</span><br><span class="line">    obj = g_malloc(type-&gt;instance_size);</span><br><span class="line">    object_initialize_with_type(obj, type-&gt;instance_size, type);</span><br><span class="line">	// 设置free函数指针，使用g_free函数</span><br><span class="line">    obj-&gt;free = g_free;</span><br><span class="line"></span><br><span class="line">    return obj;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void object_initialize_with_type(void *data, size_t size, TypeImpl *type)</span><br><span class="line">&#123;</span><br><span class="line">    Object *obj = data;</span><br><span class="line"></span><br><span class="line">    type_initialize(type);</span><br><span class="line"></span><br><span class="line">    g_assert(type-&gt;instance_size &gt;= sizeof(Object));</span><br><span class="line">    g_assert(type-&gt;abstract == false);</span><br><span class="line">    g_assert(size &gt;= type-&gt;instance_size);</span><br><span class="line"></span><br><span class="line">    memset(obj, 0, type-&gt;instance_size);</span><br><span class="line">    obj-&gt;class = type-&gt;class;</span><br><span class="line">    object_ref(obj);</span><br><span class="line">    obj-&gt;properties = g_hash_table_new_full(g_str_hash, g_str_equal,</span><br><span class="line">                                            NULL, object_property_free);</span><br><span class="line">    object_init_with_type(obj, type);</span><br><span class="line">    object_post_init_with_type(obj, type);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>object_init_with_type</code>函数首先判断ti是否有parent（即<code>type-&gt;parent != NULL</code>），有parent就会递归调用<code>object_init_with_type</code>，最终就是调用<code>ti-&gt;instance_init</code>函数</p>
+<p>而<code>object_post_init_with_type</code>差不多，只不过先调用自身的<code>ti-&gt;instance_post_init</code>，再递归调用parent的<code>ti-&gt;instance_post_init</code></p>
+<p>而这些函数都是在<code>type_init(XXXX_register_types)</code>中的<code>XXXX_register_types</code>设置好的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">static void object_init_with_type(Object *obj, TypeImpl *ti)</span><br><span class="line">&#123;</span><br><span class="line">    if (type_has_parent(ti)) &#123;</span><br><span class="line">        object_init_with_type(obj, type_get_parent(ti));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (ti-&gt;instance_init) &#123;</span><br><span class="line">        ti-&gt;instance_init(obj);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void object_post_init_with_type(Object *obj, TypeImpl *ti)</span><br><span class="line">&#123;</span><br><span class="line">    if (ti-&gt;instance_post_init) &#123;</span><br><span class="line">        ti-&gt;instance_post_init(obj);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (type_has_parent(ti)) &#123;</span><br><span class="line">        object_post_init_with_type(obj, type_get_parent(ti));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上一小节我们看到了Class的继承关系，这次是Object的继承关系，上次直接复制了参考文章作者<code>vmxnet3</code>的例子，虽然这个他也是用这个例子，但这次Object的继承关系我自己换一个吧，我用e1000网卡为例，看看Object的集成关系</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">typedef struct E1000State_st &#123;</span><br><span class="line">    /*&lt; private &gt;*/</span><br><span class="line">    PCIDevice parent_obj;</span><br><span class="line">    /*&lt; public &gt;*/</span><br><span class="line">	......</span><br><span class="line">	......</span><br><span class="line">&#125; E1000State;</span><br><span class="line"></span><br><span class="line">struct PCIDevice &#123;</span><br><span class="line">    DeviceState qdev;</span><br><span class="line">    bool partially_hotplugged;</span><br><span class="line">	......</span><br><span class="line">	......	</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct DeviceState &#123;</span><br><span class="line">    /*&lt; private &gt;*/</span><br><span class="line">    Object parent_obj;</span><br><span class="line">    /*&lt; public &gt;*/</span><br><span class="line">	......</span><br><span class="line">	......</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * Object:</span><br><span class="line"> *</span><br><span class="line"> * The base for all objects.  The first member of this object is a pointer to</span><br><span class="line"> * a #ObjectClass.  Since C guarantees that the first member of a structure</span><br><span class="line"> * always begins at byte 0 of that structure, as long as any sub-object places</span><br><span class="line"> * its parent as the first member, we can cast directly to a #Object.</span><br><span class="line"> *</span><br><span class="line"> * As a result, #Object contains a reference to the objects type as its</span><br><span class="line"> * first member.  This allows identification of the real type of the object at</span><br><span class="line"> * run time.</span><br><span class="line"> */</span><br><span class="line">struct Object</span><br><span class="line">&#123;</span><br><span class="line">    /*&lt; private &gt;*/</span><br><span class="line">    ObjectClass *class;</span><br><span class="line">    ObjectFree *free;</span><br><span class="line">    GHashTable *properties;</span><br><span class="line">    uint32_t ref;</span><br><span class="line">    Object *parent;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>整个集成关系是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">E1000State-&gt;PCIDevice-&gt;DeviceState-&gt;Object</span><br></pre></td></tr></table></figure>
+
+<h2 id="MMIO-PMIO的Memory-Region是在哪设置的呢"><a href="#MMIO-PMIO的Memory-Region是在哪设置的呢" class="headerlink" title="MMIO,PMIO的Memory Region是在哪设置的呢"></a>MMIO,PMIO的Memory Region是在哪设置的呢</h2><p>Memory Region的设置一般是在XXX_realize函数里面。比如全志科技Allwinner的一个网卡就直接卸载XXX_inti函数里面了，源码路径<code>/hw/net/allwinner_emac.c</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">static void aw_emac_init(Object *obj)</span><br><span class="line">&#123;</span><br><span class="line">    SysBusDevice *sbd = SYS_BUS_DEVICE(obj);</span><br><span class="line">    AwEmacState *s = AW_EMAC(obj);</span><br><span class="line"></span><br><span class="line">    memory_region_init_io(&amp;s-&gt;iomem, OBJECT(s), &amp;aw_emac_mem_ops, s,</span><br><span class="line">                          &quot;aw_emac&quot;, 0x1000);</span><br><span class="line">    sysbus_init_mmio(sbd, &amp;s-&gt;iomem);</span><br><span class="line">    sysbus_init_irq(sbd, &amp;s-&gt;irq);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static const TypeInfo aw_emac_info = &#123;</span><br><span class="line">    .name           = TYPE_AW_EMAC,</span><br><span class="line">    .parent         = TYPE_SYS_BUS_DEVICE,</span><br><span class="line">    .instance_size  = sizeof(AwEmacState),</span><br><span class="line">    .instance_init   = aw_emac_init,</span><br><span class="line">    .class_init     = aw_emac_class_init,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>以e1000网卡为例，首先你定义的XXXState，这里是E1000State，得定义MemoryRegion类型的变量，pmio，mmio都是这个类型</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">typedef struct E1000State_st &#123;</span><br><span class="line">    /*&lt; private &gt;*/</span><br><span class="line">    PCIDevice parent_obj;</span><br><span class="line">    /*&lt; public &gt;*/</span><br><span class="line"></span><br><span class="line">    NICState *nic;</span><br><span class="line">    NICConf conf;</span><br><span class="line">    MemoryRegion mmio;</span><br><span class="line">    MemoryRegion io;</span><br><span class="line">    ......</span><br><span class="line">    ......</span><br><span class="line">&#125; E1000State;</span><br><span class="line">``` </span><br><span class="line"></span><br><span class="line">我们看看具体是怎么操作的：</span><br><span class="line"></span><br><span class="line">首先`pci_e1000_realize`函数里面调用`e1000_mmio_setup`，里面主要调用了`memory_region_init_io`，是初始化MemoryRegion的函数，而`memory_region_add_coalescing`是初始化MemoryRegion中的`coalesced`成员（它是一个队列指针），具体看MemoryRegion的结构`https://github.com/qemu/qemu/blob/dd5b0f95490883cd8bc7d070db8de70d5c979cbc/include/exec/memory.h#L403`</span><br><span class="line"></span><br><span class="line">假如想看更多内存相关的可以查看`https://www.anquanke.com/post/id/86412`，我这摘录一部分：</span><br><span class="line"></span><br><span class="line">qemu中用AddressSpace用来表示CPU/设备看到的内存，一个AddressSpace下面包含多个MemoryRegion，这些MemoryRegion结构通过树连接起来，树的根是AddressSpace的root域。</span><br><span class="line"></span><br><span class="line">也就是`AddressSpace`里面有个`MemoryRegion *root;`，而`MemoryRegion *root;`里面指向多个MemoryRegion——在`subregions`队列结构中，在`MemoryRegion`中，`RAMBlock`表示的是分配的实际内存。而MemoryRegion中的`alias_offset`和RAMBlock中的`host`都是指向“物理内存”——就是qemu进程分配的虚拟内存，虚拟机把这个作为物理内存。</span><br><span class="line"></span><br><span class="line">``` </span><br><span class="line">e1000_mmio_setup(E1000State *d)</span><br><span class="line">&#123;</span><br><span class="line">    int i;</span><br><span class="line">    const uint32_t excluded_regs[] = &#123;</span><br><span class="line">        E1000_MDIC, E1000_ICR, E1000_ICS, E1000_IMS,</span><br><span class="line">        E1000_IMC, E1000_TCTL, E1000_TDT, PNPMMIO_SIZE</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    memory_region_init_io(&amp;d-&gt;mmio, OBJECT(d), &amp;e1000_mmio_ops, d,</span><br><span class="line">                          &quot;e1000-mmio&quot;, PNPMMIO_SIZE);</span><br><span class="line">    memory_region_add_coalescing(&amp;d-&gt;mmio, 0, excluded_regs[0]);</span><br><span class="line">    for (i = 0; excluded_regs[i] != PNPMMIO_SIZE; i++)</span><br><span class="line">        memory_region_add_coalescing(&amp;d-&gt;mmio, excluded_regs[i] + 4,</span><br><span class="line">                                     excluded_regs[i+1] - excluded_regs[i] - 4);</span><br><span class="line">    memory_region_init_io(&amp;d-&gt;io, OBJECT(d), &amp;e1000_io_ops, d, &quot;e1000-io&quot;, IOPORT_SIZE);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void pci_e1000_realize(PCIDevice *pci_dev, Error **errp)</span><br><span class="line">&#123;</span><br><span class="line">    DeviceState *dev = DEVICE(pci_dev);</span><br><span class="line">    E1000State *d = E1000(pci_dev);</span><br><span class="line">    uint8_t *pci_conf;</span><br><span class="line">    uint8_t *macaddr;</span><br><span class="line">    ......</span><br><span class="line">    ......</span><br><span class="line">    e1000_mmio_setup(d);</span><br><span class="line"></span><br><span class="line">    pci_register_bar(pci_dev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY, &amp;d-&gt;mmio);</span><br><span class="line"></span><br><span class="line">    pci_register_bar(pci_dev, 1, PCI_BASE_ADDRESS_SPACE_IO, &amp;d-&gt;io);</span><br><span class="line">    ......</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>继续看看<code>e1000_mmio_setup</code>函数调用完，接下来调用了两个<code>pci_register_bar</code>，第一个是针对MEMORY 空间的（MMIO），第二个是IO空间（PMIO）。实际这个函数的操作是对<code>&amp;pci_dev-&gt;io_regions[region_num]</code>的相应区域进行赋值，MMIO就是<code>&amp;pci_dev-&gt;io_regions[0]</code>，PMIO是<code>&amp;pci_dev-&gt;io_regions[1]</code>，这里的0，1并不是却别MMIO与PMIO的，只是区分是resource0还是resource1。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">void pci_register_bar(PCIDevice *pci_dev, int region_num,</span><br><span class="line">                      uint8_t type, MemoryRegion *memory)</span><br><span class="line">&#123;</span><br><span class="line">    PCIIORegion *r;</span><br><span class="line">    uint32_t addr; /* offset in pci config space */</span><br><span class="line">    uint64_t wmask;</span><br><span class="line">    pcibus_t size = memory_region_size(memory);</span><br><span class="line">    ......</span><br><span class="line">    ......</span><br><span class="line">    r = &amp;pci_dev-&gt;io_regions[region_num];</span><br><span class="line">    r-&gt;addr = PCI_BAR_UNMAPPED;</span><br><span class="line">    r-&gt;size = size;</span><br><span class="line">    r-&gt;type = type;</span><br><span class="line">    r-&gt;memory = memory;</span><br><span class="line">    r-&gt;address_space = type &amp; PCI_BASE_ADDRESS_SPACE_IO</span><br><span class="line">                        ? pci_get_bus(pci_dev)-&gt;address_space_io</span><br><span class="line">                        : pci_get_bus(pci_dev)-&gt;address_space_mem;</span><br><span class="line">    ......</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此外MMIO与PMIO下面的不同点还有对io_regions的address_space的赋值，利用<strong>type变量进行选择</strong>，根据下面的定义，实际也是0和1，那就是0选择<code>pci_get_bus(pci_dev)-&gt;address_space_mem</code>，而type为1选<code>pci_get_bus(pci_dev)-&gt;address_space_io</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#define  PCI_BASE_ADDRESS_SPACE_MEMORY	0x00</span><br><span class="line">#define  PCI_BASE_ADDRESS_SPACE_IO	0x01</span><br></pre></td></tr></table></figure>
+
+<p>io_regions的类型是<code>PCIIORegion</code>，可以看到跟上面的赋值也是相对应的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">typedef struct PCIIORegion &#123;</span><br><span class="line">    pcibus_t addr; /* current PCI mapping address. -1 means not mapped */</span><br><span class="line">#define PCI_BAR_UNMAPPED (~(pcibus_t)0)</span><br><span class="line">    pcibus_t size;</span><br><span class="line">    uint8_t type;</span><br><span class="line">    MemoryRegion *memory;</span><br><span class="line">    MemoryRegion *address_space;</span><br><span class="line">&#125; PCIIORegion;</span><br></pre></td></tr></table></figure>
+
+<p>最后问题来了，那么<code>pci_e1000_realize</code>在什么时候调用的呢，根据引用关系只是在<code>e1000_class_init</code>函数中对<code>PCIDeviceClass-&gt;realize</code>进行了赋值操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">static void e1000_class_init(ObjectClass *klass, void *data)</span><br><span class="line">&#123;</span><br><span class="line">    DeviceClass *dc = DEVICE_CLASS(klass);</span><br><span class="line">    PCIDeviceClass *k = PCI_DEVICE_CLASS(klass);</span><br><span class="line">	......</span><br><span class="line">	......</span><br><span class="line"></span><br><span class="line">    k-&gt;realize = pci_e1000_realize;</span><br><span class="line">	......</span><br><span class="line">	......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>刚好有个题目有符号，而且也是在XXX_class_init设置realize函数指针，那就在下面实际题目中调试看看吧</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>将 TypeInfo 注册 TypeImpl：</strong></p>
+<p>1、首先<code>__attribute__((constructor))</code>的修饰让<code>type_init</code>在main之前执行，<code>type_init</code>的参数是<code>XXX_register_types</code>函数指针，将函数指针传递到<code>ModuleEntry</code>的init函数指针，最后就是将这个<code>ModuleEntry</code>插入到<code>ModuleTypeList</code><br>2、main函数中的<code>module_call_init(MODULE_INIT_QOM);</code>调用了<code>MODULE_INIT_QOM</code>类型的ModuleTypeList中的所有ModuleEntry中的init()函数，也就是第一步<code>type_init</code>的第一个参数<code>XXX_register_types</code>函数指针<br>3、那就下了就是<code>XXX_register_types</code>函数的操作了，就是创建TypeImpl的哈希表</p>
+<p><strong>ObjectClass的初始化：</strong></p>
+<p>调用链<code>main-&gt;select_machine-&gt;object_class_get_list-&gt;object_class_foreach-&gt;object_class_foreach_tramp-&gt;type_initialize</code></p>
+<p>将<code>parent-&gt;class-&gt;interfaces</code>的一些信息添加到<code>ti-&gt;class-&gt;interfaces</code>列表上面，<code>ti-&gt;interfaces[i].typename</code>对应的type的信息也添加到ti-&gt;class-&gt;interfaces列表，最后最重要的就是调用parent的class_base_init进行初始化，最后调用自己<code>ti-&gt;class_init</code>进行初始化。</p>
+<p><strong>实例化 Instance(Object)</strong></p>
+<p>调用链<code>qemu_opts_foreach-&gt;device_init_func-&gt;qdev_device_add-&gt;object_new-&gt;object_new_with_type</code></p>
+<p><code>object_new_with_type</code>函数里面初始化了Object的一些成员，并通过<code>object_init_with_type</code>函数调用<code>ti-&gt;instance_init</code>函数（有parent就会先递归调用<code>object_init_with_type</code>，再调用自身的<code>ti-&gt;instance_init</code>函数），而最后就是通过object_post_init_with_type函数差不多，只不过先调用自身的<code>ti-&gt;instance_post_init</code>，再递归调用parent的<code>ti-&gt;instance_post_init</code></p>
+<h1 id="实际题目中的调用关系HITB-GSEC-2017-babyqemu"><a href="#实际题目中的调用关系HITB-GSEC-2017-babyqemu" class="headerlink" title="实际题目中的调用关系HITB-GSEC-2017-babyqemu"></a>实际题目中的调用关系HITB-GSEC-2017-babyqemu</h1><p>我们说过<code>__attribute__((constructor))</code>的修饰让<code>type_init</code>在main之前执行，通过读代码，发现是将函数写在<code>.init_array</code>段中的<code>__frame_dummy_init_array_entry</code>数组中</p>
+<p>接下来具体看看这个是怎么实现的</p>
+<p>以x64的<code>qemu-system-x86_64</code>为例，它也是一个ELF 64，也是从<code>_start</code>开始执行，之后调用<code>__libc_start_main</code></p>
+<p>函数原型：<code>int __libc_start_main(int *(main) (int, char * *, char * *), int argc, char * * ubp_av, void (*init) (void), void (*fini) (void), void (*rtld_fini) (void), void (* stack_end));</code></p>
+<p><code>__libc_start_main</code>函数主要做了下面工作：</p>
+<ul>
+<li>如果EUID不等于RUID进行一些必要的安全检查（通过<code>__libc_init_secure</code>函数判断是否需要检查，并设置一个全局变量，需要检查则调用<code>__libc_check_standard_fds</code>检查，防止启动一个SUID的程序，而标准文件描述符0，1，2没有打开——<a href="https://www.oreilly.com/library/view/secure-programming-cookbook/0596003943/ch01s05.html" target="_blank" rel="noopener">据说是防止拒绝服务攻击或者黑客将不受信任的文件放在特殊的硬编码的文件描述符上。</a>）</li>
+<li>初始化线程子系统（看了下应该是<code>ARCH_SETUP_TLS ();</code>，<code>/* The stack guard goes into the TCB, so initialize it early.  */</code>）</li>
+<li>调用<code>_dl_setup_stack_chk_guard</code>函数设置canary</li>
+<li>注册<code>rtld_fini</code>函数（<code>__cxa_atexit ((void (*) (void *)) rtld_fini, NULL, NULL);</code>，<code>__cxa_atexit</code>函数的作用是Register a function to be called by exit or when a shared library is unloaded.），这个函数作用是在dynamic shared object退出或者unloaded的时候释放资源</li>
+<li>注册<code>fini</code>函数（<code>__cxa_atexit ((void (*) (void *)) fini, NULL, NULL);</code>），程序退出的时候会调用它</li>
+<li>调用初始化函数<code>init</code>（调用代码：<code>(*init) (argc, argv, __environ MAIN_AUXVEC_PARAM);</code>）</li>
+<li>调用main函数（调用代码是：<code>result = main (argc, argv, __environ MAIN_AUXVEC_PARAM);</code>）</li>
+<li>用main函数的返回值作为参数调用exit函数（调用代码：<code>exit (result);</code>）</li>
+</ul>
+<p>而上面的init函数一般是<code>__libc_csu_init</code>，而里面是循环调用<code>_frame_dummy_init_array_entry[v5++])(a1, a2, v3);</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall _libc_csu_init(unsigned int a1, __int64 a2, __int64 a3)</span><br><span class="line">&#123;</span><br><span class="line">  __int64 v3; // r13</span><br><span class="line">  signed __int64 v4; // rbp</span><br><span class="line">  __int64 v5; // rbx</span><br><span class="line"></span><br><span class="line">  v3 = a3;</span><br><span class="line">  v4 = &amp;_do_global_dtors_aux_fini_array_entry - _frame_dummy_init_array_entry;</span><br><span class="line">  init_proc();</span><br><span class="line">  if ( v4 )</span><br><span class="line">  &#123;</span><br><span class="line">    v5 = 0LL;</span><br><span class="line">    do</span><br><span class="line">      ((void (__fastcall *)(_QWORD, __int64, __int64))_frame_dummy_init_array_entry[v5++])(a1, a2, v3);</span><br><span class="line">    while ( v5 != v4 );</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个题目我们关注的是hitb相关的函数，我们看看这个数组里面有哪些函数指针，可以看到<code>do_qemu_init_pci_hitb_register_types</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">.init_array:0000000000964CB0 __frame_dummy_init_array_entry dq offset frame_dummy</span><br><span class="line">.init_array:0000000000964CB0                                         ; DATA XREF: __libc_csu_init+B↑o</span><br><span class="line">.init_array:0000000000964CB0                                         ; Alternative name is &apos;__init_array_start&apos;</span><br><span class="line">.init_array:0000000000964CB8                 dq offset monitor_lock_init</span><br><span class="line">.init_array:0000000000964CC0                 dq offset do_qemu_init_register_types</span><br><span class="line">.init_array:0000000000964CC8                 dq offset do_qemu_init_qtest_type_init</span><br><span class="line">.init_array:0000000000964CD0                 dq offset do_qemu_init_memory_register_types</span><br><span class="line">.init_array:0000000000964CD8                 dq offset do_qemu_init_register_accel_types</span><br><span class="line">.init_array:0000000000964CE0                 dq offset do_qemu_init_kvm_type_init</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">.init_array:0000000000964D68                 dq offset do_qemu_init_pci_hitb_register_types</span><br><span class="line">......</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<p>还记得<code>type_init</code>就是<code>module_init</code>，也即<code>do_qemu_init_ ## function(void)</code>，所以上面的函数指针为啥都是<code>do_qemu_init_</code>开头很清楚了吧</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#define module_init(function, type)                                         \</span><br><span class="line">static void __attribute__((constructor)) do_qemu_init_ ## function(void)    \</span><br><span class="line">&#123;                                                                           \</span><br><span class="line">    register_dso_module_init(function, type);                               \</span><br><span class="line">&#125;</span><br><span class="line">#else</span><br><span class="line">/* This should not be used directly.  Use block_init etc. instead.  */</span><br><span class="line">#define module_init(function, type)                                         \</span><br><span class="line">static void __attribute__((constructor)) do_qemu_init_ ## function(void)    \</span><br><span class="line">&#123;                                                                           \</span><br><span class="line">    register_module_init(function, type);                                   \</span><br><span class="line">&#125;</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
+
+<p>之后<code>register_module_init</code>这些之前都讲过了，就将后面的<code>pci_hitb_register_types</code>函数指针赋值给ModuleEntry中的init成员并插到了一个ModuleTypeList，而main函数会调用ModuleTypeList中的ModuleTypeList中的ModuleEntry的init函数，也即这里的<code>pci_hitb_register_types</code></p>
+<p>接下来<code>pci_hitb_register_types</code>会调用<code>type_register_static</code>，参数<code>hitb_info_27046</code>就是一个<code>TypeInfo</code>类型</p>
+<figure class="highlight plain"><figcaption><span>__cdecl do_qemu_init_pci_hitb_register_types()</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  register_module_init((void (*)(void))pci_hitb_register_types, MODULE_INIT_QOM_0);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void __cdecl pci_hitb_register_types()</span><br><span class="line">&#123;</span><br><span class="line">  type_register_static(&amp;hitb_info_27046);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>里面初始化了instance_init和class_init成员，分别是hitb_instance_init和hitb_class_init（ObjectClass的初始化的时候会调用hitb_class_init，而Object初始化的时候会调用instance_init）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">data.rel.ro:0000000000969020 hitb_info_27046 dq offset aHitb         ; name</span><br><span class="line">.data.rel.ro:0000000000969020                                         ; DATA XREF: pci_hitb_register_types↑o</span><br><span class="line">.data.rel.ro:0000000000969020                 dq offset aVirtioPciDevic+7; parent ; &quot;hitb&quot; ...</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 1BD0h                ; instance_size</span><br><span class="line">.data.rel.ro:0000000000969020                 dq offset hitb_instance_init; instance_init</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; instance_post_init</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; instance_finalize</span><br><span class="line">.data.rel.ro:0000000000969020                 db 0                    ; abstract</span><br><span class="line">.data.rel.ro:0000000000969020                 db 7 dup(0)</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; class_size</span><br><span class="line">.data.rel.ro:0000000000969020                 dq offset hitb_class_init; class_init</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; class_base_init</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; class_finalize</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; class_data</span><br><span class="line">.data.rel.ro:0000000000969020                 dq 0                    ; interfaces</span><br><span class="line">.data.rel.ro:0000000000969088                 align 20h</span><br></pre></td></tr></table></figure>
+
+<p>到这里整个流程已经清楚了，但是唯一不清楚的就是hitb_class_init中的pci_hitb_realize是什么时候调用的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall hitb_class_init(ObjectClass_0 *a1, void *data)</span><br><span class="line">&#123;</span><br><span class="line">  __int64 v2; // rax</span><br><span class="line"></span><br><span class="line">  v2 = (__int64)object_class_dynamic_cast_assert(</span><br><span class="line">                  a1,</span><br><span class="line">                  &quot;pci-device&quot;,</span><br><span class="line">                  &quot;/mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/hw/misc/hitb.c&quot;,</span><br><span class="line">                  469,</span><br><span class="line">                  &quot;hitb_class_init&quot;);</span><br><span class="line">  *(_BYTE *)(v2 + 236) = 0x10;</span><br><span class="line">  *(_WORD *)(v2 + 238) = 0xFF;</span><br><span class="line">  *(_QWORD *)(v2 + 192) = pci_hitb_realize;</span><br><span class="line">  *(_QWORD *)(v2 + 208) = pci_hitb_uninit;</span><br><span class="line">  *(_WORD *)(v2 + 232) = 0x1234;</span><br><span class="line">  *(_WORD *)(v2 + 234) = 0x2333;                // device_id</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="pci-hitb-realize什么时候调用"><a href="#pci-hitb-realize什么时候调用" class="headerlink" title="pci_hitb_realize什么时候调用"></a>pci_hitb_realize什么时候调用</h2><p>接下来调试看看pci_hitb_realize什么时候调用，先看<code>hitb_class_init</code>（我能说调试比看代码方便多了么。。。，整个调用关系一目了然，害我上面看代码看了这么旧，不过其实也值得）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Breakpoint hitb_class_init</span><br><span class="line">gdb-peda$ bt</span><br><span class="line">#0  hitb_class_init (class=0x5555565ac390, data=0x0) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/hw/misc/hitb.c:469</span><br><span class="line">#1  0x0000555555a16b0d in type_initialize (ti=0x555556555630) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/qom/object.c:817</span><br><span class="line">#2  object_class_foreach_tramp (key=&lt;optimized out&gt;, value=0x555556555630, opaque=0x7fffffffe100) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/qom/object.c:804</span><br><span class="line">#3  0x00007ffff6add340 in g_hash_table_foreach () from /lib/x86_64-linux-gnu/libglib-2.0.so.0</span><br><span class="line">#4  0x0000555555a16fc8 in object_class_foreach (fn=fn@entry=0x555555a159e0 &lt;object_class_get_list_tramp&gt;, implements_type=&lt;optimized out&gt;, include_abstract=&lt;optimized out&gt;, opaque=opaque@entry=0x7fffffffe140) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/qom/object.c:826</span><br><span class="line">#5  0x0000555555a17062 in object_class_get_list (implements_type=&lt;optimized out&gt;, include_abstract=&lt;optimized out&gt;) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/qom/object.c:880</span><br><span class="line">#6  0x000055555588987f in find_default_machine () at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/vl.c:1488</span><br><span class="line">#7  0x0000555555755904 in select_machine () at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/vl.c:2745</span><br><span class="line">#8  main (argc=argc@entry=0x13, argv=argv@entry=0x7fffffffe4d8, envp=&lt;optimized out&gt;) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/vl.c:4113</span><br><span class="line">#9  0x00007ffff5db6830 in __libc_start_main (main=0x555555755410 &lt;main&gt;, argc=0x13, argv=0x7fffffffe4d8, init=&lt;optimizedout&gt;, fini=&lt;optimized out&gt;, rtld_fini=&lt;optimized out&gt;, stack_end=0x7fffffffe4c8) at ../csu/libc-start.c:291</span><br><span class="line">#10 0x000055555575cca9 in _start ()</span><br></pre></td></tr></table></figure>
+
+<p>接下来看pci_hitb_realize，可以看到是<code>qdev_device_add</code>函数里面的<code>object_property_set_bool(OBJECT(dev), true, &quot;realized&quot;, &amp;err);</code>，而且是在<code>object_new</code>之后，也就是说Object实例化后才调用class_init函数中设置的realize函数指针</p>
+<p>代码：<code>https://github.com/qemu/qemu/blob/dd5b0f95490883cd8bc7d070db8de70d5c979cbc/qdev-monitor.c#L675</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Breakpoint pci_hitb_realize</span><br><span class="line">gdb-peda$ bt</span><br><span class="line">#0  pci_hitb_realize (pdev=0x555557f845a0, errp=0x7fffffffde60) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/hw/misc/hitb.c:410</span><br><span class="line">#1  0x0000555555962034 in pci_qdev_realize (qdev=0x555557f845a0, errp=&lt;optimized out&gt;) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/hw/pci/pci.c:2002</span><br><span class="line">#2  0x00005555558e5f3d in device_set_realized (obj=&lt;optimized out&gt;, value=&lt;optimized out&gt;, errp=0x7fffffffe018) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/hw/core/qdev.c:907</span><br><span class="line">#3  0x0000555555a15d3e in property_set_bool (obj=0x555557f845a0, v=&lt;optimized out&gt;, name=&lt;optimized out&gt;, opaque=0x555557f861f0, errp=0x7fffffffe018) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/qom/object.c:1887</span><br><span class="line">#4  0x0000555555a19d6f in object_property_set_qobject (obj=obj@entry=0x555557f845a0, value=value@entry=0x555557f86e10, name=name@entry=0x555555b4b98b &quot;realized&quot;, errp=errp@entry=0x7fffffffe018) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/qom/qom-qobject.c:27</span><br><span class="line">#5  0x0000555555a17a60 in object_property_set_bool (obj=0x555557f845a0, value=&lt;optimized out&gt;, name=0x555555b4b98b &quot;realized&quot;, errp=0x7fffffffe018) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/qom/object.c:1162</span><br><span class="line">#6  0x0000555555885799 in qdev_device_add (opts=0x5555565845b0, errp=0x7fffffffe0f0) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/qdev-monitor.c:630</span><br><span class="line">#7  0x0000555555887b37 in device_init_func (opaque=&lt;optimized out&gt;, opts=&lt;optimized out&gt;, errp=&lt;optimized out&gt;) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/vl.c:2334</span><br><span class="line">#8  0x0000555555ae09ca in qemu_opts_foreach (list=&lt;optimized out&gt;, func=0x555555887b10 &lt;device_init_func&gt;, opaque=0x0, errp=0x0) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/util/qemu-option.c:1104</span><br><span class="line">#9  0x0000555555756822 in main (argc=argc@entry=0x13, argv=argv@entry=0x7fffffffe4d8, envp=&lt;optimized out&gt;) at /mnt/hgfs/eadom/workspcae/projects/hitbctf2017/babyqemu/qemu/vl.c:4648</span><br><span class="line">#10 0x00007ffff5db6830 in __libc_start_main (main=0x555555755410 &lt;main&gt;, argc=0x13, argv=0x7fffffffe4d8, init=&lt;optimizedout&gt;, fini=&lt;optimized out&gt;, rtld_fini=&lt;optimized out&gt;, stack_end=0x7fffffffe4c8) at ../csu/libc-start.c:291</span><br><span class="line">#11 0x000055555575cca9 in _start ()</span><br></pre></td></tr></table></figure>
+
+<p>根据栈，我跟了下代码，还是比较复杂的，有兴趣的也可以去跟一下</p>
+<h1 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h1><p>基础知识基本上都是搬运别人的知识，到后面源码阅读从参考别人，到自己去跟，学到很多。<br>其实调试会更加高效，而且没有参考文章的时候，你也可以找到一些蛛丝马迹</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="http://blog.vmsplice.net/2011/03/qemu-internals-big-picture-overview.html" target="_blank" rel="noopener">http://blog.vmsplice.net/2011/03/qemu-internals-big-picture-overview.html</a><br><a href="http://phrack.org/papers/vm-escape-qemu-case-study.html" target="_blank" rel="noopener">http://phrack.org/papers/vm-escape-qemu-case-study.html</a><br><a href="https://www.giantbranch.cn/2019/12/03/CTF%20QEMU%20%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%80%83%E9%80%B8%E4%B9%8BBlizzardCTF%202017%20Strng/">https://www.giantbranch.cn/2019/12/03/CTF%20QEMU%20%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%80%83%E9%80%B8%E4%B9%8BBlizzardCTF%202017%20Strng/</a><br><a href="https://www.kernel.org/doc/Documentation/vm/pagemap.txt" target="_blank" rel="noopener">https://www.kernel.org/doc/Documentation/vm/pagemap.txt</a><br><a href="https://cloud.tencent.com/developer/article/1018022" target="_blank" rel="noopener">https://cloud.tencent.com/developer/article/1018022</a><br><a href="https://my.oschina.net/u/3626804/blog/1822539" target="_blank" rel="noopener">https://my.oschina.net/u/3626804/blog/1822539</a><br><a href="http://liujunming.top/2019/07/19/%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9C%BC%E4%B8%AD%E7%9A%84PCI%E8%AE%BE%E5%A4%87/" target="_blank" rel="noopener">http://liujunming.top/2019/07/19/%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9C%BC%E4%B8%AD%E7%9A%84PCI%E8%AE%BE%E5%A4%87/</a><br><a href="http://www.mnc.co.jp/english/INtime/faq07-2_kanren/PCIconfigurationregister.htm" target="_blank" rel="noopener">http://www.mnc.co.jp/english/INtime/faq07-2_kanren/PCIconfigurationregister.htm</a><br><a href="https://ray-cp.github.io/archivers/qemu-pwn-basic-knowledge" target="_blank" rel="noopener">https://ray-cp.github.io/archivers/qemu-pwn-basic-knowledge</a><br><a href="https://www.w0lfzhang.com/2018/11/02/How-QEMU-Emulates-Devices/" target="_blank" rel="noopener">https://www.w0lfzhang.com/2018/11/02/How-QEMU-Emulates-Devices/</a><br><a href="https://blog.csdn.net/u011364612/article/details/53485856" target="_blank" rel="noopener">https://blog.csdn.net/u011364612/article/details/53485856</a><br><a href="https://www.binss.me/blog/qemu-note-of-qemu-object-model/" target="_blank" rel="noopener">https://www.binss.me/blog/qemu-note-of-qemu-object-model/</a><br><a href="https://juniorprincewang.github.io/2018/07/23/qemu%E6%BA%90%E7%A0%81%E6%B7%BB%E5%8A%A0%E8%AE%BE%E5%A4%87/" target="_blank" rel="noopener">https://juniorprincewang.github.io/2018/07/23/qemu%E6%BA%90%E7%A0%81%E6%B7%BB%E5%8A%A0%E8%AE%BE%E5%A4%87/</a><br><a href="https://www.cnblogs.com/etangyushan/p/6077307.html" target="_blank" rel="noopener">https://www.cnblogs.com/etangyushan/p/6077307.html</a><br><a href="https://developer.gnome.org/glib/stable/glib-Hash-Tables.html" target="_blank" rel="noopener">https://developer.gnome.org/glib/stable/glib-Hash-Tables.html</a><br><a href="https://terenceli.github.io/%E6%8A%80%E6%9C%AF/2017/01/08/qom-introduction" target="_blank" rel="noopener">https://terenceli.github.io/%E6%8A%80%E6%9C%AF/2017/01/08/qom-introduction</a><br><a href="https://developer.gnome.org/glib/stable/glib-Singly-Linked-Lists.html" target="_blank" rel="noopener">https://developer.gnome.org/glib/stable/glib-Singly-Linked-Lists.html</a><br><a href="https://terenceli.github.io/%E6%8A%80%E6%9C%AF/2015/09/26/qemu-options" target="_blank" rel="noopener">https://terenceli.github.io/%E6%8A%80%E6%9C%AF/2015/09/26/qemu-options</a><br><a href="https://sq.163yun.com/blog/article/175668619278782464" target="_blank" rel="noopener">https://sq.163yun.com/blog/article/175668619278782464</a><br><a href="https://www.cnblogs.com/anker/p/3462363.html" target="_blank" rel="noopener">https://www.cnblogs.com/anker/p/3462363.html</a><br><a href="https://www.jianshu.com/p/dd425b9dc9db" target="_blank" rel="noopener">https://www.jianshu.com/p/dd425b9dc9db</a><br><a href="https://www.anquanke.com/post/id/86412" target="_blank" rel="noopener">https://www.anquanke.com/post/id/86412</a><br><a href="http://www.voidcn.com/article/p-bxeqwthp-n.html" target="_blank" rel="noopener">http://www.voidcn.com/article/p-bxeqwthp-n.html</a><br><a href="http://answerrrrrrrrr.github.io/2017/03/16/Linux%E7%A8%8B%E5%BA%8F%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/" target="_blank" rel="noopener">http://answerrrrrrrrr.github.io/2017/03/16/Linux%E7%A8%8B%E5%BA%8F%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/</a><br><a href="https://refspecs.linuxbase.org/LSB_3.1.0/LSB-generic/LSB-generic/baselib---libc-start-main-.html" target="_blank" rel="noopener">https://refspecs.linuxbase.org/LSB_3.1.0/LSB-generic/LSB-generic/baselib---libc-start-main-.html</a><br><a href="https://github.com/bminor/glibc/blob/653d74f12abea144219af00400ed1f1ac5dfa79f/csu/libc-start.c#L128" target="_blank" rel="noopener">https://github.com/bminor/glibc/blob/653d74f12abea144219af00400ed1f1ac5dfa79f/csu/libc-start.c#L128</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2020/01/05/QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读/" title="QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读">https://www.giantbranch.cn/2020/01/05/QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/qemu/" rel="tag"># qemu</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/01/02/CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu/" rel="next" title="CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu">
+                <i class="fa fa-chevron-left"></i> CTF QEMU 虚拟机逃逸之HITB-GSEC-2017-babyqemu
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/01/06/CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3/" rel="prev" title="CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3">
+                CTF QEMU 虚拟机逃逸之Defcon 2018 - EC3 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#总览"><span class="nav-number">1.</span> <span class="nav-text">总览</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#KVM"><span class="nav-number">2.</span> <span class="nav-text">KVM</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#内存"><span class="nav-number">3.</span> <span class="nav-text">内存</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PCI设备"><span class="nav-number">4.</span> <span class="nav-text">PCI设备</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#查看PCI设备的信息"><span class="nav-number">4.1.</span> <span class="nav-text">查看PCI设备的信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#访问PCI设备配置空间中的Memory-空间和-I-O-空间"><span class="nav-number">4.2.</span> <span class="nav-text">访问PCI设备配置空间中的Memory 空间和 I/O 空间</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MMIO"><span class="nav-number">4.2.1.</span> <span class="nav-text">MMIO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PMIO"><span class="nav-number">4.2.2.</span> <span class="nav-text">PMIO</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#QEMU中的对象模型"><span class="nav-number">5.</span> <span class="nav-text">QEMU中的对象模型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#将-TypeInfo-注册-TypeImpl"><span class="nav-number">5.1.</span> <span class="nav-text">将 TypeInfo 注册 TypeImpl</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ObjectClass的初始化"><span class="nav-number">5.2.</span> <span class="nav-text">ObjectClass的初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对象的构造——实例化-Instance-Object"><span class="nav-number">5.3.</span> <span class="nav-text">对象的构造——实例化 Instance(Object)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MMIO-PMIO的Memory-Region是在哪设置的呢"><span class="nav-number">5.4.</span> <span class="nav-text">MMIO,PMIO的Memory Region是在哪设置的呢</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.5.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实际题目中的调用关系HITB-GSEC-2017-babyqemu"><span class="nav-number">6.</span> <span class="nav-text">实际题目中的调用关系HITB-GSEC-2017-babyqemu</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#pci-hitb-realize什么时候调用"><span class="nav-number">6.1.</span> <span class="nav-text">pci_hitb_realize什么时候调用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结-1"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">8.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2020/01/05/QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读/';
+          this.page.identifier = '2020/01/05/QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读/';
+          this.page.title = 'QEMU 的一些基础知识及QOM(Qemu Object Model)的部分相关源码阅读';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

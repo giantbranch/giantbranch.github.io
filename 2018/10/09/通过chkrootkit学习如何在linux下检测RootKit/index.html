@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="rootkit,检测rootkit,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="Rootkit是一种特殊的恶意软件，它的功能是在安装目标上隐藏自身及指定的文件、进程和网络链接等信息，比较多见到的是Rootkit一般都和木马、后门等其他恶意程序结合使用。Rootkit一词更多地是指被作为驱动程序，加载到操作系统内核中的恶意软件。 chkrootkit简介chkrootkit是一个linux下检RootKit的脚本，在某些检测中会调用当前目录的检测程序 官网：http://www">
+<meta name="keywords" content="rootkit,检测rootkit">
+<meta property="og:type" content="article">
+<meta property="og:title" content="通过chkrootkit学习如何在linux下检测RootKit">
+<meta property="og:url" content="https://www.giantbranch.cn/2018/10/09/通过chkrootkit学习如何在linux下检测RootKit/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="Rootkit是一种特殊的恶意软件，它的功能是在安装目标上隐藏自身及指定的文件、进程和网络链接等信息，比较多见到的是Rootkit一般都和木马、后门等其他恶意程序结合使用。Rootkit一词更多地是指被作为驱动程序，加载到操作系统内核中的恶意软件。 chkrootkit简介chkrootkit是一个linux下检RootKit的脚本，在某些检测中会调用当前目录的检测程序 官网：http://www">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1539147858960.jpg">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.134Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="通过chkrootkit学习如何在linux下检测RootKit">
+<meta name="twitter:description" content="Rootkit是一种特殊的恶意软件，它的功能是在安装目标上隐藏自身及指定的文件、进程和网络链接等信息，比较多见到的是Rootkit一般都和木马、后门等其他恶意程序结合使用。Rootkit一词更多地是指被作为驱动程序，加载到操作系统内核中的恶意软件。 chkrootkit简介chkrootkit是一个linux下检RootKit的脚本，在某些检测中会调用当前目录的检测程序 官网：http://www">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1539147858960.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2018/10/09/通过chkrootkit学习如何在linux下检测RootKit/">
+
+
+
+
+
+  <title>通过chkrootkit学习如何在linux下检测RootKit | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/10/09/通过chkrootkit学习如何在linux下检测RootKit/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">通过chkrootkit学习如何在linux下检测RootKit</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-09T00:00:00+00:00">
+                2018-10-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/10/09/通过chkrootkit学习如何在linux下检测RootKit/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/10/09/通过chkrootkit学习如何在linux下检测RootKit/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Rootkit是一种特殊的恶意软件，它的功能是在安装目标上隐藏自身及指定的文件、进程和网络链接等信息，比较多见到的是Rootkit一般都和木马、后门等其他恶意程序结合使用。Rootkit一词更多地是指被作为驱动程序，加载到操作系统内核中的恶意软件。</p>
+<h1 id="chkrootkit简介"><a href="#chkrootkit简介" class="headerlink" title="chkrootkit简介"></a>chkrootkit简介</h1><p>chkrootkit是一个linux下检RootKit的脚本，在某些检测中会调用当前目录的检测程序</p>
+<p>官网：<a href="http://www.chkrootkit.org/" target="_blank" rel="noopener">http://www.chkrootkit.org/</a></p>
+<p>下载源码：<a href="ftp://ftp.pangeia.com.br/pub/seg/pac/chkrootkit.tar.gz" target="_blank" rel="noopener">ftp://ftp.pangeia.com.br/pub/seg/pac/chkrootkit.tar.gz</a></p>
+<p>解压后执行 <code>make</code> 命令，就可以使用了</p>
+<p>一般直接运行，一旦有INFECTED，说明可能被植入了RootKit</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./chkrootkit | grep INFECTED</span><br></pre></td></tr></table></figure>
+
+<h1 id="总体流程"><a href="#总体流程" class="headerlink" title="总体流程"></a>总体流程</h1><p>首先删除别名，确保接下来的一些操作不会用了被RootKit改变了的别名</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">### workaround for some Bourne shell implementations</span><br><span class="line">unalias login &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">unalias ls &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">unalias netstat &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">unalias ps &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">unalias dirname &gt; /dev/null 2&gt;&amp;1</span><br></pre></td></tr></table></figure>
+
+<p>一开始会检测一些必要的命令是否可用，可执行，因为检测基于这些命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">cmdlist=&quot;</span><br><span class="line">awk</span><br><span class="line">cut</span><br><span class="line">echo</span><br><span class="line">egrep</span><br><span class="line">find</span><br><span class="line">head</span><br><span class="line">id</span><br><span class="line">ls</span><br><span class="line">netstat</span><br><span class="line">ps</span><br><span class="line">sed</span><br><span class="line">ssh</span><br><span class="line">strings</span><br><span class="line">uname</span><br><span class="line">&quot;</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是检测ps的参数ax好不好使，好使就使用ax，不好使就用-fe</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># Check if ps command is ok</span><br><span class="line">if $&#123;ps&#125; ax &gt;/dev/null 2&gt;&amp;1 ; then</span><br><span class="line">   ps_cmd=&quot;ax&quot;</span><br><span class="line">else</span><br><span class="line">   ps_cmd=&quot;-fe&quot;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<p>当然还需检测你是否是root，就根据你的id号是否为0</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if [ `$&#123;id&#125; | $&#123;cut&#125; -d= -f2 | $&#123;cut&#125; -d\( -f1` -ne 0 ]; then</span><br><span class="line">   echo &quot;$0 need root privileges&quot;</span><br><span class="line">   exit 1</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是默认执行所有测试，当然你也可以指定测试的命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">if [ $# -gt 0 ]</span><br><span class="line">then</span><br><span class="line">    ### perform only tests supplied as arguments</span><br><span class="line">    for arg in $*</span><br><span class="line">    do</span><br><span class="line">        ### check if is a valid test name</span><br><span class="line">        if echo &quot;$&#123;TROJAN&#125; $&#123;TOOLS&#125;&quot;| \</span><br><span class="line">           $&#123;egrep&#125; -v &quot;$&#123;L_REGEXP&#125;$arg$&#123;R_REGEXP&#125;&quot; &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">        then</span><br><span class="line">            echo &gt;&amp;2 &quot;$0: \`$arg&apos;: not a known test&quot;</span><br><span class="line">            exit 1</span><br><span class="line">        fi</span><br><span class="line">    done</span><br><span class="line">    LIST=$*</span><br><span class="line">else</span><br><span class="line">    ### this is the default: perform all tests</span><br><span class="line">    LIST=&quot;$&#123;TROJAN&#125; $&#123;TOOLS&#125;&quot;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<p>接下来只是对是否开启调试模式，用户是否指定了要检测的根目录进行处理</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">if [ &quot;$&#123;DEBUG&#125;&quot; = &quot;t&quot; ]; then</span><br><span class="line">    set -x</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">if [ &quot;$&#123;ROOTDIR&#125;&quot; != &quot;/&quot; ]; then</span><br><span class="line"></span><br><span class="line">    ### remove trailing `/&apos;</span><br><span class="line">    ROOTDIR=`echo $&#123;ROOTDIR&#125; | $&#123;sed&#125; -e &apos;s/\/*$//g&apos;`</span><br><span class="line"></span><br><span class="line">    for dir in $&#123;pth&#125;</span><br><span class="line">    do</span><br><span class="line">      if echo $&#123;dir&#125; | $&#123;egrep&#125; &apos;^/&apos; &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">      then</span><br><span class="line">        newpth=&quot;$&#123;newpth&#125; $&#123;ROOTDIR&#125;$&#123;dir&#125;&quot;</span><br><span class="line">      else</span><br><span class="line">        newpth=&quot;$&#123;newpth&#125; $&#123;ROOTDIR&#125;/$&#123;dir&#125;&quot;</span><br><span class="line">      fi</span><br><span class="line">    done</span><br><span class="line">    pth=$&#123;newpth&#125;</span><br><span class="line">   ROOTDIR=&quot;$&#123;ROOTDIR&#125;/&quot;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<p>最后便是循环调用各个check函数进行处理了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">for cmd in $&#123;LIST&#125;</span><br><span class="line">do</span><br><span class="line"></span><br><span class="line">    if echo &quot;$&#123;TROJAN&#125;&quot; | \</span><br><span class="line">    $&#123;egrep&#125; &quot;$&#123;L_REGEXP&#125;$cmd$&#123;R_REGEXP&#125;&quot; &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">    then</span><br><span class="line">        if [ &quot;$&#123;EXPERT&#125;&quot; != &quot;t&quot; -a &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then</span><br><span class="line">           printn &quot;Checking \`$&#123;cmd&#125;&apos;... &quot;</span><br><span class="line">        fi</span><br><span class="line">        chk_$&#123;cmd&#125;</span><br><span class="line">        STATUS=$?</span><br><span class="line"></span><br><span class="line">        ### quiet mode</span><br><span class="line">        if [ &quot;$&#123;QUIET&#125;&quot; = &quot;t&quot; ]; then</span><br><span class="line">            ### show only INFECTED status</span><br><span class="line">            if [ $&#123;STATUS&#125; -eq 0 ]; then</span><br><span class="line">                echo &quot;Checking \`$&#123;cmd&#125;&apos;... INFECTED&quot;</span><br><span class="line">            fi</span><br><span class="line">            continue</span><br><span class="line">        fi</span><br><span class="line"></span><br><span class="line">        case $STATUS in</span><br><span class="line">        0) echo &quot;INFECTED&quot;;;</span><br><span class="line">        1) echo &quot;not infected&quot;;;</span><br><span class="line">        2) echo &quot;not tested&quot;;;</span><br><span class="line">        3) echo &quot;not found&quot;;;</span><br><span class="line">        4) echo &quot;infected but disabled&quot;;;</span><br><span class="line">        5) ;;   ### expert mode</span><br><span class="line">        esac</span><br><span class="line">    else</span><br><span class="line">        ### external tool</span><br><span class="line">        if [ &quot;$&#123;EXPERT&#125;&quot; != &quot;t&quot; -a &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then</span><br><span class="line">            printn &quot;Checking \`$cmd&apos;... &quot;</span><br><span class="line">        fi</span><br><span class="line">        $&#123;cmd&#125;</span><br><span class="line"></span><br><span class="line">    fi</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+<p>那么接下来每个check方法到底是怎么检测的呢？接下来</p>
+<h1 id="检测方法"><a href="#检测方法" class="headerlink" title="检测方法"></a>检测方法</h1><p>通过分析脚本，总结出检测方法如下：</p>
+<blockquote>
+<ol>
+<li>搜索通用的ROOTKIT特征的字符串</li>
+<li>对某种特定的rootkits，或者命令的特殊的感染特征进行检测</li>
+<li>对某种特定的rootkits的生成的特定文件的检测</li>
+<li>对程序的SUID位的设置进行检测</li>
+<li>对ldsopreload的检测</li>
+<li>查找可疑的log文件</li>
+<li>查找可疑的php文件</li>
+<li>检测.history文件</li>
+<li>检测有无程序监听了一些可疑的端口</li>
+<li>检测Linux可加载内核模块</li>
+<li>检测有无隐藏进程</li>
+<li>检测目录的软链接异常</li>
+<li>检测网络接口的异常</li>
+<li>检测用户的登录日志</li>
+<li>检测上一次登录</li>
+<li>检测可疑的没有tty记录的进程</li>
+</ol>
+</blockquote>
+<p>下面对上面这些方法结合脚本代码进行简单说明</p>
+<h2 id="搜索通用的ROOTKIT特征的字符串"><a href="#搜索通用的ROOTKIT特征的字符串" class="headerlink" title="搜索通用的ROOTKIT特征的字符串"></a>搜索通用的ROOTKIT特征的字符串</h2><p>搜索的是下面的比较通用的ROOTKIT字符串</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># Many trojaned commands have this label</span><br><span class="line">GENERIC_ROOTKIT_LABEL=&quot;^/bin/.*sh$|bash|elite$|vejeta|\.ark|iroffer&quot;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到前两个都是shell相关的，相关的示例代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">chk_chfn () &#123;</span><br><span class="line">    STATUS=$&#123;NOT_INFECTED&#125;</span><br><span class="line">    CMD=`loc chfn chfn $pth`</span><br><span class="line">    [ $&#123;?&#125; -ne 0 ] &amp;&amp;  return $&#123;NOT_FOUND&#125;</span><br><span class="line"></span><br><span class="line">    if [ &quot;$&#123;EXPERT&#125;&quot; = &quot;t&quot; ]; then</span><br><span class="line">        expertmode_output &quot;$&#123;strings&#125; -a $&#123;CMD&#125;&quot;</span><br><span class="line">        return 5</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    case &quot;$&#123;SYSTEM&#125;&quot; in</span><br><span class="line">       Linux)</span><br><span class="line">          if $&#123;strings&#125; -a $&#123;CMD&#125; | $&#123;egrep&#125; &quot;$&#123;GENERIC_ROOTKIT_LABEL&#125;&quot; \</span><br><span class="line">             &gt;/dev/null 2&gt;&amp;1</span><br><span class="line">          then</span><br><span class="line">             STATUS=$&#123;INFECTED&#125;</span><br><span class="line">          fi;;</span><br><span class="line">       FreeBSD)</span><br><span class="line">          [ `echo $V | $&#123;awk&#125; &apos;&#123; if ( $1 &gt;= 5.0) print 1; else print 0 &#125;&apos;` -eq 1 ] &amp;&amp; n=1 || n=2</span><br><span class="line">          if [ `$&#123;strings&#125; -a $&#123;CMD&#125; | \</span><br><span class="line">                $&#123;egrep&#125; -c &quot;$&#123;GENERIC_ROOTKIT_LABEL&#125;&quot;` -ne $n ]</span><br><span class="line">          then</span><br><span class="line">             STATUS=$&#123;INFECTED&#125;</span><br><span class="line">          fi;;</span><br><span class="line">    esac</span><br><span class="line">    return $&#123;STATUS&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>程序针对Linux和FreeBSD系统分开处理，都是通过strings获取二进制程序中的字符串，再使用egrep命令去正则匹配，匹配成功就将返回值STATUS设置为INFECTED这个常量（这个在文件开头处定义了）</p>
+<h2 id="对某种特定的rootkits，或者命令的特殊的感染特征进行检测"><a href="#对某种特定的rootkits，或者命令的特殊的感染特征进行检测" class="headerlink" title="对某种特定的rootkits，或者命令的特殊的感染特征进行检测"></a>对某种特定的rootkits，或者命令的特殊的感染特征进行检测</h2><p>比如这个amd命令的某个感染特征</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">chk_amd () &#123;</span><br><span class="line">    STATUS=$&#123;NOT_INFECTED&#125;</span><br><span class="line">    AMD_INFECTED_LABEL=&quot;blah&quot;</span><br><span class="line">    CMD=`loc amd amd $pth`</span><br><span class="line">    if [ ! -x &quot;$&#123;CMD&#125;&quot; ]; then</span><br><span class="line">         return $&#123;NOT_FOUND&#125;</span><br><span class="line">    fi</span><br><span class="line">    if [ &quot;$&#123;EXPERT&#125;&quot; = &quot;t&quot; ]; then</span><br><span class="line">        expertmode_output &quot;$&#123;strings&#125; -a $&#123;CMD&#125;&quot;</span><br><span class="line">        return 5</span><br><span class="line">    fi</span><br><span class="line">    if $&#123;strings&#125; -a $&#123;CMD&#125; | $&#123;egrep&#125; &quot;$&#123;AMD_INFECTED_LABEL&#125;&quot; &gt;/dev/null 2&gt;&amp;1</span><br><span class="line">    then</span><br><span class="line">       STATUS=$&#123;INFECTED&#125;</span><br><span class="line">    fi</span><br><span class="line">    return $&#123;STATUS&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面这个检测crontab的nobody用户，并且定时任务中有数字的， 可能是Lupper.Worm<br>当然还是有CRONTAB_I_L这个特殊的检测</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">chk_crontab () &#123;</span><br><span class="line">    STATUS=$&#123;NOT_INFECTED&#125;</span><br><span class="line">    CRONTAB_I_L=&quot;crontab.*666&quot;</span><br><span class="line"></span><br><span class="line">    CMD=`loc crontab crontab $pth`</span><br><span class="line"></span><br><span class="line">    if [ ! -r $&#123;CMD&#125; ]</span><br><span class="line">       then</span><br><span class="line">        return $&#123;NOT_FOUND&#125;</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    if [ &quot;$&#123;EXPERT&#125;&quot; = &quot;t&quot; ]; then</span><br><span class="line">        expertmode_output &quot;$&#123;CMD&#125; -l -u nobody&quot;</span><br><span class="line">        return 5</span><br><span class="line">    fi</span><br><span class="line">    # slackware&apos;s crontab have a bug</span><br><span class="line">    if  ( $&#123;CMD&#125; -l -u nobody | $egrep [0-9] ) &gt;/dev/null 2&gt;&amp;1 ; then</span><br><span class="line">        $&#123;echo&#125; &quot;Warning: crontab for nobody found, possible Lupper.Worm... &quot;</span><br><span class="line">	if $&#123;CMD&#125; -l -u nobody 2&gt;/dev/null  | $&#123;egrep&#125; $CRONTAB_I_L &gt;/dev/null 2&gt;&amp;1</span><br><span class="line">	   then</span><br><span class="line">           STATUS=$&#123;INFECTED&#125;</span><br><span class="line">	fi</span><br><span class="line">    fi</span><br><span class="line">    return $&#123;STATUS&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对Ramen Worm进行特征匹配</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if $&#123;egrep&#125; &quot;^asp&quot; $&#123;ROOTDIR&#125;etc/inetd.conf &gt;/dev/null 2&gt;&amp;1; then</span><br><span class="line">    echo &quot;Warning: Possible Ramen Worm installed in inetd.conf&quot;</span><br><span class="line">    STATUS=$&#123;INFECTED&#125;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<h2 id="对某种特定的rootkits生成的特定文件的检测"><a href="#对某种特定的rootkits生成的特定文件的检测" class="headerlink" title="对某种特定的rootkits生成的特定文件的检测"></a>对某种特定的rootkits生成的特定文件的检测</h2><p>如下面的HiDrootkit和t0rn</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">### HiDrootkit</span><br><span class="line">if [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then printn \</span><br><span class="line">  &quot;Searching for HiDrootkit&apos;s default dir... &quot;; fi</span><br><span class="line">if [ -d $&#123;ROOTDIR&#125;var/lib/games/.k ]</span><br><span class="line">then</span><br><span class="line">  echo &quot;Possible HiDrootkit installed&quot;</span><br><span class="line">else</span><br><span class="line">  if [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then echo &quot;nothing found&quot;; fi</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">### t0rn</span><br><span class="line">if [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then printn\</span><br><span class="line">  &quot;Searching for t0rn&apos;s default files and dirs... &quot;; fi</span><br><span class="line">if [ -f $&#123;ROOTDIR&#125;etc/ttyhash -o -f $&#123;ROOTDIR&#125;sbin/xlogin -o \</span><br><span class="line">    -d $&#123;ROOTDIR&#125;usr/src/.puta  -o -r $&#123;ROOTDIR&#125;lib/ldlib.tk -o \</span><br><span class="line">    -d $&#123;ROOTDIR&#125;usr/info/.t0rn ]</span><br><span class="line">then</span><br><span class="line">  echo &quot;Possible t0rn rootkit installed&quot;</span><br><span class="line">else</span><br><span class="line">  if [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then echo &quot;nothing found&quot;; fi</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<h2 id="对程序的SUID位的设置进行检测"><a href="#对程序的SUID位的设置进行检测" class="headerlink" title="对程序的SUID位的设置进行检测"></a>对程序的SUID位的设置进行检测</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">chk_basename () &#123;</span><br><span class="line">   STATUS=$&#123;NOT_INFECTED&#125;</span><br><span class="line">   CMD=`loc basename basename $pth`</span><br><span class="line"></span><br><span class="line">   if [ &quot;$&#123;EXPERT&#125;&quot; = &quot;t&quot; ]; then</span><br><span class="line">       expertmode_output &quot;$&#123;strings&#125; -a $&#123;CMD&#125;&quot;</span><br><span class="line">       expertmode_output &quot;$&#123;ls&#125; -l $&#123;CMD&#125;&quot;</span><br><span class="line">       return 5</span><br><span class="line">   fi</span><br><span class="line">   if $&#123;strings&#125; -a $&#123;CMD&#125; | $&#123;egrep&#125; &quot;$&#123;GENERIC_ROOTKIT_LABEL&#125;&quot; &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">   then</span><br><span class="line">       STATUS=$&#123;INFECTED&#125;</span><br><span class="line">   fi</span><br><span class="line"></span><br><span class="line">   [ &quot;$SYSTEM&quot; != &quot;OSF1&quot; ] &amp;&amp;</span><br><span class="line">   &#123;</span><br><span class="line">      if $&#123;ls&#125; -l $&#123;CMD&#125; | $&#123;egrep&#125; &quot;^...s&quot; &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">      then</span><br><span class="line">         STATUS=$&#123;INFECTED&#125;</span><br><span class="line">      fi</span><br><span class="line">   &#125;</span><br><span class="line">   return $&#123;STATUS&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个除了检测有无关键字，还检测SUID位有无设置</p>
+<p><img src="http://pic.giantbranch.cn/pic/1539147858960.jpg" alt></p>
+<h2 id="对ldsopreload的检测"><a href="#对ldsopreload的检测" class="headerlink" title="对ldsopreload的检测"></a>对ldsopreload的检测</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">chk_ldsopreload() &#123;</span><br><span class="line">   STATUS=$&#123;NOT_INFECTED&#125;</span><br><span class="line">   CMD=&quot;$&#123;ROOTDIR&#125;lib/libshow.so $&#123;ROOTDIR&#125;lib/libproc.a&quot;</span><br><span class="line"></span><br><span class="line">   if [ &quot;$&#123;SYSTEM&#125;&quot; = &quot;Linux&quot; ]</span><br><span class="line">   then</span><br><span class="line">      if [ ! -x ./strings-static ]; then</span><br><span class="line">        printn &quot;can&apos;t exec ./strings-static, &quot;</span><br><span class="line">        return $&#123;NOT_TESTED&#125;</span><br><span class="line">      fi</span><br><span class="line"></span><br><span class="line">      if [ &quot;$&#123;EXPERT&#125;&quot; = &quot;t&quot; ]; then</span><br><span class="line">          expertmode_output &quot;./strings-static -a $&#123;CMD&#125;&quot;</span><br><span class="line">          return 5</span><br><span class="line">      fi</span><br><span class="line"></span><br><span class="line">      ### strings must be a statically linked binary.</span><br><span class="line">      if ./strings-static -a $&#123;CMD&#125; &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">      then</span><br><span class="line">         STATUS=$&#123;INFECTED&#125;</span><br><span class="line">      fi</span><br><span class="line">   else</span><br><span class="line">     STATUS=$&#123;NOT_TESTED&#125;</span><br><span class="line">   fi</span><br><span class="line">   return $&#123;STATUS&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>检测是否有libshow.so，libproc.a，有就说明感染了恶意so文件</p>
+<p>可以看到为了保险起见，作者使用的是自己目录下静态编译的strings进行检测</p>
+<h2 id="查找可疑的log文件"><a href="#查找可疑的log文件" class="headerlink" title="查找可疑的log文件"></a>查找可疑的log文件</h2><p>例子如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">files=`$&#123;find&#125; $&#123;ROOTDIR&#125;dev $&#123;ROOTDIR&#125;tmp $&#123;ROOTDIR&#125;lib $&#123;ROOTDIR&#125;etc $&#123;ROOTDIR&#125;var \</span><br><span class="line">$&#123;findargs&#125; \( -name &quot;tcp.log&quot; -o -name &quot;.linux-sniff&quot; -o -name &quot;sniff-l0g&quot; -o -name &quot;core_&quot; \) \</span><br><span class="line">2&gt;/dev/null`</span><br><span class="line">if [ &quot;$&#123;files&#125;&quot; = &quot;&quot; ]</span><br><span class="line">then</span><br><span class="line">  if [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then echo &quot;nothing found&quot;; fi</span><br><span class="line">else</span><br><span class="line">  echo</span><br><span class="line">  echo $&#123;files&#125;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<h2 id="查找可疑的php文件"><a href="#查找可疑的php文件" class="headerlink" title="查找可疑的php文件"></a>查找可疑的php文件</h2><p>查找一些可疑的php文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">###</span><br><span class="line">### Suspect PHP files</span><br><span class="line">###</span><br><span class="line">if [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then</span><br><span class="line">    printn &quot;Searching for suspect PHP files... &quot;; fi</span><br><span class="line">    files=&quot;`$&#123;find&#125; $&#123;ROOTDIR&#125;tmp $&#123;ROOTDIR&#125;var/tmp $&#123;findargs&#125; -name &apos;*.php&apos; 2&gt; /dev/null`&quot;</span><br><span class="line">if [ `echo abc | head -n 1` = &quot;abc&quot; ]; then</span><br><span class="line">    fileshead=&quot;`$&#123;find&#125; $&#123;ROOTDIR&#125;tmp $&#123;ROOTDIR&#125;var/tmp $&#123;findargs&#125; -type f -exec head -n 1 &#123;&#125; \; | $egrep &apos;#!.*php&apos; 2&gt; /dev/null`&quot;</span><br><span class="line">else</span><br><span class="line">    fileshead=&quot;`$&#123;find&#125; $&#123;ROOTDIR&#125;tmp $&#123;ROOTDIR&#125;var/tmp $&#123;findargs&#125; -type f -exec head -1 &#123;&#125; \; | grep &apos;#!.*php&apos; 2&gt; /dev/null`&quot;</span><br><span class="line">fi</span><br><span class="line">if [ &quot;$&#123;files&#125;&quot; = &quot;&quot; -a &quot;$&#123;fileshead&#125;&quot; = &quot;&quot; ]; then</span><br><span class="line">    if [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then echo &quot;nothing found&quot;; fi</span><br><span class="line">else</span><br><span class="line">     echo</span><br><span class="line">     echo &quot;$&#123;files&#125;&quot;</span><br><span class="line">     echo &quot;$&#123;fileshead&#125;&quot;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<h2 id="检测-history文件"><a href="#检测-history文件" class="headerlink" title="检测.history文件"></a>检测.history文件</h2><p>看看history有没有被清空了，或者软连接到其他地方了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">if [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then \</span><br><span class="line">      printn &quot;Searching for anomalies in shell history files... &quot;; fi</span><br><span class="line">   files=&quot;&quot;</span><br><span class="line">   if [ ! -z &quot;$&#123;SHELL&#125;&quot; -a ! -z &quot;$&#123;HOME&#125;&quot; ]; then</span><br><span class="line">      files=`$&#123;find&#125; $&#123;ROOTDIR&#125;$&#123;HOME&#125; $&#123;findargs&#125; -name &apos;.*history&apos; -size 0`</span><br><span class="line">      [ ! -z &quot;$&#123;files&#125;&quot; ] &amp;&amp; \</span><br><span class="line">        echo &quot;Warning: \`$&#123;files&#125;&apos; file size is zero&quot;</span><br><span class="line">      files1=`$&#123;find&#125; $&#123;ROOTDIR&#125;$&#123;HOME&#125; $&#123;findargs&#125; -name &apos;.*history&apos; \( -links 2 -o -type l \)`</span><br><span class="line">      [ ! -z &quot;$&#123;files1&#125;&quot; ] &amp;&amp; \</span><br><span class="line">        echo &quot;Warning: \`$&#123;files1&#125;&apos; is linked to another file&quot;</span><br><span class="line">   fi</span><br><span class="line">   if [ -z &quot;$&#123;files&#125;&quot; -a -z &quot;$&#123;files1&#125;&quot; ]; then</span><br><span class="line">      if [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then echo &quot;nothing found&quot;; fi</span><br><span class="line">   fi</span><br></pre></td></tr></table></figure>
+
+<h2 id="检测有无程序监听了一些可疑的端口"><a href="#检测有无程序监听了一些可疑的端口" class="headerlink" title="检测有无程序监听了一些可疑的端口"></a>检测有无程序监听了一些可疑的端口</h2><p>检测代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">bindshell () &#123;</span><br><span class="line">PORT=&quot;114|145|465|511|600|1008|1524|1999|1978|2881|3049|3133|3879|4000|4369|5190|5665|6667|10008|12321|23132|27374|29364|30999|31336|31337|37998|45454|47017|47889|60001|7222&quot;</span><br><span class="line">   OPT=&quot;-an&quot;</span><br><span class="line">   PI=&quot;&quot;</span><br><span class="line">   if [ &quot;$&#123;ROOTDIR&#125;&quot; != &quot;/&quot; ]; then</span><br><span class="line">     echo &quot;not tested&quot;</span><br><span class="line">     return $&#123;NOT_TESTED&#125;</span><br><span class="line">   fi</span><br><span class="line"></span><br><span class="line">   if [ &quot;$&#123;EXPERT&#125;&quot; = &quot;t&quot; ]; then</span><br><span class="line">       expertmode_output &quot;$&#123;netstat&#125; $&#123;OPT&#125;&quot;</span><br><span class="line">       return 5</span><br><span class="line">   fi</span><br><span class="line">   for P in `echo $PORT | $&#123;sed&#125; &apos;s/|/ /g&apos;`; do</span><br><span class="line">      if $&#123;netstat&#125; &quot;$&#123;OPT&#125;&quot; | $&#123;egrep&#125; &quot;^tcp.*LIST|^udp&quot; | $&#123;egrep&#125; \</span><br><span class="line">&quot;[.:]$&#123;P&#125;[^0-9.:]&quot; &gt;/dev/null 2&gt;&amp;1</span><br><span class="line">      then</span><br><span class="line">         PI=&quot;$&#123;PI&#125; $&#123;P&#125;&quot;</span><br><span class="line">      fi</span><br><span class="line">   done</span><br><span class="line">   if [ &quot;$&#123;PI&#125;&quot; != &quot;&quot; ]</span><br><span class="line">   then</span><br><span class="line">      echo &quot;INFECTED PORTS: ($PI)&quot;</span><br><span class="line">   else</span><br><span class="line">      if [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then echo &quot;not infected&quot;; fi</span><br><span class="line">   fi</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="检测Linux可加载内核模块"><a href="#检测Linux可加载内核模块" class="headerlink" title="检测Linux可加载内核模块"></a>检测Linux可加载内核模块</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">lkm ()</span><br><span class="line">&#123;</span><br><span class="line">    prog=&quot;&quot;</span><br><span class="line">    if [  \( &quot;$&#123;SYSTEM&#125;&quot; = &quot;Linux&quot;  -o \( &quot;$&#123;SYSTEM&#125;&quot; = &quot;FreeBSD&quot; -a \</span><br><span class="line">       `echo $&#123;V&#125; | $&#123;awk&#125; &apos;&#123; if ($1 &gt; 4.3 || $1 &lt; 6.0) print 1; else print 0 &#125;&apos;` -eq 1 \) \) -a &quot;$&#123;ROOTDIR&#125;&quot; = &quot;/&quot; ]; then</span><br><span class="line">      [  -x ./chkproc -a &quot;`find /proc | wc -l`&quot; -gt 1 ] &amp;&amp; prog=&quot;./chkproc&quot;</span><br><span class="line">      [  -x ./chkdirs ] &amp;&amp; prog=&quot;$prog ./chkdirs&quot;</span><br><span class="line">      if [ &quot;$prog&quot; = &quot;&quot; ]; then</span><br><span class="line">         echo &quot;not tested: can&apos;t exec $prog&quot;</span><br><span class="line">         return $&#123;NOT_TESTED&#125;</span><br><span class="line">      fi</span><br><span class="line"></span><br><span class="line">      if [ &quot;$&#123;EXPERT&#125;&quot; = &quot;t&quot; ]; then</span><br><span class="line">         [ -r /proc/$KALLSYMS ] &amp;&amp;  $&#123;egrep&#125; -i &quot;adore|sebek&quot; &lt; /proc/$KALLSYMS 2&gt;/dev/null</span><br><span class="line">         [ -d /proc/knark ] &amp;&amp;  $&#123;ls&#125; -la /proc/knark 2&gt; /dev/null</span><br><span class="line">         PV=`$ps -V 2&gt;/dev/null| $cut -d &quot; &quot; -f 3 |$&#123;awk&#125; -F . &apos;&#123; print $1 &quot;.&quot; $2 $3 &#125;&apos; | $&#123;awk&#125; &apos;&#123; if ($0 &gt; 3.19) print 3; else if ($0 &lt; 2.015) print 1; else print 2 &#125;&apos;`</span><br><span class="line">         [ &quot;$PV&quot; = &quot;&quot; ] &amp;&amp;  PV=2</span><br><span class="line">         [ &quot;$&#123;SYSTEM&#125;&quot; = &quot;SunOS&quot; ] &amp;&amp; PV=0</span><br><span class="line">         expertmode_output &quot;./chkproc -v -v -p $PV&quot;</span><br><span class="line">         return 5</span><br><span class="line">      fi</span><br><span class="line"></span><br><span class="line">      ### adore LKM</span><br><span class="line">      [ -r /proc/$KALLSYMS ] &amp;&amp; \</span><br><span class="line">      if `$&#123;egrep&#125; -i adore &lt; /proc/$KALLSYMS &gt;/dev/null 2&gt;&amp;1`; then</span><br><span class="line">         echo &quot;Warning: Adore LKM installed&quot;</span><br><span class="line">      fi</span><br><span class="line"></span><br><span class="line">      ### sebek LKM (Adore based)</span><br><span class="line">      [ -r /proc/$KALLSYMS ] &amp;&amp; \</span><br><span class="line">      if `$&#123;egrep&#125; -i sebek &lt; /proc/$KALLSYMS &gt;/dev/null 2&gt;&amp;1`; then</span><br><span class="line">         echo &quot;Warning: Sebek LKM installed&quot;</span><br><span class="line">      fi</span><br><span class="line"></span><br><span class="line">      ### knark LKM</span><br><span class="line">      if [ -d /proc/knark ]; then</span><br><span class="line">         echo &quot;Warning: Knark LKM installed&quot;</span><br><span class="line">      fi</span><br><span class="line"></span><br><span class="line">      PV=`$ps -V 2&gt;/dev/null| $cut -d &quot; &quot; -f 3 |$&#123;awk&#125; -F . &apos;&#123; print $1 &quot;.&quot; $2 $3 &#125;&apos; | $&#123;awk&#125; &apos;&#123; if ($0 &gt; 3.19) print 3; else if ($0 &lt; 2.11) print 1; else print 2 &#125;&apos;`</span><br><span class="line">      [ &quot;$PV&quot; = &quot;&quot; ] &amp;&amp;  PV=2</span><br><span class="line">      [ &quot;$&#123;SYSTEM&#125;&quot; = &quot;SunOS&quot; ] &amp;&amp; PV=0</span><br><span class="line">      if [ &quot;$&#123;DEBUG&#125;&quot; = &quot;t&quot; ]; then</span><br><span class="line">           $&#123;echo&#125; &quot;*** PV=$PV ***&quot;</span><br><span class="line">      fi</span><br><span class="line">      if ./chkproc -p $&#123;PV&#125;; then</span><br><span class="line">         if [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then echo &quot;chkproc: nothing detected&quot;; fi</span><br><span class="line">      else</span><br><span class="line">         echo &quot;chkproc: Warning: Possible LKM Trojan installed&quot;</span><br><span class="line">      fi</span><br><span class="line">      dirs=&quot;/tmp&quot;</span><br><span class="line">      for i in /usr/share /usr/bin /usr/sbin /lib; do</span><br><span class="line">         [ -d $i ] &amp;&amp; dirs=&quot;$dirs $i&quot;</span><br><span class="line">      done</span><br><span class="line">      if ./chkdirs $dirs;  then</span><br><span class="line">         if [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then echo &quot;chkdirs: nothing detected&quot;; fi</span><br><span class="line">      else</span><br><span class="line">	    echo &quot;chkdirs: Warning: Possible LKM Trojan installed&quot;</span><br><span class="line">      fi</span><br><span class="line">   else</span><br><span class="line">         if [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ]; then echo &quot;chkproc: not tested&quot;; fi</span><br><span class="line">   fi</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> loadable kernel module (LKM)，这个是检测内核模块的 ，看看有无adore，sebek这些内核模块</p>
+<p> 之后调用chkproc，chkdirs进行检测，这两个下面检测有无隐藏进程，会说到</p>
+<h2 id="检测有无隐藏进程"><a href="#检测有无隐藏进程" class="headerlink" title="检测有无隐藏进程"></a>检测有无隐藏进程</h2><p> 这个代码在chkproc.c中，它通过暴力递归，看看有没有/proc目录存在，而ps查不出来的进程，那么就说明有进程隐藏了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"> /* Brute force */</span><br><span class="line">   strcpy(buf, &quot;/proc/&quot;);</span><br><span class="line">   retps = retdir = 0;</span><br><span class="line">   for (i = FIRST_PROCESS; i &lt;= MAX_PROCESSES; i++)</span><br><span class="line">   &#123;</span><br><span class="line">      // snprintf(&amp;buf[6], 6, &quot;%d&quot;, i);</span><br><span class="line">       snprintf(&amp;buf[6], 8, &quot;%d&quot;, i);</span><br><span class="line">      if (!chdir(buf))</span><br><span class="line">      &#123;</span><br><span class="line">         if (!dirproc[i] &amp;&amp; !psproc[i])</span><br><span class="line">         &#123;</span><br><span class="line">#if defined(__linux__)</span><br><span class="line">            if (!isathread[i]) &#123;</span><br><span class="line">#endif</span><br><span class="line">            retdir++;</span><br><span class="line">            if (verbose)</span><br><span class="line">	       printf (&quot;PID %5d(%s): not in readdir output\n&quot;, i, buf);</span><br><span class="line">#if defined(__linux__)</span><br><span class="line">            &#125;</span><br><span class="line">#endif</span><br><span class="line">         &#125;</span><br><span class="line">         if (!psproc[i] ) /* &amp;&amp; !kill(i, 0)) */</span><br><span class="line">         &#123;</span><br><span class="line">#if defined(__linux__)</span><br><span class="line">            if(!isathread[i]) &#123;</span><br><span class="line">#endif</span><br><span class="line">            retps++;</span><br><span class="line">            if (verbose)</span><br><span class="line">	       printf (&quot;PID %5d: not in ps output\n&quot;, i);</span><br><span class="line">#if defined(__linux__)</span><br><span class="line">            &#125;</span><br><span class="line">#endif</span><br><span class="line">	 &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="检测目录的软链接异常"><a href="#检测目录的软链接异常" class="headerlink" title="检测目录的软链接异常"></a>检测目录的软链接异常</h2><p>chkdirs比较的是父目录的软链接数和子目录的个数</p>
+<p>正常情况下，父目录的软链接数 = 子目录的个数 + 2</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">if (!linkcount) &#123;</span><br><span class="line">    if (lstat(&quot;.&quot;, &amp;statinfo)) &#123;</span><br><span class="line">      fprintf(stderr, &quot;lstat(%s): %s\n&quot;, fullpath, strerror(errno));</span><br><span class="line">      goto abort;</span><br><span class="line">    &#125;</span><br><span class="line">    linkcount = statinfo.st_nlink;   //获取符号链接数</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  if (!(dirhandle = opendir(&quot;.&quot;))) &#123;</span><br><span class="line">    fprintf(stderr, &quot;opendir(%s): %s\n&quot;, fullpath, strerror(errno));</span><br><span class="line">    goto abort;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  numdirs = 0;</span><br><span class="line">  dl = (struct dirinfolist *)NULL;</span><br><span class="line">  while ((finfo = readdir(dirhandle))) &#123;</span><br><span class="line">    if (!strcmp(finfo-&gt;d_name, &quot;.&quot;) || !strcmp(finfo-&gt;d_name, &quot;..&quot;))</span><br><span class="line">      continue;</span><br><span class="line"></span><br><span class="line">    if (lstat(finfo-&gt;d_name, &amp;statinfo)) &#123;</span><br><span class="line">      fprintf(stderr, &quot;lstat(%s/%s): %s\n&quot;,</span><br><span class="line">	      fullpath, finfo-&gt;d_name, strerror(errno));</span><br><span class="line">      closedir(dirhandle);</span><br><span class="line">      goto abort;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (S_ISDIR(statinfo.st_mode)) &#123;    //判断是否是目录</span><br><span class="line">      numdirs++;</span><br><span class="line"></span><br><span class="line">      if (norecurse) continue;               /* just count subdirs if &quot;-n&quot; */</span><br><span class="line"></span><br><span class="line">      /* Otherwise, keep a list of all directories found that have link</span><br><span class="line">	 count &gt; 2 (indicating directory contains subdirectories).  We&apos;ll</span><br><span class="line">	 call check_dir() on each of these subdirectories in a moment...</span><br><span class="line">      */</span><br><span class="line">      if (statinfo.st_nlink &gt; 2) &#123;</span><br><span class="line">	dptr = dl;</span><br><span class="line">	if (!(dl = (struct dirinfolist *)malloc(sizeof(struct dirinfolist)))) &#123;</span><br><span class="line">	  fprintf(stderr, &quot;malloc() failed: %s\n&quot;, strerror(errno));</span><br><span class="line">	  norecurse = 1;</span><br><span class="line">	  while (dptr) &#123;</span><br><span class="line">	    dl = dptr-&gt;dil_next;</span><br><span class="line">	    free((void *)dptr);</span><br><span class="line">	    dptr = dl;</span><br><span class="line">	  &#125;</span><br><span class="line">	  continue;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	strncpy(dl-&gt;dil_name, finfo-&gt;d_name, sizeof(dl-&gt;dil_name));</span><br><span class="line">	dl-&gt;dil_lc = statinfo.st_nlink;</span><br><span class="line">	dl-&gt;dil_next = dptr;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  closedir(dirhandle);</span><br><span class="line"></span><br><span class="line">  /* Parent directory link count had better equal #subdirs+2... */</span><br><span class="line">  diff = linkcount - numdirs - 2;     //</span><br><span class="line">  if (diff) printf(&quot;%d\t%s\n&quot;, diff, fullpath);</span><br></pre></td></tr></table></figure>
+
+<h2 id="检测网络接口的异常"><a href="#检测网络接口的异常" class="headerlink" title="检测网络接口的异常"></a>检测网络接口的异常</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"> sniffer () &#123;</span><br><span class="line">    if [ &quot;$&#123;ROOTDIR&#125;&quot; != &quot;/&quot; ]; then</span><br><span class="line">      echo &quot;not tested&quot;</span><br><span class="line">      return $&#123;NOT_TESTED&#125;</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    if [ &quot;$SYSTEM&quot; = &quot;SunOS&quot; ]; then</span><br><span class="line">       return $&#123;NOT_TESTED&#125;</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    if [ &quot;$&#123;EXPERT&#125;&quot; = &quot;t&quot; ]; then</span><br><span class="line">        expertmode_output &quot;./ifpromisc&quot; -v</span><br><span class="line">        return 5</span><br><span class="line">    fi</span><br><span class="line">    if [ ! -x ./ifpromisc ]; then</span><br><span class="line">      echo &quot;not tested: can&apos;t exec ./ifpromisc&quot;</span><br><span class="line">      return $&#123;NOT_TESTED&#125;</span><br><span class="line">    else</span><br><span class="line">      [ &quot;$&#123;QUIET&#125;&quot; != &quot;t&quot; ] &amp;&amp; ./ifpromisc -v || ./ifpromisc -q</span><br><span class="line">    fi</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个是对网络接口的检测，看看有无开启网卡混杂模式（英语：promiscuous mode）</p>
+<p>而PF_PACKET可以操作链路层的数据，可以读取和发送链路层的数据包</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> ./ifpromisc -v</span><br><span class="line">ens3: PF_PACKET(/sbin/dhclient)</span><br><span class="line">virbr0: not promisc and no PF_PACKET sockets</span><br><span class="line">docker0: not promisc and no PF_PACKET sockets</span><br><span class="line">br-47a3d838588a: not promisc and no PF_PACKET sockets</span><br></pre></td></tr></table></figure>
+
+<h2 id="检测用户的登录日志"><a href="#检测用户的登录日志" class="headerlink" title="检测用户的登录日志"></a>检测用户的登录日志</h2><p>检测用户的登录相关的log文件</p>
+<p>SunOS使用的是check_wtmpx，比较的文件是/var/adm/wtmp，/var/adm/wtmpx,check_wtmpx部分代码，比较这两个文件的一些差异，比如下面的比较uid</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if ( memcmp( utmp_entry.ut_id, utmpx_entry.ut_id, 4 ) != 0 )</span><br><span class="line">&#123;</span><br><span class="line">    fprintf( stderr, &quot;[ %u ] utmp_entry.ut_id != utmpx_entry.ut_id\n&quot;, wtmp_read_counter );</span><br><span class="line">    break;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其他linux检测的是var/log/wtmp或者var/adm/wtmp<br>chkwtmp部分代码，查看有无删除了登录时间</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">gettimeofday(&amp;mytime, &amp;dummy);</span><br><span class="line">       act_time=mytime.tv_sec;</span><br><span class="line">       wtmpfile[127]=&apos;\0&apos;;</span><br><span class="line">       memcpy(wtmpfile, WTMP_FILENAME, 127);</span><br><span class="line">       if ( argc == 3 &amp;&amp; !memcmp(&quot;-f&quot;, argv[1], 2) &amp;&amp; *argv[2])</span><br><span class="line">          memcpy(wtmpfile, argv[2], 127);</span><br><span class="line"></span><br><span class="line">	if ((filehandle=open(wtmpfile,O_RDONLY)) &lt; 0) &#123;</span><br><span class="line">		fprintf(stderr, &quot;unable to open wtmp-file %s\n&quot;, wtmpfile);</span><br><span class="line">		return(2);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	while (read (filehandle, (char *) &amp;utmp_ent, sizeof (struct utmp)) &gt; 0) &#123;</span><br><span class="line">		if (utmp_ent.ut_time == 0)</span><br><span class="line">			del_counter++;</span><br><span class="line">		else &#123;</span><br><span class="line">			if (del_counter) &#123;</span><br><span class="line">				printit(del_counter, start_time,</span><br><span class="line">					utmp_ent.ut_time);</span><br><span class="line">				t_del++;</span><br><span class="line">				del_counter=0;</span><br><span class="line">			&#125;</span><br><span class="line">			start_time=utmp_ent.ut_time;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	close(filehandle);</span><br><span class="line">	if (del_counter)</span><br><span class="line">	   printit(del_counter, start_time, act_time);</span><br><span class="line">        exit((int) t_del+del_counter);</span><br></pre></td></tr></table></figure>
+
+<h2 id="检测上一次登录"><a href="#检测上一次登录" class="headerlink" title="检测上一次登录"></a>检测上一次登录</h2><p>使用chklastlog程序检测，下面是部分代码，用户的数据通过getpwent函数获取，其实就是通过/etc/passwd获取，检测基于两点</p>
+<p>1、通过比较MAX_ID,与当前的遍历的用户的id，看看id是否大于环境变量MAX_ID<br>2、看看是否有这样的情况：用户名出现在lastlog，wtmp文件中，而在/etc/passwd中没有的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">if ( !nonuser(utmp_ent) &amp;&amp; strncmp(utmp_ent.ut_line, &quot;ftp&quot;, 3) &amp;&amp;</span><br><span class="line">	 (uid=localgetpwnam(localpwd,utmp_ent.ut_name)) != NULL )</span><br><span class="line">		&#123;</span><br><span class="line">			if (*uid &gt; MAX_ID)</span><br><span class="line">			&#123;</span><br><span class="line">			   fprintf(stderr, &quot;MAX_ID is %ld and current uid is %ld, please check\n\r&quot;, MAX_ID, *uid );</span><br><span class="line">			   exit (1);</span><br><span class="line"></span><br><span class="line">			&#125;</span><br><span class="line">	if (!userid[*uid])</span><br><span class="line">			&#123;</span><br><span class="line">		lseek(fh_lastlog, (long)*uid * sizeof (struct lastlog), 0);</span><br><span class="line">		if ((wtmp_bytes_read = read(fh_lastlog, &amp;lastlog_ent, sizeof (struct lastlog))) &gt; 0)</span><br><span class="line">				&#123;</span><br><span class="line">					if (wtmp_bytes_read &lt; sizeof(struct lastlog))</span><br><span class="line">					&#123;</span><br><span class="line">					   fprintf(stderr, &quot;lastlog entry may be corrupted&quot;);</span><br><span class="line">					   break;</span><br><span class="line">					&#125;</span><br><span class="line">					if (lastlog_ent.ll_time == 0)</span><br><span class="line">					&#123;</span><br><span class="line">					   if (-1 != (slot = getslot(localpwd, *uid)))</span><br><span class="line">						   printf(&quot;user %s deleted or never logged from lastlog!\n&quot;,</span><br><span class="line">							NULL != localpwd-&gt;uname[slot] ?</span><br><span class="line">							(char*)localpwd-&gt;uname[slot] : &quot;(null)&quot;);</span><br><span class="line">					   else</span><br><span class="line">						  printf(&quot;deleted user uid(%d) not in passwd\n&quot;, *uid);</span><br><span class="line">					   ++status;</span><br><span class="line">					&#125;</span><br><span class="line">					userid[*uid]=TRUE;</span><br><span class="line">				&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="检测可疑的没有tty记录的进程"><a href="#检测可疑的没有tty记录的进程" class="headerlink" title="检测可疑的没有tty记录的进程"></a>检测可疑的没有tty记录的进程</h2><p>检测的是/var/run/utmp或者/var/adm/utmpx，方法是比较的是ps命令与/var/run/utmp文件之间的差别</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">y = fetchps(ps_l);</span><br><span class="line">z = fetchutmp(ut_l);</span><br><span class="line">hdr_prntd = 0;</span><br><span class="line">for (h = 0; h &lt; y; h++) &#123;	/* loop through &apos;ps&apos; data */</span><br><span class="line">mtch_fnd = 0;</span><br><span class="line">for (i = 0; i &lt; z; i++) &#123;	/* try and match the tty from &apos;ps&apos; to one in utmp */</span><br><span class="line">	if (ut_l[i].ut_type == LOGIN_PROCESS	/* ignore getty processes with matching pid from &apos;ps&apos; */</span><br><span class="line">	&amp;&amp; ut_l[i].ut_pid == ps_l[h].ps_pid)</span><br><span class="line">   &#123;</span><br><span class="line">	mtch_fnd = 1;</span><br><span class="line">		break;</span><br><span class="line">	   &#125;</span><br><span class="line">	else if (strncmp(ps_l[h].ps_tty, ut_l[i].ut_tty,	/* compare the tty&apos;s */</span><br><span class="line">			 strlen(ps_l[h].ps_tty)) == 0)</span><br><span class="line">	&#123;</span><br><span class="line">	mtch_fnd = 1;</span><br><span class="line">		break;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line">if (!mtch_fnd) &#123;</span><br><span class="line">	if (!hdr_prntd) &#123;</span><br><span class="line">	printf</span><br><span class="line">		(&quot; The tty of the following user process(es) were not found\n&quot;);</span><br><span class="line">	printf(&quot; in %s !\n&quot;, UTMP);</span><br><span class="line">	printf(&quot;! %-9s %7s %-6s %s\n&quot;, &quot;RUID&quot;, &quot;PID&quot;, &quot;TTY&quot;,</span><br><span class="line">		   &quot;CMD&quot;);</span><br><span class="line">	hdr_prntd = 1;</span><br><span class="line">	&#125;</span><br><span class="line">	printf(&quot;! %-9s %7d %-6s %s&quot;, ps_l[h].ps_user,</span><br><span class="line">	   ps_l[h].ps_pid, ps_l[h].ps_tty, ps_l[h].ps_args);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>比如下面的检测结果，而我的/var/run/utmp中是没有tty7这个tty的记录的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Checking `chkutmp&apos;...  The tty of the following user process(es) were not found</span><br><span class="line"> in /var/run/utmp !</span><br><span class="line">! RUID          PID TTY    CMD</span><br><span class="line">! root         1076 tty7   /usr/lib/xorg/Xorg -core :0 -seat seat0 -auth /var/run/lightdm/root/:0 -nolisten tcp vt7 -novtswitch</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2018/10/09/通过chkrootkit学习如何在linux下检测RootKit/" title="通过chkrootkit学习如何在linux下检测RootKit">https://www.giantbranch.cn/2018/10/09/通过chkrootkit学习如何在linux下检测RootKit/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/rootkit/" rel="tag"># rootkit</a>
+          
+            <a href="/tags/检测rootkit/" rel="tag"># 检测rootkit</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/30/没有libc6-dbg的符号如何查找main_arena/" rel="next" title="没有libc6-dbg的符号如何查找main_arena">
+                <i class="fa fa-chevron-left"></i> 没有libc6-dbg的符号如何查找main_arena
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/07/CTF PWN专用虚拟机/" rel="prev" title="CTF PWN专用虚拟机">
+                CTF PWN专用虚拟机 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#chkrootkit简介"><span class="nav-number">1.</span> <span class="nav-text">chkrootkit简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总体流程"><span class="nav-number">2.</span> <span class="nav-text">总体流程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#检测方法"><span class="nav-number">3.</span> <span class="nav-text">检测方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#搜索通用的ROOTKIT特征的字符串"><span class="nav-number">3.1.</span> <span class="nav-text">搜索通用的ROOTKIT特征的字符串</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对某种特定的rootkits，或者命令的特殊的感染特征进行检测"><span class="nav-number">3.2.</span> <span class="nav-text">对某种特定的rootkits，或者命令的特殊的感染特征进行检测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对某种特定的rootkits生成的特定文件的检测"><span class="nav-number">3.3.</span> <span class="nav-text">对某种特定的rootkits生成的特定文件的检测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对程序的SUID位的设置进行检测"><span class="nav-number">3.4.</span> <span class="nav-text">对程序的SUID位的设置进行检测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对ldsopreload的检测"><span class="nav-number">3.5.</span> <span class="nav-text">对ldsopreload的检测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查找可疑的log文件"><span class="nav-number">3.6.</span> <span class="nav-text">查找可疑的log文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查找可疑的php文件"><span class="nav-number">3.7.</span> <span class="nav-text">查找可疑的php文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#检测-history文件"><span class="nav-number">3.8.</span> <span class="nav-text">检测.history文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#检测有无程序监听了一些可疑的端口"><span class="nav-number">3.9.</span> <span class="nav-text">检测有无程序监听了一些可疑的端口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#检测Linux可加载内核模块"><span class="nav-number">3.10.</span> <span class="nav-text">检测Linux可加载内核模块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#检测有无隐藏进程"><span class="nav-number">3.11.</span> <span class="nav-text">检测有无隐藏进程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#检测目录的软链接异常"><span class="nav-number">3.12.</span> <span class="nav-text">检测目录的软链接异常</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#检测网络接口的异常"><span class="nav-number">3.13.</span> <span class="nav-text">检测网络接口的异常</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#检测用户的登录日志"><span class="nav-number">3.14.</span> <span class="nav-text">检测用户的登录日志</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#检测上一次登录"><span class="nav-number">3.15.</span> <span class="nav-text">检测上一次登录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#检测可疑的没有tty记录的进程"><span class="nav-number">3.16.</span> <span class="nav-text">检测可疑的没有tty记录的进程</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2018/10/09/通过chkrootkit学习如何在linux下检测RootKit/';
+          this.page.identifier = '2018/10/09/通过chkrootkit学习如何在linux下检测RootKit/';
+          this.page.title = '通过chkrootkit学习如何在linux下检测RootKit';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

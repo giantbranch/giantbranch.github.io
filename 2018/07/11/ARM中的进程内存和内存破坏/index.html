@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="pwn,heap,arm,stack,format string,Dangling pointer,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="注：本位为简译文章，原文见最后的reference 进程的内存布局程序载入内存会分成多个段，我们关心下面三个  程序空间 堆 栈  一般情况下布局如下  我们可以通过gef看到内存布局及权限 123456789101112131415161718192021222324252627282930313233azeria@labs:~/exp $ gdb program...gef&amp;gt; gef c">
+<meta name="keywords" content="pwn,heap,arm,stack,format string,Dangling pointer">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ARM中的进程内存和内存破坏">
+<meta property="og:url" content="https://www.giantbranch.cn/2018/07/11/ARM中的进程内存和内存破坏/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="注：本位为简译文章，原文见最后的reference 进程的内存布局程序载入内存会分成多个段，我们关心下面三个  程序空间 堆 栈  一般情况下布局如下  我们可以通过gef看到内存布局及权限 123456789101112131415161718192021222324252627282930313233azeria@labs:~/exp $ gdb program...gef&amp;gt; gef c">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531279869248.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531288189380.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531289370624.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531289418220.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531289752428.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531289833182.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531290222604.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531290439779.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531290471462.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531290501248.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531290692027.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531290733397.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531290849772.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531290877048.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1531290933903.jpg">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.050Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ARM中的进程内存和内存破坏">
+<meta name="twitter:description" content="注：本位为简译文章，原文见最后的reference 进程的内存布局程序载入内存会分成多个段，我们关心下面三个  程序空间 堆 栈  一般情况下布局如下  我们可以通过gef看到内存布局及权限 123456789101112131415161718192021222324252627282930313233azeria@labs:~/exp $ gdb program...gef&amp;gt; gef c">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1531279869248.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2018/07/11/ARM中的进程内存和内存破坏/">
+
+
+
+
+
+  <title>ARM中的进程内存和内存破坏 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/07/11/ARM中的进程内存和内存破坏/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">ARM中的进程内存和内存破坏</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-11T00:00:00+00:00">
+                2018-07-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/07/11/ARM中的进程内存和内存破坏/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/07/11/ARM中的进程内存和内存破坏/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>注：本位为简译文章，原文见最后的reference</p>
+<h1 id="进程的内存布局"><a href="#进程的内存布局" class="headerlink" title="进程的内存布局"></a>进程的内存布局</h1><p>程序载入内存会分成多个段，我们关心下面三个</p>
+<ol>
+<li>程序空间</li>
+<li>堆</li>
+<li>栈</li>
+</ol>
+<p>一般情况下布局如下</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531279869248.jpg" alt></p>
+<p>我们可以通过gef看到内存布局及权限</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">azeria@labs:~/exp $ gdb program</span><br><span class="line">...</span><br><span class="line">gef&gt; gef config context.layout &quot;code&quot;</span><br><span class="line">gef&gt; break main</span><br><span class="line">Breakpoint 1 at 0x104c4: file program.c, line 6.</span><br><span class="line">gef&gt; run</span><br><span class="line">...</span><br><span class="line">gef&gt; nexti 2</span><br><span class="line">-----------------------------------------------------------------------------------------[ code:arm ]----</span><br><span class="line">...</span><br><span class="line">      0x104c4 &lt;main+20&gt;        mov    r0,  #8</span><br><span class="line">      0x104c8 &lt;main+24&gt;        bl     0x1034c &lt;malloc@plt&gt;</span><br><span class="line">-&gt;    0x104cc &lt;main+28&gt;        mov    r3,  r0</span><br><span class="line">      0x104d0 &lt;main+32&gt;        str    r3,  [r11,  #-8]</span><br><span class="line">...</span><br><span class="line">gef&gt; vmmap</span><br><span class="line">Start      End        Offset     Perm Path</span><br><span class="line">0x00010000 0x00011000 0x00000000 r-x /home/azeria/exp/program &lt;---- Program Image</span><br><span class="line">0x00020000 0x00021000 0x00000000 rw- /home/azeria/exp/program &lt;---- Program Image continues...</span><br><span class="line">0x00021000 0x00042000 0x00000000 rw- [heap] &lt;---- HEAP</span><br><span class="line">0xb6e74000 0xb6f9f000 0x00000000 r-x /lib/arm-linux-gnueabihf/libc-2.19.so &lt;---- Shared library (libc)</span><br><span class="line">0xb6f9f000 0xb6faf000 0x0012b000 --- /lib/arm-linux-gnueabihf/libc-2.19.so &lt;---- libc continues...</span><br><span class="line">0xb6faf000 0xb6fb1000 0x0012b000 r-- /lib/arm-linux-gnueabihf/libc-2.19.so &lt;---- libc continues...</span><br><span class="line">0xb6fb1000 0xb6fb2000 0x0012d000 rw- /lib/arm-linux-gnueabihf/libc-2.19.so &lt;---- libc continues...</span><br><span class="line">0xb6fb2000 0xb6fb5000 0x00000000 rw-</span><br><span class="line">0xb6fcc000 0xb6fec000 0x00000000 r-x /lib/arm-linux-gnueabihf/ld-2.19.so &lt;---- Shared library (ld)</span><br><span class="line">0xb6ffa000 0xb6ffb000 0x00000000 rw-</span><br><span class="line">0xb6ffb000 0xb6ffc000 0x0001f000 r-- /lib/arm-linux-gnueabihf/ld-2.19.so &lt;---- ld continues...</span><br><span class="line">0xb6ffc000 0xb6ffd000 0x00020000 rw- /lib/arm-linux-gnueabihf/ld-2.19.so &lt;---- ld continues...</span><br><span class="line">0xb6ffd000 0xb6fff000 0x00000000 rw-</span><br><span class="line">0xb6fff000 0xb7000000 0x00000000 r-x [sigpage]</span><br><span class="line">0xbefdf000 0xbf000000 0x00000000 rw- [stack] &lt;---- STACK</span><br><span class="line">0xffff0000 0xffff1000 0x00000000 r-x [vectors]</span><br></pre></td></tr></table></figure>
+
+<h1 id="栈溢出"><a href="#栈溢出" class="headerlink" title="栈溢出"></a>栈溢出</h1><p>如图，就是程序对用户输入的长度做限制，导致可以覆盖LR寄存器的味道，通过精心地控制，即可达到任意代码执行的目的</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531288189380.jpg" alt></p>
+<p>我们用如下程序测试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">/*azeria@labs:~/exp $ gcc stack.c -o stack*/</span><br><span class="line">#include &quot;stdio.h&quot;</span><br><span class="line"></span><br><span class="line">int main(int argc, char **argv)</span><br><span class="line">&#123;</span><br><span class="line">char buffer[8];</span><br><span class="line">gets(buffer);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>汇编代码如下：</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531289370624.jpg" alt></p>
+<p>我们输入7个A，可以看到  R11（即FP）和LR储存的位置还没被覆盖</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531289418220.jpg" alt></p>
+<p>假如我们输入16个A，可以看到都覆盖了，之后的pop {r11, pc}就会让攻击者劫持控制流了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531289752428.jpg" alt></p>
+<p>继续运行，确实被控制了，程序也蹦了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531289833182.jpg" alt></p>
+<h1 id="堆溢出"><a href="#堆溢出" class="headerlink" title="堆溢出"></a>堆溢出</h1><p>堆相对复杂，我们malloc一次，就会得到一个chunk，这个chunk有header和user data，堆溢出有下面图中的两种：一个是chunk内部，一个是溢出到另一个chunk了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531290222604.jpg" alt></p>
+<p><strong>chunk内部溢出</strong></p>
+<p>示例代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">/*azeria@labs:~/exp $ gcc intra_chunk.c -o intra_chunk -O*/</span><br><span class="line">#include &quot;stdlib.h&quot;</span><br><span class="line">#include &quot;stdio.h&quot;</span><br><span class="line"></span><br><span class="line">struct u_data                                          //object model: 8 bytes for name, 4 bytes for number</span><br><span class="line">&#123;</span><br><span class="line"> char name[8];</span><br><span class="line"> int number;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">int main ( int argc, char* argv[] )</span><br><span class="line">&#123;</span><br><span class="line"> struct u_data* objA = malloc(sizeof(struct u_data)); //create object in Heap</span><br><span class="line"></span><br><span class="line"> objA-&gt;number = 1234;                                 //set the number of our object to a static value</span><br><span class="line"> gets(objA-&gt;name);                                    //set name of our object according to user&apos;s input</span><br><span class="line"></span><br><span class="line"> if(objA-&gt;number == 1234)                             //check if static value is intact</span><br><span class="line"> &#123;</span><br><span class="line">  puts(&quot;Memory valid&quot;);</span><br><span class="line"> &#125;</span><br><span class="line"> else                                                 //proceed here in case the static value gets corrupted</span><br><span class="line"> &#123;</span><br><span class="line">  puts(&quot;Memory corrupted&quot;);</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，假如我们分配一个结构体的内存，假如对name的输入没有限制，那么number也是我们可以控制的</p>
+<p>汇编如下：</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531290439779.jpg" alt></p>
+<p>输入7个A</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531290471462.jpg" alt></p>
+<p>堆从0x00021000开始，结构如下，number还没被覆盖</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531290501248.jpg" alt></p>
+<p>但是我们输入8个A，那么number的最低位就被00覆盖了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531290692027.jpg" alt></p>
+<p>那就可以改变程序的执行流程</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531290733397.jpg" alt></p>
+<p><strong>chunk外部溢出</strong></p>
+<p>示例代码如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">/*azeria@labs:~/exp $ gcc inter_chunk.c -o inter_chunk*/</span><br><span class="line">#include &quot;stdlib.h&quot;</span><br><span class="line">#include &quot;stdio.h&quot;</span><br><span class="line"></span><br><span class="line">int main ( int argc, char* argv[] )</span><br><span class="line">&#123;</span><br><span class="line"> char *some_string = malloc(8);  //create some_string &quot;object&quot; in Heap</span><br><span class="line"> int *some_number = malloc(4);   //create some_number &quot;object&quot; in Heap</span><br><span class="line"></span><br><span class="line"> *some_number = 1234;            //assign some_number a static value</span><br><span class="line"> gets(some_string);              //ask user for input for some_string</span><br><span class="line"></span><br><span class="line"> if(*some_number == 1234)        //check if static value (of some_number) is in tact</span><br><span class="line"> &#123;</span><br><span class="line"> puts(&quot;Memory valid&quot;);</span><br><span class="line"> &#125;</span><br><span class="line"> else                            //proceed here in case the static some_number gets corrupted</span><br><span class="line"> &#123;</span><br><span class="line"> puts(&quot;Memory corrupted&quot;);</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>差不多，我们也先输入7个A，可以看到堆的结构如下</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531290849772.jpg" alt></p>
+<p>16个A，header和some_number都被覆盖了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531290877048.jpg" alt></p>
+<p>也同样可以改变执行流程</p>
+<p><img src="http://pic.giantbranch.cn/pic/1531290933903.jpg" alt></p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://azeria-labs.com/process-memory-and-memory-corruption/" target="_blank" rel="noopener">https://azeria-labs.com/process-memory-and-memory-corruption/</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2018/07/11/ARM中的进程内存和内存破坏/" title="ARM中的进程内存和内存破坏">https://www.giantbranch.cn/2018/07/11/ARM中的进程内存和内存破坏/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/pwn/" rel="tag"># pwn</a>
+          
+            <a href="/tags/heap/" rel="tag"># heap</a>
+          
+            <a href="/tags/arm/" rel="tag"># arm</a>
+          
+            <a href="/tags/stack/" rel="tag"># stack</a>
+          
+            <a href="/tags/format-string/" rel="tag"># format string</a>
+          
+            <a href="/tags/Dangling-pointer/" rel="tag"># Dangling pointer</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/10/《不止代码》的要点/" rel="next" title="《不止代码》的要点">
+                <i class="fa fa-chevron-left"></i> 《不止代码》的要点
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/16/angr 漏洞发现官方例子 —— strcpy_find/" rel="prev" title="angr 漏洞发现官方例子 —— strcpy_find">
+                angr 漏洞发现官方例子 —— strcpy_find <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#进程的内存布局"><span class="nav-number">1.</span> <span class="nav-text">进程的内存布局</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#栈溢出"><span class="nav-number">2.</span> <span class="nav-text">栈溢出</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#堆溢出"><span class="nav-number">3.</span> <span class="nav-text">堆溢出</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reference"><span class="nav-number">4.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2018/07/11/ARM中的进程内存和内存破坏/';
+          this.page.identifier = '2018/07/11/ARM中的进程内存和内存破坏/';
+          this.page.title = 'ARM中的进程内存和内存破坏';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

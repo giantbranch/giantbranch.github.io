@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="pwn,ctf,qemu,vm escape,虚拟机逃逸,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="不知什么来源的题目来源：https://kirin-say.top/2019/11/06/QEMU-Escape-in-Cloud-Security-Game/ 漏洞：也不能说漏洞，在mmio_read里面直接给了system的后门 123456789101112signed __int64 __fastcall rfid_read(__int64 a1, unsigned __int64 a2)">
+<meta name="keywords" content="pwn,ctf,qemu,vm escape,虚拟机逃逸">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CTF QEMU 虚拟机逃逸总结">
+<meta property="og:url" content="https://www.giantbranch.cn/2020/01/15/CTF QEMU 虚拟机逃逸总结/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="不知什么来源的题目来源：https://kirin-say.top/2019/11/06/QEMU-Escape-in-Cloud-Security-Game/ 漏洞：也不能说漏洞，在mmio_read里面直接给了system的后门 123456789101112signed __int64 __fastcall rfid_read(__int64 a1, unsigned __int64 a2)">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.050Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CTF QEMU 虚拟机逃逸总结">
+<meta name="twitter:description" content="不知什么来源的题目来源：https://kirin-say.top/2019/11/06/QEMU-Escape-in-Cloud-Security-Game/ 漏洞：也不能说漏洞，在mmio_read里面直接给了system的后门 123456789101112signed __int64 __fastcall rfid_read(__int64 a1, unsigned __int64 a2)">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2020/01/15/CTF QEMU 虚拟机逃逸总结/">
+
+
+
+
+
+  <title>CTF QEMU 虚拟机逃逸总结 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2020/01/15/CTF QEMU 虚拟机逃逸总结/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">CTF QEMU 虚拟机逃逸总结</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-15T00:00:00+00:00">
+                2020-01-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/01/15/CTF QEMU 虚拟机逃逸总结/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/01/15/CTF QEMU 虚拟机逃逸总结/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="不知什么来源的题目"><a href="#不知什么来源的题目" class="headerlink" title="不知什么来源的题目"></a>不知什么来源的题目</h1><p>来源：<a href="https://kirin-say.top/2019/11/06/QEMU-Escape-in-Cloud-Security-Game/" target="_blank" rel="noopener">https://kirin-say.top/2019/11/06/QEMU-Escape-in-Cloud-Security-Game/</a></p>
+<p>漏洞：也不能说漏洞，在mmio_read里面直接给了system的后门</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">signed __int64 __fastcall rfid_read(__int64 a1, unsigned __int64 a2)</span><br><span class="line">&#123;</span><br><span class="line">  size_t v2; // rax</span><br><span class="line"></span><br><span class="line">  if ( ((a2 &gt;&gt; 20) &amp; 0xF) != 15 )</span><br><span class="line">  &#123;</span><br><span class="line">    v2 = strlen(magic_code);</span><br><span class="line">    if ( !memcmp(code, magic_code, v2) )</span><br><span class="line">      system(command);</span><br><span class="line">  &#125;</span><br><span class="line">  return 0x42066LL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>利用：通过rfid_write将code赋值为跟magic_code相等，再设置一下command，最后调用rfid_read即可完成逃逸</p>
+<h1 id="BlizzardCTF-2017-Strng"><a href="#BlizzardCTF-2017-Strng" class="headerlink" title="BlizzardCTF 2017 Strng"></a>BlizzardCTF 2017 Strng</h1><p>题目链接：<a href="https://github.com/rcvalle/blizzardctf2017" target="_blank" rel="noopener">https://github.com/rcvalle/blizzardctf2017</a></p>
+<p>漏洞：在pmio中对于数组的索引没有限制，导致越界读写</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">uint64_t __fastcall strng_pmio_read(STRNGState *opaque, hwaddr addr, unsigned int size)</span><br><span class="line">&#123;</span><br><span class="line">  uint64_t result; // rax</span><br><span class="line">  uint32_t v4; // edx</span><br><span class="line"></span><br><span class="line">  result = -1LL;</span><br><span class="line">  if ( size == 4 )</span><br><span class="line">  &#123;</span><br><span class="line">    if ( addr )</span><br><span class="line">    &#123;</span><br><span class="line">      if ( addr == 4 )</span><br><span class="line">      &#123;</span><br><span class="line">        v4 = opaque-&gt;addr;</span><br><span class="line">        if ( !(v4 &amp; 3) )</span><br><span class="line">          result = opaque-&gt;regs[v4 &gt;&gt; 2];    &lt;========= 越界读</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">      result = opaque-&gt;addr;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void __fastcall strng_pmio_write(STRNGState *opaque, hwaddr addr, uint64_t val, unsigned int size)</span><br><span class="line">&#123;</span><br><span class="line">  if ( size == 4 )</span><br><span class="line">  &#123;</span><br><span class="line">    if ( addr )</span><br><span class="line">    &#123;</span><br><span class="line">      if ( addr == 4 )</span><br><span class="line">      &#123;</span><br><span class="line">        v4 = opaque-&gt;addr;</span><br><span class="line">        if ( !(v4 &amp; 3) )</span><br><span class="line">        &#123;</span><br><span class="line">          v5 = v4 &gt;&gt; 2;</span><br><span class="line">          if ( (_DWORD)v5 == 1 )</span><br><span class="line">          &#123;</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">          &#125;</span><br><span class="line">          else</span><br><span class="line">          &#123;</span><br><span class="line">            opaque-&gt;regs[v5] = val;    &lt;========越界写</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>利用：<br>1、通过数组越界，获得任意读写来泄露函数指针，计算出system函数地址<br>2、之后改写rand_r函数指针为system，调用rand_r函数即可劫持控制流</p>
+<h1 id="HITB-GSEC-2017-babyqemu"><a href="#HITB-GSEC-2017-babyqemu" class="headerlink" title="HITB-GSEC-2017-babyqemu"></a>HITB-GSEC-2017-babyqemu</h1><p>题目下载：<a href="https://github.com/kitctf/writeups/blob/master/hitb-gsec-2017/babyqemu/babyqemu.tar.gz" target="_blank" rel="noopener">https://github.com/kitctf/writeups/blob/master/hitb-gsec-2017/babyqemu/babyqemu.tar.gz</a></p>
+<p>漏洞：也是对于dma_buf数组的索引没有限制，导致任意地址读写，只不过这个题目需要我们将虚拟地址转化为物理地址</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall hitb_dma_timer(HitbState *opaque)</span><br><span class="line">&#123;</span><br><span class="line">  dma_addr_t v1; // rax</span><br><span class="line">  __int64 v2; // rdx</span><br><span class="line">  uint8_t *v3; // rsi</span><br><span class="line">  dma_addr_t v4; // rax</span><br><span class="line">  dma_addr_t v5; // rdx</span><br><span class="line">  uint8_t *v6; // rbp</span><br><span class="line">  uint8_t *v7; // rbp</span><br><span class="line"></span><br><span class="line">  v1 = opaque-&gt;dma.cmd;</span><br><span class="line">  if ( v1 &amp; 1 )</span><br><span class="line">  &#123;</span><br><span class="line">    if ( v1 &amp; 2 )</span><br><span class="line">    &#123;</span><br><span class="line">      v2 = (unsigned int)(LODWORD(opaque-&gt;dma.src) - 0x40000);</span><br><span class="line">      if ( v1 &amp; 4 )</span><br><span class="line">      &#123;</span><br><span class="line">        v7 = (uint8_t *)&amp;opaque-&gt;dma_buf[v2];</span><br><span class="line">        ((void (__fastcall *)(uint8_t *, _QWORD))opaque-&gt;enc)(v7, LODWORD(opaque-&gt;dma.cnt));</span><br><span class="line">        v3 = v7;</span><br><span class="line">      &#125;</span><br><span class="line">      else</span><br><span class="line">      &#123;</span><br><span class="line">        v3 = (uint8_t *)&amp;opaque-&gt;dma_buf[v2];   &lt;=======越界读</span><br><span class="line">      &#125;</span><br><span class="line">      cpu_physical_memory_rw(opaque-&gt;dma.dst, v3, opaque-&gt;dma.cnt, 1); //读出来后传递给dma.dst </span><br><span class="line">      v4 = opaque-&gt;dma.cmd;</span><br><span class="line">      v5 = opaque-&gt;dma.cmd &amp; 4;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">      v6 = (uint8_t *)&amp;opaque[0xFFFFFFDBLL].dma_buf[(unsigned int)opaque-&gt;dma.dst + 0x510];  //这里ida有点问题，其实这里是opaque-&gt;dma_buf[opaque-&gt;dma.dst-0x40000]</span><br><span class="line">      LODWORD(v3) = (_DWORD)opaque + opaque-&gt;dma.dst - 0x40000 + 0xBB8;</span><br><span class="line">      cpu_physical_memory_rw(opaque-&gt;dma.src, v6, opaque-&gt;dma.cnt, 0);  // 越界写opaque-&gt;dma_buf[opaque-&gt;dma.dst-0x40000]</span><br><span class="line">      v4 = opaque-&gt;dma.cmd;</span><br><span class="line">      v5 = opaque-&gt;dma.cmd &amp; 4;</span><br><span class="line">      if ( opaque-&gt;dma.cmd &amp; 4 )</span><br><span class="line">      &#123;</span><br><span class="line">        v3 = (uint8_t *)LODWORD(opaque-&gt;dma.cnt);</span><br><span class="line">        ((void (__fastcall *)(uint8_t *, uint8_t *, dma_addr_t))opaque-&gt;enc)(v6, v3, v5);</span><br><span class="line">        v4 = opaque-&gt;dma.cmd;</span><br><span class="line">        v5 = opaque-&gt;dma.cmd &amp; 4;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    opaque-&gt;dma.cmd = v4 &amp; 0xFFFFFFFFFFFFFFFELL;</span><br><span class="line">    if ( v5 )</span><br><span class="line">    &#123;</span><br><span class="line">      opaque-&gt;irq_status |= 0x100u;</span><br><span class="line">      hitb_raise_irq(opaque, (uint32_t)v3);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>利用：<br>1、通过数组越界读泄露函数指针enc，由于这个qemu-system-x86_64的导入表有system，所以我们直接可以算出system<br>2、用system覆盖enc函数<br>3、写入opaque-&gt;dma_buf为要执行的命令，比如cat flag<br>4、使用cmd=1|2|4时，调用enc函数，劫持控制流</p>
+<h1 id="QEMU-Escape-—-vm-escape-from-0CTF-2017-Finals"><a href="#QEMU-Escape-—-vm-escape-from-0CTF-2017-Finals" class="headerlink" title="QEMU Escape — vm_escape from 0CTF 2017 Finals"></a>QEMU Escape — vm_escape from 0CTF 2017 Finals</h1><p>没有公开下载的题目<br>wp: <a href="https://blog.eadom.net/writeups/qemu-escape-vm-escape-from-0ctf-2017-finals-writeup/" target="_blank" rel="noopener">https://blog.eadom.net/writeups/qemu-escape-vm-escape-from-0ctf-2017-finals-writeup/</a></p>
+<p>漏洞：<br>1、对于phys_mem_write的len没有限制，导致可以越界读，同样用到了物理地址（需要将虚拟地址转化为物理地址）<br>2、uaf漏洞，在vdd_mmio_write中可以设置dma_timer的过期时间，而在vdd_dma_timer中调用了<code>opaque-&gt;dma_state-&gt;phys_mem_read/write</code>，而<code>pci_vdd_uninit</code>函数会将dma_state释放；所以加入<code>pci_vdd_uninit</code>函数，在<code>vdd_dma_timer</code>之前调用，就是uaf了。</p>
+<p>利用：<br>1、通过phys_mem_write的越界读泄露程序地址还有libc地址（其实这里libc地址用不到，因为导入表有system了，只要程序地址加上偏移就行）<br>2、将我们要执行的命令复制到opaque-&gt;dma_buf<br>3、在vdd_mmio_write中可以设置dma_timer的过期时间<br>4、往<code>/sys/bus/pci/slots/4/power</code>写入0，从而触发pci_vdd_uninit去free dma_state<br>5、通过vdd_linear_write申请dma_state同样大小的内存，并用正确的值填充，具体代码如下，主要是将cmd设置为2，而phys_mem_read函数指针，设置为system，最后上面的dma_timer时间到了就会调用opaque-&gt;dma_state-&gt;phys_mem_read，从而让我们劫持控制流</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">void put_fake_dma(void)</span><br><span class="line">&#123;</span><br><span class="line">    struct dma fakedma;</span><br><span class="line">    fakedma.cmd = 2;</span><br><span class="line">    fakedma.phys_mem_read = system_addr;</span><br><span class="line">    memcpy(pbuf, (void *)&amp;fakedma, sizeof(fakedma));</span><br><span class="line">    set_dmalen(0x330);</span><br><span class="line">    set_dmastate_src(virt_to_phys(pbuf));</span><br><span class="line">    set_dmastate_dst(virt_to_phys(pbuf));</span><br><span class="line">    outb(0, VDB_PORT + 0);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Defcon-2018-EC3"><a href="#Defcon-2018-EC3" class="headerlink" title="Defcon 2018 - EC3"></a>Defcon 2018 - EC3</h1><p>题目：<a href="https://github.com/o-o-overflow/chall-ec-3" target="_blank" rel="noopener">https://github.com/o-o-overflow/chall-ec-3</a></p>
+<p>漏洞：在mmio_write中，free的时候，没有将指针置空，导致了uaf漏洞，就跟常规的堆题一样，使用fastbin attack</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">void __fastcall ooo_mmio_write_6E61F4(__int64 opaque, __int64 addr, __int64 value, unsigned int size)</span><br><span class="line">&#123;</span><br><span class="line"> ......</span><br><span class="line"> ......</span><br><span class="line">  choose = ((unsigned int)addr &amp; 0xF00000) &gt;&gt; 20;</span><br><span class="line">  switch ( choose )</span><br><span class="line">  &#123;</span><br><span class="line">    case 1u:</span><br><span class="line">      free(gbuf_bss_1317940[((unsigned int)addr_copy &amp; 0xF0000) &gt;&gt; 16]);</span><br><span class="line">      break;</span><br><span class="line">    case 2u:</span><br><span class="line">      v12 = ((unsigned int)addr_copy &amp; 0xF0000) &gt;&gt; 16;</span><br><span class="line">      v8 = addr_copy;</span><br><span class="line">      memcpy((char *)gbuf_bss_1317940[v12] + (signed __int16)addr_copy, &amp;value_point[4], size);</span><br><span class="line">      break;</span><br><span class="line">    case 0u:</span><br><span class="line">      v11 = ((unsigned int)addr_copy &amp; 0xF0000) &gt;&gt; 16;</span><br><span class="line">      if ( v11 == 15 )</span><br><span class="line">      &#123;</span><br><span class="line">        for ( i = 0; i &lt;= 14; ++i )</span><br><span class="line">          gbuf_bss_1317940[i] = malloc(8LL * *(_QWORD *)&amp;value_point[4]);</span><br><span class="line">      &#125;</span><br><span class="line">      else</span><br><span class="line">      &#123;</span><br><span class="line">        gbuf_bss_1317940[v11] = malloc(8LL * *(_QWORD *)&amp;value_point[4]);</span><br><span class="line">      &#125;</span><br><span class="line">      break;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>利用：<br>1、在gbuf_bss_1317940中构0x7f绕过fastbin检查，比如在gbuf_bss_1317940[8]中存放malloc的返回值<br>2、利用fastbin attack获得指向gbuf_bss_1317940的指针<br>3、利用上面的指针，将free或者malloc的got地址写入到gbuf_bss_1317940[10]中<br>4、通过edit gbuf_bss_1317940[10]即可修改got表<br>5、最后调用free或者malloc即可劫持控制流，这里有个cat flag的后门函数，劫持到那即可</p>
+<p>题目难点在于没有符号表，需要逆向，还有就是qemu自身也会申请或者释放0x60大小的堆，所以需要循环申请和循环修改提升成功率</p>
+<h1 id="强网杯-qwb-2019-final-execchrome"><a href="#强网杯-qwb-2019-final-execchrome" class="headerlink" title="强网杯 qwb 2019 final execchrome"></a>强网杯 qwb 2019 final execchrome</h1><p>题目：<a href="https://github.com/ray-cp/vm-escape/tree/master/qemu-escape/qwb-final-2019-ExecChrome" target="_blank" rel="noopener">https://github.com/ray-cp/vm-escape/tree/master/qemu-escape/qwb-final-2019-ExecChrome</a></p>
+<p>只有qemu-system-x86_64，可能需要修复需要的lib，需要的库超级多</p>
+<p>漏洞：<br>1、 nvme_mmio_read存在越界读漏洞，也是对索引没有限制</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">uint64_t __cdecl nvme_mmio_read(NvmeCtrl *opaque, hwaddr addr, unsigned int size)</span><br><span class="line">&#123;</span><br><span class="line">......</span><br><span class="line">......</span><br><span class="line">  memcpy(&amp;val, &amp;ptr[addr], sizea);</span><br><span class="line">  return val;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>2、 在nvme_mmio_write中的nvme_write_bar函数中故意添加了代码，也是导致NvmeCtrl-&gt;bar.cap之后的0-0x1000偏移任意地址写</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">if ( sizea == 2 )</span><br><span class="line">     &#123;</span><br><span class="line">       *(_WORD *)((char *)&amp;NvmeCtrl-&gt;bar.cap + offset) = dataa;</span><br><span class="line">     &#125;</span><br><span class="line">     else if ( sizea &gt; 2 )</span><br><span class="line">     &#123;</span><br><span class="line">       if ( sizea == 4 )</span><br><span class="line">       &#123;</span><br><span class="line">         *(_DWORD *)((char *)&amp;NvmeCtrl-&gt;bar.cap + offset) = dataa;</span><br><span class="line">       &#125;</span><br><span class="line">       else if ( sizea == 8 )</span><br><span class="line">       &#123;</span><br><span class="line">         *(uint64_t *)((char *)&amp;NvmeCtrl-&gt;bar.cap + offset) = dataa;</span><br><span class="line">       &#125;</span><br><span class="line">     &#125;</span><br><span class="line">     else if ( sizea == 1 )</span><br><span class="line">     &#123;</span><br><span class="line">       *((_BYTE *)&amp;NvmeCtrl-&gt;bar.cap + offset) = dataa;</span><br><span class="line">     &#125;</span><br></pre></td></tr></table></figure>
+
+<p>漏洞利用：<br>1、利用nvme_mmio_read进行程序地址以及堆地址的泄露，got表中存在system，所以程序地址加一个偏移就得到了system got的地址<br>2、通过NvmeCtrl-&gt;bar.cap之后的0-0x1000偏移任意地址写，在bar后面的地址伪造一个<code>admin_sq-&gt;timer</code>,timer中的cb设置为system got的地址<br>3、也是NvmeCtrl-&gt;bar.cap之后的0-0x1000偏移任意地址写，修改admin_cq-&gt;timer指针，指向上面伪造的timer</p>
+<p>最后竟然通过只有通过重启动触发timer的调用…</p>
+<h1 id="XNUCA-2018-SSD"><a href="#XNUCA-2018-SSD" class="headerlink" title="XNUCA 2018 SSD"></a>XNUCA 2018 SSD</h1><p>题目：<a href="https://github.com/w0lfzhang/vmescape/tree/master/xnuca" target="_blank" rel="noopener">https://github.com/w0lfzhang/vmescape/tree/master/xnuca</a></p>
+<p>漏洞：还是常规的fastbin的uaf放到qemu里面，free的时候没将指针置空</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">xnucaState *__fastcall xnuca_timer(xnucaState *State)</span><br><span class="line">&#123;</span><br><span class="line">  xnucaState *result; // rax</span><br><span class="line">  int v2; // eax</span><br><span class="line">  void **v3; // rbx</span><br><span class="line"></span><br><span class="line">  result = (xnucaState *)(State-&gt;cmd_9D0 &amp; 4);</span><br><span class="line">  if ( (_DWORD)result )</span><br><span class="line">  &#123;</span><br><span class="line">    v2 = State-&gt;choose_9EC;</span><br><span class="line">    switch ( v2 )</span><br><span class="line">    &#123;</span><br><span class="line">      case 2:</span><br><span class="line">        *(_DWORD *)((unsigned int)State-&gt;mallocSize + *(_QWORD *)(State-&gt;heaplist_9E0 + 8LL * (unsigned int)State-&gt;index)) = State-&gt;value_9F8;</span><br><span class="line">        break;</span><br><span class="line">      case 3:</span><br><span class="line">        free(*(void **)(State-&gt;heaplist_9E0 + 8LL * (unsigned int)State-&gt;index));</span><br><span class="line">        break;</span><br><span class="line">      case 1:</span><br><span class="line">        v3 = (void **)(State-&gt;heaplist_9E0 + 8LL * (unsigned int)State-&gt;index);</span><br><span class="line">        *v3 = malloc((unsigned int)State-&gt;mallocSize);</span><br><span class="line">        break;</span><br><span class="line">    &#125;</span><br><span class="line">    result = State;</span><br><span class="line">    State-&gt;cmd_9D0 &amp;= 0xFFFFFFFB;</span><br><span class="line">  &#125;</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>漏洞利用：<br>通过fastbin attack伪造fd指向free got后，修改free got为system plt的地址，最后调用free即可</p>
+<p>跟defcon ec3比，只不过这个有符号，但是给这个加了点限制，才能进入漏洞代码：</p>
+<p>1、首先调用<code>xnuca_timer</code>，先得调用<code>xnuca_set_timer</code>初始化计时器<br>2、而进入计时器的初始化，需要<code>State-&gt;cmd_9D0 &amp; 1 == 1</code>，那就需要通过<code>xnuca_auth</code> 5次后设置<code>a1-&gt;cmd_9D0 |= 1u;</code><br>3、最后进入<code>xnuca_timer</code>中的漏洞代码，需要<code>cmd_9D0 &amp; 4 == 1</code>，这个可以通过调用<code>xnuca_send_request</code>设置，不过也得必须调用<code>xnuca_send_request</code>来传递我们的参数</p>
+<p>跟defcon ec3不一样的还有malloc的返回值不是0x7fxxxxxxx，所以指向直接fd劫持到got表，修改free了</p>
+<h1 id="强网杯2019线上赛qwct"><a href="#强网杯2019线上赛qwct" class="headerlink" title="强网杯2019线上赛qwct"></a>强网杯2019线上赛qwct</h1><p>题目：<a href="https://github.com/ray-cp/vm-escape/tree/master/qemu-escape/qwb-preliminary-2019-qwct" target="_blank" rel="noopener">https://github.com/ray-cp/vm-escape/tree/master/qemu-escape/qwb-preliminary-2019-qwct</a></p>
+<p>漏洞：</p>
+<p>通过strlen()到\x00才截止可以越界读</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">v18 = strlen((const char *)opaque-&gt;crypto.output_buf);</span><br><span class="line">      v19 = size_copy == 1;</span><br><span class="line">      v20 = size_copy == 1;</span><br><span class="line">      if ( addr &lt; v18 + 0x3000 &amp;&amp; v19 )</span><br><span class="line">      &#123;</span><br><span class="line">        if ( (opaque-&gt;crypto.statu - 6) &amp; 0xFFFFFFFFFFFFFFFDLL )</span><br><span class="line">        &#123;</span><br><span class="line">          result = -1LL;</span><br><span class="line">        &#125;</span><br><span class="line">        else</span><br><span class="line">        &#123;</span><br><span class="line">          v22 = *((_BYTE *)opaque + addr - 0x15C0);</span><br><span class="line">          result = v22;</span><br><span class="line">        &#125;</span><br><span class="line">        return result;</span><br></pre></td></tr></table></figure>
+
+<p>aes_encrypt_function和aes_decrypto_function都有8字节溢出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">  if ( v7 )</span><br><span class="line">  &#123;</span><br><span class="line">    v9 = 0LL;</span><br><span class="line">    do</span><br><span class="line">    &#123;</span><br><span class="line">      v10 = (__int64)&amp;output_buf[v9];</span><br><span class="line">      v11 = (__int64)&amp;v4[v9];</span><br><span class="line">      v9 += 16LL;</span><br><span class="line">      AES_ecb_encrypt(v11, v10, (__int64)&amp;aes, 0LL);</span><br><span class="line">    &#125;</span><br><span class="line">    while ( v7 &gt; v9 );</span><br><span class="line">    v18 = 0LL;</span><br><span class="line">    v19 = 0;</span><br><span class="line">    v12 = 0;</span><br><span class="line">    for ( i = 0LL; ; v12 = *((_BYTE *)&amp;v18 + (i &amp; 7)) )</span><br><span class="line">    &#123;</span><br><span class="line">      v14 = output_buf[i] ^ v12;</span><br><span class="line">      v15 = i++;</span><br><span class="line">      *((_BYTE *)&amp;v18 + (v15 &amp; 7)) = v14;</span><br><span class="line">      if ( v7 == i )</span><br><span class="line">        break;</span><br><span class="line">    &#125;</span><br><span class="line">    v16 = v18;</span><br><span class="line">  &#125;</span><br><span class="line">  else</span><br><span class="line">  &#123;</span><br><span class="line">    v16 = 0LL;</span><br><span class="line">  &#125;</span><br><span class="line">  *(_QWORD *)&amp;output_buf[v7] = v16;</span><br><span class="line">  return 1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>漏洞利用：<br>1、mmio_write不能直接填充output_buf，所以我们通过调用stream_encrypto_fucntion去填充疑惑后都是非0的，那么strlen计算就会超过0x800，那就可以越界读，读取到函数指针stream_encrypto_fucntion的地址，从而算出程序的基址，及system_plt地址</p>
+<p>2、虽然aes_encrypt_function和aes_decrypto_function都有8字节溢出，但是我们需要控制output_buf的值，我们才能最终控制计算出来的值（即循环异或，第一次是异或0，第二次是异或上一次的结果），直接通过aes_encrypt_function利用有点困哪，我们难以控制加密后的值。但是我们先aes加密，再通过aes解密，那么我们就可以精准控制解密结果了。</p>
+<h1 id="题外话"><a href="#题外话" class="headerlink" title="题外话"></a>题外话</h1><p>关注下有没常见套路整数溢出漏洞什么的</p>
+<h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h1><h3 id="关于exp传到qemu中"><a href="#关于exp传到qemu中" class="headerlink" title="关于exp传到qemu中"></a>关于exp传到qemu中</h3><p>远程环境</p>
+<ul>
+<li>telnet：<code>telnet XXX.XXX.XXX.XXX 6666 &gt; pwn.b64 &amp;&amp; base64 -d pwn.b64 &gt; pwn</code></li>
+<li>有无wget</li>
+<li>实在不行难道 echo？</li>
+</ul>
+<p>本地环境</p>
+<p>1、scp<br>2、sftp<br>3、文件系统打包</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">//解压</span><br><span class="line">cpio -idmv &lt; rootfs.img</span><br><span class="line"></span><br><span class="line">//编译+打包</span><br><span class="line">gcc -o exp -static exp.c</span><br><span class="line">cp ./exp ./rootfs/root</span><br><span class="line">cd ./rootfs &amp;&amp; find . | cpio -o --format=newc &gt; ../XXX</span><br></pre></td></tr></table></figure>
+
+<h3 id="调用计算器，浏览器"><a href="#调用计算器，浏览器" class="headerlink" title="调用计算器，浏览器"></a>调用计算器，浏览器</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// char *para=&quot;google-chrome –no-sandbox file:///home/qwb/Desktop/success.mp4&quot;;</span><br><span class="line">// &gt;&gt;&gt; from pwn import *</span><br><span class="line">// &gt;&gt;&gt; map(hex, unpack_many(&quot;gnome-calculator&quot;))</span><br><span class="line">// [&apos;0x6d6f6e67&apos;, &apos;0x61632d65&apos;, &apos;0x6c75636c&apos;, &apos;0x726f7461&apos;]</span><br></pre></td></tr></table></figure>
+
+<p>msfvenom -p linux/x64/exec cmd=”export DISPLAY=:0.0&amp;&amp;xcalc” -f dw</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2020/01/15/CTF QEMU 虚拟机逃逸总结/" title="CTF QEMU 虚拟机逃逸总结">https://www.giantbranch.cn/2020/01/15/CTF QEMU 虚拟机逃逸总结/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/pwn/" rel="tag"># pwn</a>
+          
+            <a href="/tags/ctf/" rel="tag"># ctf</a>
+          
+            <a href="/tags/qemu/" rel="tag"># qemu</a>
+          
+            <a href="/tags/vm-escape/" rel="tag"># vm escape</a>
+          
+            <a href="/tags/虚拟机逃逸/" rel="tag"># 虚拟机逃逸</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/01/13/CTF QEMU 虚拟机逃逸之强网杯2019线上赛qwct/" rel="next" title="CTF QEMU 虚拟机逃逸之强网杯2019线上赛qwct">
+                <i class="fa fa-chevron-left"></i> CTF QEMU 虚拟机逃逸之强网杯2019线上赛qwct
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/03/06/libprotobuf-mutator学习/" rel="prev" title="libprotobuf-mutator学习">
+                libprotobuf-mutator学习 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#不知什么来源的题目"><span class="nav-number">1.</span> <span class="nav-text">不知什么来源的题目</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BlizzardCTF-2017-Strng"><span class="nav-number">2.</span> <span class="nav-text">BlizzardCTF 2017 Strng</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HITB-GSEC-2017-babyqemu"><span class="nav-number">3.</span> <span class="nav-text">HITB-GSEC-2017-babyqemu</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#QEMU-Escape-—-vm-escape-from-0CTF-2017-Finals"><span class="nav-number">4.</span> <span class="nav-text">QEMU Escape — vm_escape from 0CTF 2017 Finals</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Defcon-2018-EC3"><span class="nav-number">5.</span> <span class="nav-text">Defcon 2018 - EC3</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#强网杯-qwb-2019-final-execchrome"><span class="nav-number">6.</span> <span class="nav-text">强网杯 qwb 2019 final execchrome</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#XNUCA-2018-SSD"><span class="nav-number">7.</span> <span class="nav-text">XNUCA 2018 SSD</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#强网杯2019线上赛qwct"><span class="nav-number">8.</span> <span class="nav-text">强网杯2019线上赛qwct</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#题外话"><span class="nav-number">9.</span> <span class="nav-text">题外话</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#附录"><span class="nav-number">10.</span> <span class="nav-text">附录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#关于exp传到qemu中"><span class="nav-number">10.0.1.</span> <span class="nav-text">关于exp传到qemu中</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#调用计算器，浏览器"><span class="nav-number">10.0.2.</span> <span class="nav-text">调用计算器，浏览器</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2020/01/15/CTF QEMU 虚拟机逃逸总结/';
+          this.page.identifier = '2020/01/15/CTF QEMU 虚拟机逃逸总结/';
+          this.page.title = 'CTF QEMU 虚拟机逃逸总结';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

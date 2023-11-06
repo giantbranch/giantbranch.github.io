@@ -1,3 +1,8 @@
+https://www.giantbranch.cn/2023/11/06/Ubuntu安装osquery试用/
+https://www.giantbranch.cn/2023/10/29/试用Kong/
+https://www.giantbranch.cn/2023/10/11/应用实时防护（RASP）/
+https://www.giantbranch.cn/2023/10/11/流量清洗与流量压制/
+https://www.giantbranch.cn/2023/10/04/自建WAF系统/
 https://www.giantbranch.cn/2023/07/21/如何从活动的Linux恶意软件中恢复已删除的二进制文件/
 https://www.giantbranch.cn/2023/07/21/检测Linux二进制文件污染/
 https://www.giantbranch.cn/2023/07/20/使用Linux进程环境变量进行取证/

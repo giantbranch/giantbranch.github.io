@@ -1,5 +1,5 @@
-https://www.giantbranch.cn/2023/11/06/Ubuntu安装osquery试用/
 https://www.giantbranch.cn/2023/10/29/试用Kong/
+https://www.giantbranch.cn/2023/10/15/Ubuntu安装osquery试用/
 https://www.giantbranch.cn/2023/10/11/应用实时防护（RASP）/
 https://www.giantbranch.cn/2023/10/11/流量清洗与流量压制/
 https://www.giantbranch.cn/2023/10/04/自建WAF系统/

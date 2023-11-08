@@ -291,6 +291,423 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2023/07/20/使用Linux进程环境变量进行取证/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2023/07/20/使用Linux进程环境变量进行取证/" itemprop="url">使用Linux进程环境变量进行取证</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2023-07-20T00:00:00+00:00">
+                2023-07-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2023/07/20/使用Linux进程环境变量进行取证/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2023/07/20/使用Linux进程环境变量进行取证/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          注：下面来自半翻译，半实践
+对Linux进程进行取证，可以通过/proc/&lt;PID&gt;/environ来查看某个进程的环境变量，来获取一些信息。
+所以说，遇到可疑的进程不要立即杀掉，不然取证都可能无从下手。
+背景当在Linux上启动一个进程时，该进程的许多环境变量将在其运行期间保持不变。那
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2023/07/20/使用Linux进程环境变量进行取证/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2023/06/29/pastis样本同步代码阅读记录/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2023/06/29/pastis样本同步代码阅读记录/" itemprop="url">pastis样本同步代码阅读记录</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2023-06-29T00:00:00+00:00">
+                2023-06-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2023/06/29/pastis样本同步代码阅读记录/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2023/06/29/pastis样本同步代码阅读记录/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          简单看下https://github.com/quarkslab/pastis/的样本同步相关的代码
+fuzz端fuzz端就两个功能，发送新增的样本或者crash，以及接收新样本
+发送新增样本或者crash以afl++为例： https://github.com/quarkslab/pastis/b
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2023/06/29/pastis样本同步代码阅读记录/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2023/06/20/试用clusterfuzzlite/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2023/06/20/试用clusterfuzzlite/" itemprop="url">试用clusterfuzzlite</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2023-06-20T00:00:00+00:00">
+                2023-06-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2023/06/20/试用clusterfuzzlite/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2023/06/20/试用clusterfuzzlite/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          clusterfuzzlite是是一种持续的模糊测试解决方案，作为持续集成 (CI) 工作流的一部分运行，比如我们一旦push代码，便可以自动build，之后自动fuzz。
+比如它支持GitHub Actions，GitLab，Google Cloud Build和Prow，我们最常见到的应该是Gi
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2023/06/20/试用clusterfuzzlite/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2022/06/13/Kubernetes Goat：Kubernetes 漏洞靶场/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1260,428 +1677,6 @@ syz-manager1、启动、监控多个vm实例2、复制syz-
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="giantbranch">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="giantbranch's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/" itemprop="url">ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-25T00:00:00+00:00">
-                2021-01-25
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          回顾与总览上一次我们选择了fuzz task的代码进行阅读，这次我们进一步深入，看看fuzz engine的选择
-先回到上次说的引擎类：https://www.giantbranch.cn/2020/05/22/ClusterFuzz%E7%9A%84bot%E6%BA%90%E7%A0%81(fu
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2021/01/25/ClusterFuzz的bot源码(fuzz engine的选择与调度之libfuzzer)阅读/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2020/12/25/winafl编译与测试/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="giantbranch">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="giantbranch's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/12/25/winafl编译与测试/" itemprop="url">winafl编译与测试</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-12-25T00:00:00+00:00">
-                2020-12-25
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2020/12/25/winafl编译与测试/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/12/25/winafl编译与测试/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          实验环境
-
-Visual Studio 2017 （你也可用更加新的版本）gitperlcmakegitwindows 10DynamoRIO-Windows-8.0.0-1.zip 
-
-注意好像win10需要DynamoRIO 8.0.0以上
-上面的都搞好后，下载winafl
-1git clone
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2020/12/25/winafl编译与测试/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2020/09/08/通过编译器转换(llvm pass)规避模糊测试的一些障碍/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="giantbranch">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="giantbranch's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/09/08/通过编译器转换(llvm pass)规避模糊测试的一些障碍/" itemprop="url">通过编译器转换(llvm pass)规避模糊测试的一些障碍</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-09-08T00:00:00+00:00">
-                2020-09-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2020/09/08/通过编译器转换(llvm pass)规避模糊测试的一些障碍/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/09/08/通过编译器转换(llvm pass)规避模糊测试的一些障碍/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          这个是看一个文章的记录，算是简译吧
-总的来说是通过llvm pass去优化代码的生成去提高AFL的代码覆盖率
-AFL通过插桩获取的代码覆盖率，假如变异的样本触发的新的路径，就会加入到接下来的变异队列中
-但是有一些情况，会给afl造成极大的障碍
-12345if (input == 0xabad1dea
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2020/09/08/通过编译器转换(llvm pass)规避模糊测试的一些障碍/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1732,7 +1727,7 @@ AFL通过插桩获取的代码覆盖率，假如变异的样本触发的新的�
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">165</span>
+                  <span class="site-state-item-count">168</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1745,7 +1740,7 @@ AFL通过插桩获取的代码覆盖率，假如变异的样本触发的新的�
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">207</span>
+                  <span class="site-state-item-count">208</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>

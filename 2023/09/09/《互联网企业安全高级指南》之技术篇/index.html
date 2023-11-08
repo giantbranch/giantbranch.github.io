@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="企业安全,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="防御架构原则防守体系建设三部曲三个层面的攻防对抗：信息对抗、技术对抗、运营能力对抗  信息对抗：知己知彼，情报优势 技术对抗：高维防守、建立优势、工程化 运营能力对抗：闭环运营、执行力  大规模生产网络的纵深防御架构互联网安全理念作者赞同腾讯的“河防”以及数字公司（应该指的360 ）用的“塔防”概念 互联网安全的几个核心需求：快速检测、有限影响、快速溯源、快速恢复 攻击者视角Plan-A：直接从目">
+<meta name="keywords" content="企业安全">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《互联网企业安全高级指南》之技术篇">
+<meta property="og:url" content="https://www.giantbranch.cn/2023/09/09/《互联网企业安全高级指南》之技术篇/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="防御架构原则防守体系建设三部曲三个层面的攻防对抗：信息对抗、技术对抗、运营能力对抗  信息对抗：知己知彼，情报优势 技术对抗：高维防守、建立优势、工程化 运营能力对抗：闭环运营、执行力  大规模生产网络的纵深防御架构互联网安全理念作者赞同腾讯的“河防”以及数字公司（应该指的360 ）用的“塔防”概念 互联网安全的几个核心需求：快速检测、有限影响、快速溯源、快速恢复 攻击者视角Plan-A：直接从目">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2023-11-08T07:54:23.321Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="《互联网企业安全高级指南》之技术篇">
+<meta name="twitter:description" content="防御架构原则防守体系建设三部曲三个层面的攻防对抗：信息对抗、技术对抗、运营能力对抗  信息对抗：知己知彼，情报优势 技术对抗：高维防守、建立优势、工程化 运营能力对抗：闭环运营、执行力  大规模生产网络的纵深防御架构互联网安全理念作者赞同腾讯的“河防”以及数字公司（应该指的360 ）用的“塔防”概念 互联网安全的几个核心需求：快速检测、有限影响、快速溯源、快速恢复 攻击者视角Plan-A：直接从目">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2023/09/09/《互联网企业安全高级指南》之技术篇/">
+
+
+
+
+
+  <title>《互联网企业安全高级指南》之技术篇 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2023/09/09/《互联网企业安全高级指南》之技术篇/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">《互联网企业安全高级指南》之技术篇</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2023-09-09T00:00:00+00:00">
+                2023-09-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2023/09/09/《互联网企业安全高级指南》之技术篇/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2023/09/09/《互联网企业安全高级指南》之技术篇/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="防御架构原则"><a href="#防御架构原则" class="headerlink" title="防御架构原则"></a>防御架构原则</h1><h2 id="防守体系建设三部曲"><a href="#防守体系建设三部曲" class="headerlink" title="防守体系建设三部曲"></a>防守体系建设三部曲</h2><p>三个层面的攻防对抗：信息对抗、技术对抗、运营能力对抗</p>
+<ul>
+<li>信息对抗：知己知彼，情报优势</li>
+<li>技术对抗：高维防守、建立优势、工程化</li>
+<li>运营能力对抗：闭环运营、执行力</li>
+</ul>
+<h2 id="大规模生产网络的纵深防御架构"><a href="#大规模生产网络的纵深防御架构" class="headerlink" title="大规模生产网络的纵深防御架构"></a>大规模生产网络的纵深防御架构</h2><h3 id="互联网安全理念"><a href="#互联网安全理念" class="headerlink" title="互联网安全理念"></a>互联网安全理念</h3><p>作者赞同腾讯的“河防”以及数字公司（应该指的360 ）用的“塔防”概念</p>
+<p>互联网安全的几个核心需求：快速检测、有限影响、快速溯源、快速恢复</p>
+<h3 id="攻击者视角"><a href="#攻击者视角" class="headerlink" title="攻击者视角"></a>攻击者视角</h3><p>Plan-A：直接从目标系统正面找漏洞，getshell，提权，后面扩大战果，安全建设的思路要阻止攻击者扩大战果<br>Plan-B：曲折迂回，从周围信任域开始下手（包括arp重定向、可嗅探的、可会话中间人的、可链路劫持的、相同内网的、密码满足同一规律的、互联互通信任关系的，灾备或者镜像站点等），获取一个点之后再折返，之后与A类似<br>Plan-C：社会工程学，针对管理员和办公网的APT，水坑攻击。</p>
+<h3 id="防御者模型"><a href="#防御者模型" class="headerlink" title="防御者模型"></a>防御者模型</h3><p>纵深防御体系：安全域、基于第二层的隔离、端口协议过滤、APP安全、Container层安全、OS层防御和提权、防止内核空间乱入、Hypervisor保护</p>
+<p>第一层：安全域的划分，是对业务的抽象不是对物理服务器的划分；他们不一定同一个物理机房，但对应相同的安全等级，共享相同的访问控制策略（目的希望将安全事件的最大范围控制在一个安全域中）</p>
+<p>第二层：基于数据链路层的隔离，使用VPC、Vxlan、Vlan等方法在安全域的基础上对一组服务器更细的粒度再画一道防线，进一步抑制单点沦陷后受害源扩大的问题</p>
+<p>第三层：端口状态协议过滤，这是大多数防火墙的应用场景。解决对黑客暴露的攻击面问题。</p>
+<p>第四层：APP安全，主要解决认证鉴权、注入、跨站和上传的应用层漏洞。</p>
+<p>第五层：容器和运行时的环境。应用程序有漏洞，也不希望攻击者直接跳转到系统权限，方法是容器加固，比如阻止一些危险函数的运行，比如上传了webshell但是不被解析执行。</p>
+<p>第六层：OS层防御，系统加固，主要对抗提权，SMAP(Supervisor Mode Access Prevention,管理模式访问保护)和SMEP(Supervisor Mode Execution Prevention,管理模式执行保护)、DEP、ASLR、stack-canary等，此外不是特别的需求要干掉LKM【Loadable Kernel Module（可加载内核模块）】，/dev/kmem （一个特殊的设备文件，用于提供对系统内核内存的直接访问。它允许用户级程序读取或写入内核虚拟地址空间中的数据。），限制/dev/mem的全地址空间的读写（/dev/mem 是一个特殊的设备文件，用于提供对系统物理内存的直接访问。它允许用户级程序读取或写入整个物理内存的内容。）</p>
+<p>第六层：假如云计算环境，更底层的还有hypervisor</p>
+<h3 id="互联网安全架构设计原则"><a href="#互联网安全架构设计原则" class="headerlink" title="互联网安全架构设计原则"></a>互联网安全架构设计原则</h3><ol>
+<li>纵深防御</li>
+<li>多维防御：同一个攻击多种维度的防御和检测手段；例如SQL注入，第一层WAF，第二层Web日志分析，第三层RASP，第四层SQL审计</li>
+<li>降维防御：比如在内核态检测用户态攻击，使用RASP运行时而不是cgi层面检测webshell</li>
+<li>实时入侵检测</li>
+<li>伸缩性、可水平扩展，无论是WAF、HIDS还是IPS需要能够水平扩展</li>
+<li>支持分布式IDC</li>
+<li>支持自动化运维：需要能够自动化分发、注册、报告转台、统一策略推送等</li>
+<li>低性能损耗</li>
+<li>能旁路则不串联</li>
+<li>业务无感知</li>
+<li>去“信息孤岛”：程序和设备科联动，可关联，IOC信息的兼容、共享和流通。</li>
+<li>TCO可控：TCO（Total Cost of Ownership，总拥有成本）可控意味着在管理和运营信息技术（IT）系统或解决方案时，可以对系统的总体成本进行有效的控制和管理。</li>
+</ol>
+<h1 id="基础安全措施"><a href="#基础安全措施" class="headerlink" title="基础安全措施"></a>基础安全措施</h1><p>不管安全实践多么优秀的互联网公司，安全体系都离不开基础安全措施，不然上层的大数据入侵检测如同空中楼阁。在纵深防御中层层设卡，每个环节关注有限的点，使得入侵检测需要的覆盖面（广度）和检测层次（深度）随着攻击面的缩小而大幅缩减。</p>
+<h2 id="安全域划分"><a href="#安全域划分" class="headerlink" title="安全域划分"></a>安全域划分</h2><p>目的是将一组安全等级相同的计算机划入同一个安全域，对他们设置相同的网络边界，在网络边界上以最小权限开放对其他安全域的NACL（网络访问控制列表/策略），将域内计算机暴露的风险最小化，在发生攻击或蠕虫病毒是能将威胁最大化地隔离，减少域外时间对域内系统的影响</p>
+<h3 id="传统的安全域划分"><a href="#传统的安全域划分" class="headerlink" title="传统的安全域划分"></a>传统的安全域划分</h3><p>通常分为DMZ区和内网，还会通过硬件防火墙的不同端口来实现隔离，这种只适用于办公网络，对于大规模生产网络已经不适用。</p>
+<p>DMZ（Demilitarized Zone，非军事区）是一个位于网络边界内的区域，用于隔离内部受信任的网络与外部不受信任的网络之间的安全边界。</p>
+<h3 id="典型的Web服务"><a href="#典型的Web服务" class="headerlink" title="典型的Web服务"></a>典型的Web服务</h3><p>有三层：接入层、应用层、数据层。</p>
+<p>接入层：只开放80与443端口<br>应用层：工程技术人员可通过堡垒机访问应用层<br>数据库层：授权的第三方可通过ssh远程连接访问指定的数据层资源</p>
+<p>其余所有端口默认阻断</p>
+<p>安全域划分没有限定一定划分vlan，可以基于L3、L4的防火墙规则，甚至NAT都可以起到隔离作用。基于L2的划分比L3及之后的更可靠一点。</p>
+<h3 id="大型系统安全域划分"><a href="#大型系统安全域划分" class="headerlink" title="大型系统安全域划分"></a>大型系统安全域划分</h3><p>把不同的业务（垂直纵向）以及分层的服务（水平横向）一个个切开，在南北向的APT调用上保留最小权限的访问控制，在东西向如无系统调用关系则彼此隔离。</p>
+<p>小网络可以做得很细，大网络的运维工作量大，需要妥协折中的策略。</p>
+<h3 id="生产网络和办公网络"><a href="#生产网络和办公网络" class="headerlink" title="生产网络和办公网络"></a>生产网络和办公网络</h3><p>只介绍生产网络和办公网络链接所涉及的安全域问题，为保证最大的隔离，尽可能采取如下措施：</p>
+<ul>
+<li>生产网络的ssh 22端口在前端防火墙或者交换机上默认阻止访问</li>
+<li>远程访问（运维连接）通过VPN或者专线链接到机房生产网络</li>
+<li>通过生产网络的内网而非外网登录个服务器或者自动化运维平台</li>
+<li>办公网络中运维环境、发布源和其他OA环境VLAN隔离</li>
+<li>虽然同一个物理办公地点，但运维专线和帮贡网络的接入链路各自独立</li>
+<li>为保证可用性，运维专线最好有两条以上且来自不同的ISP，防止单链路故障时，无法运维</li>
+<li>跳板机有所有的运维操作审计。</li>
+</ul>
+<h2 id="系统安全加固"><a href="#系统安全加固" class="headerlink" title="系统安全加固"></a>系统安全加固</h2><p> 所有安全工作的第一步，可以归入安全基线</p>
+<h3 id="Linux加固"><a href="#Linux加固" class="headerlink" title="Linux加固"></a>Linux加固</h3><ol>
+<li>禁用LKM：规避knark、adore这类LKM RootKit（通过配置只是治标，治本是在编译内核的时候去掉LKM的支持）</li>
+<li>限制/dev/mem，新版linux不再有/dev/kmem, 要确保CONFIG_STRICT_DEVMEM设置为y</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">root@vps1:/boot# cat config-`uname -r` | grep DEVKMEM</span><br><span class="line">root@vps1:/boot# cat config-`uname -r` | grep DEVMEM</span><br><span class="line">CONFIG_DEVMEM=y</span><br><span class="line">CONFIG_ARCH_HAS_DEVMEM_IS_ALLOWED=y</span><br><span class="line">CONFIG_STRICT_DEVMEM=y</span><br><span class="line"># CONFIG_IO_STRICT_DEVMEM is not set</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>内核参数调整</li>
+</ol>
+<p>/proc/sys/kernel/randomize_va_space ： ASLR，0是关闭，1是mmap base、stack和vdso page随机化，heap没有，2才增加了heap的随机化<br>/proc/sys/kernel/kptr_restrict 1：限制非特权用户对内核指针的访问，只有具有root权限的进程才能读取和使用内核指针。<br>/proc/sys/vm/mmap_min_addr是Linux内核中一个虚拟内存子系统的参数。它用于限制非特权用户在较低的虚拟内存地址范围内进行内存映射的能力。 设置为65536</p>
+<ol start="4">
+<li><p>禁用NAT：攻击者内网渗透会在边界开启端口转发，/proc/sys/net/ipv4/ip_forward，设置为0，假如无缘无故变为1，可能出了安全问题（但有些服务可能需要这个功能，）</p>
+</li>
+<li><p>Bash日志： 家目录的.bash_history，</p>
+</li>
+</ol>
+<p>下面配置可以加到.bashrc中</p>
+<p>设置环境变量为只读</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">readonly</span> HISTFILE</span><br><span class="line"><span class="built_in">readonly</span> HISTFILESIZE</span><br><span class="line"><span class="built_in">readonly</span> HISTSIZE</span><br><span class="line"><span class="built_in">readonly</span> HISTCMD</span><br><span class="line"><span class="built_in">readonly</span> HISTCONTROL</span><br><span class="line"><span class="built_in">readonly</span> HISTIGNORE</span><br></pre></td></tr></table></figure>
+
+<p>为history添加时间戳</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">exportHISTTIMEFORMAT=&apos; %F %T &apos;</span><br></pre></td></tr></table></figure>
+
+<p>设置history文件只能追加</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chattr +a ~/.bash_history</span><br></pre></td></tr></table></figure>
+
+<p>禁用其他shell</p>
+<p>更改<code>HISTFILE</code>为其他文件，并保留原路径下的.bash_history</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HISTFILE=/usr/local/log/cmd</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>高级技巧</li>
+</ol>
+<p>高阶的做法就是修改shell本身，对所有执行的命令无差别地记录</p>
+<p>修改shell源码是一种方式，直接修改libc会更加高效，涉及的对象是exec函数族</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">int execl(const char *path, const char *arg0, ... /* (char *) NULL */);</span><br><span class="line">int execv(const char *path, char *const argv[]);</span><br><span class="line">int execle(const char *path, const char *arg0, ... /* (char *) NULL, char *const envp[] */);</span><br><span class="line">int execve(const char *path, char *const argv[], char *const envp[]);</span><br><span class="line">int execlp(const char *file, const char *arg0, ... /* (char *) NULL */);</span><br><span class="line">int execvp(const char *file, char *const argv[]);</span><br></pre></td></tr></table></figure>
+
+<p>exec 函数族的底层实现通常会调用 execve 函数。这是因为 execve 函数是 exec 系列函数中最底层、最通用的函数。</p>
+<p>修改以上库函数，支持额外的syslog，就能记录所有运行过的程序。</p>
+<p>另一种shell审计的高级方式是将shell的log统一收集后基于机器学习，学习正常管理员的shell命令习惯，而不是以静态规则定义黑白名单。</p>
+<h3 id="应用配置加固"><a href="#应用配置加固" class="headerlink" title="应用配置加固"></a>应用配置加固</h3><ol>
+<li>目录权限</li>
+</ol>
+<p>安全圈流行：可写目录不解析，解析目录不可写</p>
+<ol start="2">
+<li>Web进程以非root运行</li>
+<li>过滤特定的文件类型：比如通过web配置的rewrite规则，将.bak .log .zip（这个看情况） .sql 等后缀的访问，重定向到特定的页面</li>
+</ol>
+<h3 id="远程访问"><a href="#远程访问" class="headerlink" title="远程访问"></a>远程访问</h3><p>ssh使用v2版本能，并禁止root用户远程登录</p>
+<h3 id="账户密码"><a href="#账户密码" class="headerlink" title="账户密码"></a>账户密码</h3><p>对付暴力破解最有效的方式是多因素认证或非密码认证</p>
+<p>收集各种社工库，把内部测试研发运维的常用弱密码做成字典，周期性地更新字典并主动尝试破解公司内的各个系统的账户，能破解的都视为弱密码。</p>
+<h3 id="网络访问控制"><a href="#网络访问控制" class="headerlink" title="网络访问控制"></a>网络访问控制</h3><p>生产网络多层NACL：第一层 FW，第二层交换机（简单的NACL） ，第三层服务器（系统自导的防火墙就够用了）</p>
+<h3 id="补丁管理"><a href="#补丁管理" class="headerlink" title="补丁管理"></a>补丁管理</h3><p>自动化运维：大量push补丁<br>ITSM（信息技术服务管理）成熟度：不影响在线服务可用性<br>架构容灾能力：支持有损服务，灰度和滚动升级<br>系统能力：提供热补丁，无需重启<br>快速单个漏洞扫描：补丁push成功后的检测</p>
+<h3 id="日志审计"><a href="#日志审计" class="headerlink" title="日志审计"></a>日志审计</h3><p>一般建好第几，初步纵深防御建立起来才搞SOC（安全运营中心）</p>
+<p>初期可以关注重要的，比如 lastlog和/var/log/secure，看看是否有非雇员登录</p>
+<h2 id="服务器4A"><a href="#服务器4A" class="headerlink" title="服务器4A"></a>服务器4A</h2><p>4A是指： 账户、认证、授权和审计</p>
+<p>对于大规模的服务器集群，不太可能，每台服务器单独维护用户名和密码</p>
+<p>一个是基于LDAP</p>
+<p>一个基于堡垒机</p>
+<h1 id="网络安全"><a href="#网络安全" class="headerlink" title="网络安全"></a>网络安全</h1><h2 id="网络入侵检测"><a href="#网络入侵检测" class="headerlink" title="网络入侵检测"></a>网络入侵检测</h2><p>传统商业NIDS</p>
+<p>开源的snort</p>
+<p>大型全流量NIDS——基于大数据的NIDS架构</p>
+<ul>
+<li>分层结构，所有节点可水平扩展</li>
+<li>检测与防护分离，性能与可用性大幅提升</li>
+<li>报文解析与攻击识别完全解耦，入侵检测环节后移</li>
+<li>依赖大数据集群，规则数量不再成为瓶颈，而且不在基于静态特征而是能多维度建模</li>
+</ul>
+<h2 id="T级DDoS防御"><a href="#T级DDoS防御" class="headerlink" title="T级DDoS防御"></a>T级DDoS防御</h2><p>多层防御结构</p>
+<p>第一层：ISP近源清洗<br>第二层：云清理/CDN硬抗<br>第三层：DC级近目的的清洗</p>
+<h2 id="链路劫持"><a href="#链路劫持" class="headerlink" title="链路劫持"></a>链路劫持</h2><ol>
+<li>加密的DNS：比如DOT DOH等</li>
+<li>全站HTTPS</li>
+<li>登录过程加密：前端页面加密后再提交服务器</li>
+<li>跨IDC传输加密</li>
+</ol>
+<h2 id="Web应用防火墙"><a href="#Web应用防火墙" class="headerlink" title="Web应用防火墙"></a>Web应用防火墙</h2><ul>
+<li>cname部署</li>
+<li>module部署：ModSecurity</li>
+<li>网络层部署</li>
+<li>混合型WAF架构</li>
+</ul>
+<h1 id="入侵感知体系"><a href="#入侵感知体系" class="headerlink" title="入侵感知体系"></a>入侵感知体系</h1><h2 id="主机入侵检测（HIDS）"><a href="#主机入侵检测（HIDS）" class="headerlink" title="主机入侵检测（HIDS）"></a>主机入侵检测（HIDS）</h2><p>开源产品 OSSEC</p>
+<p>MIG： 开源的分布式取证框架，不算严格意义的HIDS</p>
+<p>OSquery：将操作系统当作数据库，用sql语句查询</p>
+<h2 id="检测webshell"><a href="#检测webshell" class="headerlink" title="检测webshell"></a>检测webshell</h2><ol>
+<li>静态检测：可以多维度检测：文件数组，生成时间/目录、inode、上传的目录</li>
+<li>流量监测</li>
+</ol>
+<h2 id="RASP"><a href="#RASP" class="headerlink" title="RASP"></a>RASP</h2><p>Java：基于高危行为组合的检测模型、基于调用栈的检测模式</p>
+<h2 id="数据库审计"><a href="#数据库审计" class="headerlink" title="数据库审计"></a>数据库审计</h2><p>解决：SQL注入拖库、操作违规的审计</p>
+<p>部署：旁路型、主机型、代理型</p>
+<h2 id="入侵检测数据分析平台"><a href="#入侵检测数据分析平台" class="headerlink" title="入侵检测数据分析平台"></a>入侵检测数据分析平台</h2><p>全局的信息汇聚与分析，将上面提到的数据进行汇聚和分析</p>
+<h1 id="漏洞扫描"><a href="#漏洞扫描" class="headerlink" title="漏洞扫描"></a>漏洞扫描</h1><h2 id="扫描分类"><a href="#扫描分类" class="headerlink" title="扫描分类"></a>扫描分类</h2><p>ACL扫描：避免无需对外开放的ip或者端口暴露公网<br>弱口令扫描<br>系统及应用服务漏洞扫描<br>Web漏洞扫描</p>
+<h2 id="应对大规模的资产扫描"><a href="#应对大规模的资产扫描" class="headerlink" title="应对大规模的资产扫描"></a>应对大规模的资产扫描</h2><ul>
+<li>简化漏洞评估链，减少扫描任务</li>
+<li>减少网络开销与被检查者的性能损耗</li>
+<li>减少漏洞扫描的种类</li>
+<li>减少收工确认的工作量</li>
+</ul>
+<p>实践中：</p>
+<ol>
+<li>不做全网漏扫，先做端口扫描，减少扫描的任务</li>
+<li>做好高危端口监控</li>
+<li>系统和应用扫描，不完全依赖扫描器，可借助本机agent的扫描</li>
+</ol>
+<h1 id="移动应用安全"><a href="#移动应用安全" class="headerlink" title="移动应用安全"></a>移动应用安全</h1><h1 id="代码审计"><a href="#代码审计" class="headerlink" title="代码审计"></a>代码审计</h1><p>Coverity</p>
+<h1 id="办公网络安全"><a href="#办公网络安全" class="headerlink" title="办公网络安全"></a>办公网络安全</h1><h2 id="安全域划分-1"><a href="#安全域划分-1" class="headerlink" title="安全域划分"></a>安全域划分</h2><p>一般针对大型企业</p>
+<p> 分类示例： OA服务器域、事业部A桌面域、事业部B桌面域</p>
+<p> 而在桌面域可以细分，重度PC用户（运维、研发）、中度PC用户（运营、市场、媒体）、轻度PC用户（客服、线下销售）</p>
+<p>重度的策略可以无需过于严格，轻度的可以相对严格的策略</p>
+<h2 id="终端管理"><a href="#终端管理" class="headerlink" title="终端管理"></a>终端管理</h2><h3 id="补丁管理-1"><a href="#补丁管理-1" class="headerlink" title="补丁管理"></a>补丁管理</h3><p>微软自身解决方案中的SCCM<br>第三方终端管理软件中附带的补丁推送功能</p>
+<h3 id="组策略"><a href="#组策略" class="headerlink" title="组策略"></a>组策略</h3><p>作用主要在于实施一些基本的安全策略</p>
+<h3 id="终端HIPS（AV）"><a href="#终端HIPS（AV）" class="headerlink" title="终端HIPS（AV）"></a>终端HIPS（AV）</h3><p>360安全卫士、腾讯管家那些</p>
+<p>不过现在微软的defender也不错了</p>
+<h3 id="网络准入NAC"><a href="#网络准入NAC" class="headerlink" title="网络准入NAC"></a>网络准入NAC</h3><p>主流方案：</p>
+<ol>
+<li>802.1X  （前提是所有交换机都支持802.1X ）</li>
+<li>C/S模式认证</li>
+</ol>
+<p>IEEE 802.1X 是一种网络访问控制（NAC）协议，用于提高局域网（LAN）和无线局域网（WLAN）的安全性。它的主要目的是确保只有经过授权的设备和用户能够访问网络资源，从而减少未经授权的访问和网络攻击的风险。</p>
+<h2 id="安全网关"><a href="#安全网关" class="headerlink" title="安全网关"></a>安全网关</h2><ol>
+<li>NGFW/FW</li>
+<li>UTM（统一威胁管理）/反病毒网关/NIPS/反垃圾邮件</li>
+<li>堡垒机</li>
+<li>行为升级</li>
+<li>其他：DLP（数据丢失预防Data Loss Prevention）、抗APT、大数据探针</li>
+</ol>
+<h2 id="研发管理"><a href="#研发管理" class="headerlink" title="研发管理"></a>研发管理</h2><ol>
+<li>防泄密：研发两台电脑，一个可上网，一个用于coding，不能上网</li>
+<li>源代码管理</li>
+</ol>
+<h2 id="远程访问-1"><a href="#远程访问-1" class="headerlink" title="远程访问"></a>远程访问</h2><p>vpn：暴力破解问题</p>
+<h2 id="虚拟化桌面"><a href="#虚拟化桌面" class="headerlink" title="虚拟化桌面"></a>虚拟化桌面</h2><p>安全方面有先天优势，尤其是物理安全方面，没有拷贝数据的USB口</p>
+<h2 id="APT"><a href="#APT" class="headerlink" title="APT"></a>APT</h2><p>安全体系需要构建的完备一点<br>此外还可以从陷阱网络和蜜罐入手</p>
+<h2 id="DLP数据防泄漏"><a href="#DLP数据防泄漏" class="headerlink" title="DLP数据防泄漏"></a>DLP数据防泄漏</h2><p>主要通过终端控制、网络出口控制、以及检测网络流量实现</p>
+<h1 id="安全管理体系"><a href="#安全管理体系" class="headerlink" title="安全管理体系"></a>安全管理体系</h1><p>本质是一种方法论和参考维度，ISO27001</p>
+<p>安全团队的组织分类</p>
+<p>安全KPI：覆盖率、覆盖深度、检出率/主动止损率、TCO（总拥有成本，Total Cost of Ownership）和 ROI（投资回报率，Return on Investment）</p>
+<p>外部评价指标：攻防能力、视野和方法论、工程化能力（全线防御、纵深防御、自动化）、对业务的影响力</p>
+<h1 id="隐私保护"><a href="#隐私保护" class="headerlink" title="隐私保护"></a>隐私保护</h1><p>数据分类</p>
+<p>访问控制</p>
+<p>数据隔离</p>
+<p>数据加密</p>
+<p>密钥管理</p>
+<p>安全删除</p>
+<p>匿名化</p>
+<p>内容分级：有些需要2FA认证才给访问才行</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2023/09/09/《互联网企业安全高级指南》之技术篇/" title="《互联网企业安全高级指南》之技术篇">https://www.giantbranch.cn/2023/09/09/《互联网企业安全高级指南》之技术篇/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/企业安全/" rel="tag"># 企业安全</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2023/09/05/《互联网企业安全高级指南》之理论篇/" rel="next" title="《互联网企业安全高级指南》之理论篇">
+                <i class="fa fa-chevron-left"></i> 《互联网企业安全高级指南》之理论篇
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2023/09/22/《互联网企业安全高级指南》之实践篇/" rel="prev" title="《互联网企业安全高级指南》之实践篇">
+                《互联网企业安全高级指南》之实践篇 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">168</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">208</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#防御架构原则"><span class="nav-number">1.</span> <span class="nav-text">防御架构原则</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#防守体系建设三部曲"><span class="nav-number">1.1.</span> <span class="nav-text">防守体系建设三部曲</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#大规模生产网络的纵深防御架构"><span class="nav-number">1.2.</span> <span class="nav-text">大规模生产网络的纵深防御架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#互联网安全理念"><span class="nav-number">1.2.1.</span> <span class="nav-text">互联网安全理念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#攻击者视角"><span class="nav-number">1.2.2.</span> <span class="nav-text">攻击者视角</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#防御者模型"><span class="nav-number">1.2.3.</span> <span class="nav-text">防御者模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#互联网安全架构设计原则"><span class="nav-number">1.2.4.</span> <span class="nav-text">互联网安全架构设计原则</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#基础安全措施"><span class="nav-number">2.</span> <span class="nav-text">基础安全措施</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#安全域划分"><span class="nav-number">2.1.</span> <span class="nav-text">安全域划分</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#传统的安全域划分"><span class="nav-number">2.1.1.</span> <span class="nav-text">传统的安全域划分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#典型的Web服务"><span class="nav-number">2.1.2.</span> <span class="nav-text">典型的Web服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#大型系统安全域划分"><span class="nav-number">2.1.3.</span> <span class="nav-text">大型系统安全域划分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生产网络和办公网络"><span class="nav-number">2.1.4.</span> <span class="nav-text">生产网络和办公网络</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#系统安全加固"><span class="nav-number">2.2.</span> <span class="nav-text">系统安全加固</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Linux加固"><span class="nav-number">2.2.1.</span> <span class="nav-text">Linux加固</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用配置加固"><span class="nav-number">2.2.2.</span> <span class="nav-text">应用配置加固</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#远程访问"><span class="nav-number">2.2.3.</span> <span class="nav-text">远程访问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#账户密码"><span class="nav-number">2.2.4.</span> <span class="nav-text">账户密码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#网络访问控制"><span class="nav-number">2.2.5.</span> <span class="nav-text">网络访问控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#补丁管理"><span class="nav-number">2.2.6.</span> <span class="nav-text">补丁管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#日志审计"><span class="nav-number">2.2.7.</span> <span class="nav-text">日志审计</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#服务器4A"><span class="nav-number">2.3.</span> <span class="nav-text">服务器4A</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#网络安全"><span class="nav-number">3.</span> <span class="nav-text">网络安全</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#网络入侵检测"><span class="nav-number">3.1.</span> <span class="nav-text">网络入侵检测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#T级DDoS防御"><span class="nav-number">3.2.</span> <span class="nav-text">T级DDoS防御</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#链路劫持"><span class="nav-number">3.3.</span> <span class="nav-text">链路劫持</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Web应用防火墙"><span class="nav-number">3.4.</span> <span class="nav-text">Web应用防火墙</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#入侵感知体系"><span class="nav-number">4.</span> <span class="nav-text">入侵感知体系</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#主机入侵检测（HIDS）"><span class="nav-number">4.1.</span> <span class="nav-text">主机入侵检测（HIDS）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#检测webshell"><span class="nav-number">4.2.</span> <span class="nav-text">检测webshell</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RASP"><span class="nav-number">4.3.</span> <span class="nav-text">RASP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据库审计"><span class="nav-number">4.4.</span> <span class="nav-text">数据库审计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#入侵检测数据分析平台"><span class="nav-number">4.5.</span> <span class="nav-text">入侵检测数据分析平台</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#漏洞扫描"><span class="nav-number">5.</span> <span class="nav-text">漏洞扫描</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#扫描分类"><span class="nav-number">5.1.</span> <span class="nav-text">扫描分类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#应对大规模的资产扫描"><span class="nav-number">5.2.</span> <span class="nav-text">应对大规模的资产扫描</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#移动应用安全"><span class="nav-number">6.</span> <span class="nav-text">移动应用安全</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#代码审计"><span class="nav-number">7.</span> <span class="nav-text">代码审计</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#办公网络安全"><span class="nav-number">8.</span> <span class="nav-text">办公网络安全</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#安全域划分-1"><span class="nav-number">8.1.</span> <span class="nav-text">安全域划分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#终端管理"><span class="nav-number">8.2.</span> <span class="nav-text">终端管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#补丁管理-1"><span class="nav-number">8.2.1.</span> <span class="nav-text">补丁管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#组策略"><span class="nav-number">8.2.2.</span> <span class="nav-text">组策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#终端HIPS（AV）"><span class="nav-number">8.2.3.</span> <span class="nav-text">终端HIPS（AV）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#网络准入NAC"><span class="nav-number">8.2.4.</span> <span class="nav-text">网络准入NAC</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安全网关"><span class="nav-number">8.3.</span> <span class="nav-text">安全网关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#研发管理"><span class="nav-number">8.4.</span> <span class="nav-text">研发管理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#远程访问-1"><span class="nav-number">8.5.</span> <span class="nav-text">远程访问</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟化桌面"><span class="nav-number">8.6.</span> <span class="nav-text">虚拟化桌面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#APT"><span class="nav-number">8.7.</span> <span class="nav-text">APT</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DLP数据防泄漏"><span class="nav-number">8.8.</span> <span class="nav-text">DLP数据防泄漏</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#安全管理体系"><span class="nav-number">9.</span> <span class="nav-text">安全管理体系</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#隐私保护"><span class="nav-number">10.</span> <span class="nav-text">隐私保护</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2023/09/09/《互联网企业安全高级指南》之技术篇/';
+          this.page.identifier = '2023/09/09/《互联网企业安全高级指南》之技术篇/';
+          this.page.title = '《互联网企业安全高级指南》之技术篇';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

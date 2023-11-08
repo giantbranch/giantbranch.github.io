@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="企业安全,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="安全大环境与背景对于有一定IT资产的企业，企业安全不是发现漏洞然后修复漏洞，在设置一下防火墙之类的。 攻防只解决了一半的问题，安全的工程化以及体系化的安全架构设计能力也是同样重要的。 安全建设包含：组织、管理、技术，组织 就是安全组织 作者认为的企业安全：从广义的信息安全或者狭义的网络安全出发，根据企业自身所处的产业低位、IT总投入能力、商业模式和业务需求为目标，而建立的安全解决方案以及为保障方案">
+<meta name="keywords" content="企业安全">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《互联网企业安全高级指南》之理论篇">
+<meta property="og:url" content="https://www.giantbranch.cn/2023/09/05/《互联网企业安全高级指南》之理论篇/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="安全大环境与背景对于有一定IT资产的企业，企业安全不是发现漏洞然后修复漏洞，在设置一下防火墙之类的。 攻防只解决了一半的问题，安全的工程化以及体系化的安全架构设计能力也是同样重要的。 安全建设包含：组织、管理、技术，组织 就是安全组织 作者认为的企业安全：从广义的信息安全或者狭义的网络安全出发，根据企业自身所处的产业低位、IT总投入能力、商业模式和业务需求为目标，而建立的安全解决方案以及为保障方案">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2023-11-08T07:54:24.141Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="《互联网企业安全高级指南》之理论篇">
+<meta name="twitter:description" content="安全大环境与背景对于有一定IT资产的企业，企业安全不是发现漏洞然后修复漏洞，在设置一下防火墙之类的。 攻防只解决了一半的问题，安全的工程化以及体系化的安全架构设计能力也是同样重要的。 安全建设包含：组织、管理、技术，组织 就是安全组织 作者认为的企业安全：从广义的信息安全或者狭义的网络安全出发，根据企业自身所处的产业低位、IT总投入能力、商业模式和业务需求为目标，而建立的安全解决方案以及为保障方案">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2023/09/05/《互联网企业安全高级指南》之理论篇/">
+
+
+
+
+
+  <title>《互联网企业安全高级指南》之理论篇 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2023/09/05/《互联网企业安全高级指南》之理论篇/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">《互联网企业安全高级指南》之理论篇</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2023-09-05T00:00:00+00:00">
+                2023-09-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2023/09/05/《互联网企业安全高级指南》之理论篇/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2023/09/05/《互联网企业安全高级指南》之理论篇/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="安全大环境与背景"><a href="#安全大环境与背景" class="headerlink" title="安全大环境与背景"></a>安全大环境与背景</h1><p>对于有一定IT资产的企业，企业安全不是发现漏洞然后修复漏洞，在设置一下防火墙之类的。</p>
+<p>攻防只解决了一半的问题，安全的工程化以及体系化的安全架构设计能力也是同样重要的。</p>
+<p>安全建设包含：组织、管理、技术，组织 就是安全组织</p>
+<p>作者认为的企业安全：从广义的信息安全或者狭义的网络安全出发，根据企业自身所处的产业低位、IT总投入能力、商业模式和业务需求为目标，而建立的安全解决方案以及为保障方案实践的有效性而进行的一系列系统化、工程化的日常安全活动的集合。</p>
+<p>企业安全7大领域</p>
+<ol>
+<li>网络安全：基础、狭义但核心的部分，聚焦纯技术</li>
+<li>平台和业务安全：所在行业和主营业务相关的安全管理</li>
+<li>广义的信息安全：纸质文档、客户隐私、内部邮件、会议内容等</li>
+<li>IT风险管理、IT审计&amp;内控：风险的识别、评估和应对，审计合规</li>
+<li>业务持续性管理：BCM（Business Continuity Management），组织制定和实施一系列策略、计划和程序，以确保在面对各种内部或外部的灾难、事故或业务中断时，能够维持关键业务的连续运行，并尽快恢复正常运营。</li>
+<li>安全品牌营销、渠道维护：为品牌的安全形象出席一些市场宣介</li>
+<li>CXO的其他需求：俗称打杂</li>
+</ol>
+<p>在甲方，安全不是主营业务，归根结底，安全是一个保值型的后台智能，不是一个明显能创造收益的前台职能，是一个成本中心而非盈利中心。</p>
+<p>核心：看产出是否对主营业务有帮助，工作成果能不能转化为主营业务竞争力</p>
+<p> BCP（Business Continuity Plan）：业务持续性计划，是一份组织为应对各种内部或外部的灾难、事故或业务中断而制定的详细计划。<br> DRP（Disaster Recovery Plan）：灾难恢复计划，是一种面向信息技术系统和基础设施的计划，旨在在信息系统遭受破坏或中断时，尽快恢复其正常运行状态。</p>
+<p> BS25999是一项国际标准，全称为《业务持续性管理》（Business Continuity Management）的英国标准。BS25999标准于2012年被国际标准化组织（ISO）正式接纳并发布为ISO 22301标准，通过遵循ISO 22301标准，组织可以建立一个系统化和综合的业务持续性管理体系，以增强对潜在中断的应对能力，并最大限度地减少对业务的影响。</p>
+<p>通过遵循ISO 27001标准，组织可以建立一个系统化和综合的信息安全管理体系，以确保信息资产得到恰当的保护，减少信息安全风险，增强信息安全意识，以及满足法律法规和利益相关者的要求。</p>
+<p>BS7799已经被ISO 27001所取代，因此在实践中，更推荐使用ISO 27001标准来建立信息安全管理体系。</p>
+<p>推荐做法：</p>
+<ul>
+<li>互联网公司：1. 网络安全 2. 平台和业务安全 5. 业务持续性管理</li>
+<li>传统行业：1. 网络安全 3. 广义的信息安全 4. IT风险管理、IT审计&amp;内控 5. 业务持续性管理</li>
+</ul>
+<p>互联网安全工作包括：</p>
+<ol>
+<li>信息安全管理：设计流程、整体策略</li>
+<li>基础架构与网络安全：IDC、设备、服务器、中间件数据库，还有漏洞扫描、补丁、ACL、安全配置、网络和主机入侵检测。</li>
+<li>应用与交付安全：对产品进行安全评估、代码审计、渗透测试，应用层防火墙和入情监测。</li>
+<li>业务安全：账户安全，交易封控、征信、反价格爬虫、反作弊i、反bot程序、反欺诈、反钓鱼、反垃圾信息、舆情监控、防游戏外挂、打击黑色产业链、安全情报等。</li>
+</ol>
+<p>  <strong>互联网企业和传统企业在安全建设中的区别</strong></p>
+<p>  传统企业安全问题特征：</p>
+<ol>
+<li>IT资产相对固定</li>
+<li>业务变更不频繁</li>
+<li>网络边界比较固定</li>
+<li>IDC规模不会很大，甚至没有</li>
+<li>使用基于传统的资产威胁脆弱性的风险管理的方法，加上购买和部署商业安全产品（解决方案）通常可以搞定</li>
+</ol>
+<p>大型互联网企业：</p>
+<ol>
+<li>海量IDC和海量数据</li>
+<li>完全的分布式架构</li>
+<li>应对业务的频繁发布和变更</li>
+<li>同时架构层面需要关注：高性能、高可用性、（水平）扩展性、TCO（ROI）</li>
+</ol>
+<p>注： TCO (Total Cost of Ownership) 和 ROI (Return on Investment) 都是用于评估和分析企业投资决策的概念。TCO（总拥有成本）是指在使用某个产品或服务的全寿命周期中所涉及的所有费用。ROI（投资回报率）是一种衡量投资效益的指标，用于评估投资项目的经济回报。</p>
+<p>互联网企业分为生产网络和办公网络，而某些传统企业可能只有办公网络，随着数字中国推进，传统企业也会有自己的生产网络。</p>
+<p>互联网企业的生产网络都是以攻防为驱动，关注性能损耗、运维成本和软件成本，会把在服务器上装防病毒软件这个方案干掉</p>
+<p>机房规模大了，不可能部署n个硬件盒子，需要适应分布式的系统架构</p>
+<p>所以最终的解决方案应该是：自研或者对开源软件进行二次开发+无限水平扩展的软件架构+构建于普通中低端硬件之上（PC服务器甚至是白牌）+ 大数据机器学习的方式。</p>
+<h1 id="甲方安全建设方法论"><a href="#甲方安全建设方法论" class="headerlink" title="甲方安全建设方法论"></a>甲方安全建设方法论</h1><h2 id="从零开始"><a href="#从零开始" class="headerlink" title="从零开始"></a>从零开始</h2><ol>
+<li>三张表：<ul>
+<li>组织结构图、</li>
+<li>线上产品和交付团队（包括其主要负责人的映射）</li>
+<li>全网拓扑、各系统的逻辑架构图、物理部署图、各系统间的调用关系、服务治理结构、数据流关系等</li>
+</ul>
+</li>
+<li>历史遗留问题：需要类是灰度滚动升级的方式去做一轮线上系统的后门排查</li>
+<li>初期三件事：<pre><code>- 事前的安全基线
+- 建立是中的监控能力
+- 做好事后的应急响应能力：应急时间成本更短，溯源和根因分析能力更强</code></pre></li>
+</ol>
+<h2 id="不同阶段的安全建设重点"><a href="#不同阶段的安全建设重点" class="headerlink" title="不同阶段的安全建设重点"></a>不同阶段的安全建设重点</h2><ol>
+<li>站后重建：救火阶段过去，进入正式的安全建设期，基础的安全建设，做生产网络和办公网络的网络安全的基础部分，在实践上不落后与公司的整体技术步伐，向自动化看齐</li>
+<li>进阶：一是冠以的信息安全：ISO27001可以拿出来看看了，二是业务安全，比如盗号</li>
+<li>优化器：开源工具不足以支撑业务规模，进入自研工具时代。一般要分拆团队，另外招人</li>
+<li>对外开放：安全能力对外开放，成为一方</li>
+</ol>
+<h2 id="如何推动安全策略"><a href="#如何推动安全策略" class="headerlink" title="如何推动安全策略"></a>如何推动安全策略</h2><ol>
+<li>公司层面：自上而下地推动</li>
+<li>战术层面：与研发和运维是合作关系，建立良好的人际关系，让开发掌握更好更安全的技能而产生正向驱动力。</li>
+</ol>
+<h2 id="选择不同维度做防御"><a href="#选择不同维度做防御" class="headerlink" title="选择不同维度做防御"></a>选择不同维度做防御</h2><ol>
+<li>技术实现维度: 选择某一层或者某几层去设防和封堵</li>
+<li>一题多解：解决一个问题有多种解决方案</li>
+<li>跨时间轴的肠镜：临时性规避措施——push补丁/根治措施——取消临时性措施——添加常态性的特征检测措施——检测到漏网之鱼——继续上述过程</li>
+<li>风险和影响的平衡：风险暴露程序、研发运维变更成本和用户体验的负面影响三者的平衡<ol start="5">
+<li>修复成本的折中：业务影响力大，时间人员成本小，是最高优先级；业务影响很小，但是实践人员成本大，这个应该是直接砍掉这个需求，做这个比较亏。·</li>
+</ol>
+</li>
+</ol>
+<h2 id="需要自己发明安全机制吗"><a href="#需要自己发明安全机制吗" class="headerlink" title="需要自己发明安全机制吗"></a>需要自己发明安全机制吗</h2><p>一般来说直接使用现成的就行，比如DEP、ASLR、操作系统基带的RBAC（基于角色的访问控制）</p>
+<p>假如需要解决的是单一问题，用救火的方式，假如是一类问题才考虑如何更好地解决这一类问题，如果在微观细节上补洞总是补不完，不放看看更高抽象层次有没有解决方案，有没有新的路径解决这个大类的问题。</p>
+<h2 id="如何看待SDL"><a href="#如何看待SDL" class="headerlink" title="如何看待SDL"></a>如何看待SDL</h2><p>SDL（安全开发声明周期）</p>
+<p>目前SDL包含：</p>
+<ul>
+<li>培训：核心安全培训</li>
+<li>要求：确定安全要求、创建质量门/Bug栏、安全和隐私风险评估</li>
+<li>设计：确定设计要求、分析攻击面、威胁建模</li>
+<li>实施：使用批准的攻击、启用不安全的函数、静态分析</li>
+<li>验证：动态分析、模糊测试、攻击面评析</li>
+<li>发布：时间相应计划、最终安全评析、发布存档</li>
+<li>响应：执行事件响应计划</li>
+</ul>
+<p><strong>安全设计</strong></p>
+<ul>
+<li>最小攻击面</li>
+<li>深度防御</li>
+<li>最小权限原则</li>
+<li>安全默认设置</li>
+</ul>
+<p><strong>威胁建模</strong></p>
+<ul>
+<li>威胁建模概述：威胁建模（Threat Modeling）是一种通过分析系统或应用程序的设计和实现，识别威胁和潜在漏洞的方法。通过威胁建模，可以帮助企业提前发现和预防安全漏洞，以及为安全决策提供数据支持。</li>
+<li>威胁建模的设计意义</li>
+<li>基于威胁模型的编码约束</li>
+</ul>
+<p>以下是威胁建模的一般步骤：</p>
+<ol>
+<li><p>确定资产：确定需要保护的资产类型和重要性，例如机密数据、知识产权等。</p>
+</li>
+<li><p>构建系统和流程架构：通过绘制图表或使用其他工具，建立应用程序或系统的逻辑架构图，包括各种数据源、处理和存储组件、用户界面和网络连接。</p>
+</li>
+<li><p>定义攻击者模型：确定系统中可能的攻击者和攻击方式，例如黑客、内部员工、供应商或合作伙伴等。</p>
+</li>
+<li><p>识别威胁：基于攻击者模型，识别可能的威胁和攻击，例如SQL注入、跨站点脚本攻击、社交工程攻击等。</p>
+</li>
+<li><p>评估威胁严重性：对每个识别出的威胁进行概率和严重性评估，确定其风险级别。</p>
+</li>
+<li><p>提出对策：针对识别出的威胁，提出相应的安全措施和防御措施，包括技术控制、流程和策略、培训和意识提高等方面。</p>
+</li>
+<li><p>验证措施：对提出的防御措施进行测试和验证，确定其有效性和可行性。</p>
+</li>
+</ol>
+<p>需要注意的是，威胁建模并非一次性的过程，需要随着应用程序或系统的变化不断更新和维护。此外，威胁建模需要针对不同的应用程序或系统进行定制化，考虑到其特定的业务需求和技术实现。最后，威胁建模不是万能的，不能保证完全避免所有的安全漏洞和攻击。但是，它可以帮助企业减少风险，并更好地处理安全事件。</p>
+<p><strong>安全编码：</strong></p>
+<ul>
+<li><p>缓冲区溢出</p>
+</li>
+<li><p>整数算法错误</p>
+</li>
+<li><p>跨站点脚本</p>
+</li>
+<li><p>SQL注入</p>
+</li>
+<li><p>弱加密</p>
+<p><strong>安全测试：</strong></p>
+<ul>
+<li>安全测试与功能测试之间的区别</li>
+<li>风险评估</li>
+<li>安全测试方法：黑盒测试（渗透测试）、白盒测试（渗透测试）、压力测试、代码审查</li>
+</ul>
+</li>
+</ul>
+<p>安全测试和功能测试是软件测试的两个不同方面，它们主要关注的是不同的目标。</p>
+<p>功能测试是验证软件系统是否按照规定的需求和预期功能进行工作。它确保软件的各项功能在各种条件下正常运行，包括用户界面、数据处理、业务逻辑等。功能测试主要关注系统是否能够正确地执行特定任务，如输入验证、功能覆盖等，并且通常以预期结果为基准进行验证。</p>
+<p>而安全测试是为了评估软件系统的安全性能和强度。它专注于发现系统中可能存在的安全漏洞、风险和潜在威胁，并提出相应的建议来增强系统的安全性。安全测试旨在模拟真实的攻击场景，包括黑盒测试和白盒测试，测试人员会尝试以各种方式绕过访问控制、注入恶意代码、暴露敏感信息等。</p>
+<p>因此，安全测试和功能测试在测试目标、方法和侧重点上存在一些区别：</p>
+<ol>
+<li><p>测试目标：功能测试主要关注系统的功能和操作是否正常；安全测试重点关注系统的安全漏洞和潜在的威胁。</p>
+</li>
+<li><p>测试方法：功能测试通常采用黑盒测试或白盒测试，关注输入和输出的正确性；安全测试则会使用更多的黑盒测试和渗透测试来模拟真实攻击并评估系统的防御能力。</p>
+</li>
+<li><p>侧重点：功能测试关注系统功能的完整性和正确性；安全测试则侧重于发现系统的弱点和漏洞，以及提供相应的修复建议。</p>
+</li>
+</ol>
+<p>需要注意的是，功能测试和安全测试是相辅相成的，两者都是保证软件质量和安全性的重要组成部分。综合进行功能测试和安全测试，可以确保软件系统不仅具备基本功能，还能够抵御各种潜在的安全威胁。</p>
+<p> <strong>隐私</strong></p>
+<ul>
+<li>隐私敏感数据的类型</li>
+<li>隐私设计的最佳实践</li>
+<li>风险评估</li>
+<li>隐私开发的最佳实践</li>
+<li>隐私测试的最佳实践</li>
+</ul>
+<p>隐私开发的最佳实践是在软件和应用程序的开发过程中，将隐私保护作为核心原则并采取相应的措施。以下是一些隐私开发的最佳实践：</p>
+<ol>
+<li><p>数据分类和敏感性评估：对所处理的数据进行分类，确定敏感数据的范围和安全级别，并进行相应的风险评估。</p>
+</li>
+<li><p>数据加密：采用适当的加密算法和加密技术，对存储在数据库、传输过程中的数据进行加密，确保数据在非授权访问时无法被读取或理解。</p>
+</li>
+<li><p>用户授权和访问控制：实施身份验证和授权机制，确保只有经过授权的用户才能访问和处理敏感数据。包括使用强密码、多因素身份验证等来增强用户的账户安全性。</p>
+</li>
+<li><p>匿名化和脱敏处理：对敏感数据进行匿名化或脱敏处理，以减少个人身份的识别风险。</p>
+</li>
+<li><p>最小权限原则：给予用户和程序仅必要的权限，避免过度收集和访问用户的个人信息。</p>
+</li>
+<li><p>错误处理和日志记录：合理记录和审计系统操作和错误信息，及时检测和响应潜在的安全事件和隐私问题。</p>
+</li>
+<li><p>安全漏洞管理：及时监测和修复软件中的安全漏洞，定期进行安全评估和渗透测试，确保系统的安全性。</p>
+</li>
+<li><p>隐私政策和通知：制定明确的隐私政策，并将其通知给用户，告知数据收集、使用和共享的目的和方式。</p>
+</li>
+<li><p>第三方服务供应商的选择和审查：对于使用第三方提供的服务或工具，要评估其隐私和安全措施，确保他们符合合规要求。</p>
+</li>
+<li><p>员工培训和教育：对开发人员和相关人员进行隐私意识和最佳实践的培训，确保团队整体上具备隐私保护的意识和技能。</p>
+</li>
+</ol>
+<p>综上所述，隐私开发的最佳实践需要全面考虑软件和应用程序的整个生命周期，从需求分析到发布和运营过程中都应当注重隐私保护，并采取相应的技术和管理措施来保障用户的隐私权益。</p>
+<p>隐私测试是评估应用程序、系统或产品在处理用户个人信息时是否符合隐私保护要求的过程。以下是一些隐私测试的最佳实践：</p>
+<ol>
+<li><p>设计测试方案：根据隐私保护的相关法规、标准和最佳实践，制定详细的测试方案，明确测试目标、范围和方法。</p>
+</li>
+<li><p>数据分类和敏感性评估：对测试所使用的数据进行分类，确定敏感数据的范围和安全级别，并进行相应的风险评估。</p>
+</li>
+<li><p>合规性检查：评估应用程序、系统或产品是否符合相关法规和隐私保护的最佳实践，包括隐私政策、用户授权和访问控制、数据加密和匿名化等方面的要求。</p>
+</li>
+<li><p>数据收集和使用测试：验证应用程序、系统或产品是否按照隐私政策中规定的目的和方式收集和使用用户个人信息，是否尊重用户的选择和权利。</p>
+</li>
+<li><p>安全性测试：检查数据传输和存储的安全性措施，包括加密算法、访问控制、身份验证等方面的测试，以确保数据在传输和存储过程中的安全性。</p>
+</li>
+<li><p>第三方服务供应商测试：评估第三方服务供应商是否符合隐私保护的要求，包括数据处理和共享、数据安全管理等方面的测试。</p>
+</li>
+<li><p>用户权益测试：验证用户在隐私保护方面的权益是否得到充分保障，包括访问、修改、删除个人信息的测试，以及用户投诉和申诉机制的测试。</p>
+</li>
+<li><p>日志和审计测试：确保应用程序、系统或产品具备适当的日志和审计功能，记录关键操作和事件，以便追踪和调查潜在的隐私问题。</p>
+</li>
+<li><p>跨平台和跨设备测试：针对不同的操作系统、设备和网络环境，测试应用程序、系统或产品在不同环境下的隐私保护能力。</p>
+</li>
+<li><p>审查测试报告和改进措施：综合测试结果，编写详细的测试报告，并提出改进建议和优化措施，以进一步完善隐私保护。</p>
+</li>
+</ol>
+<p>综上所述，隐私测试需要综合考虑法规、标准和最佳实践，涵盖数据分类、合规性检查、安全性测试、用户权益测试等多个方面。通过全面的隐私测试，可以识别和解决可能存在的隐私问题，确保应用程序、系统或产品符合隐私保护的要求。</p>
+<p><strong>高级概念方面的培训</strong></p>
+<ul>
+<li>高级的安全设计和体系结构</li>
+<li>可信用户界面设计</li>
+<li>安全漏洞细节</li>
+<li>实施自定义威胁缓解</li>
+</ul>
+<h3 id="攻防驱动修改"><a href="#攻防驱动修改" class="headerlink" title="攻防驱动修改"></a>攻防驱动修改</h3><ul>
+<li>事前基线：Web安全编码标准，开发部门不强制不考试可能一直没人看的东西</li>
+<li>事中措施：代码审计，发布前过一轮扫描器+渗透测试</li>
+<li>事后机制：HTTP全流量IDS，Web日志大数据分析，等等</li>
+<li>事件驱动：发现了新的安全问题就“事后诸葛亮一把”，做点不就行措施</li>
+</ul>
+<h3 id="SDL落地率低的原因"><a href="#SDL落地率低的原因" class="headerlink" title="SDL落地率低的原因"></a>SDL落地率低的原因</h3><ol>
+<li><p>DevOps的交付模式：互联网交付节奏快，没有足够事件去思考安全，而SDL会拖慢发布的节奏，需要经验丰富的安全人员和自动化工具的支持</p>
+</li>
+<li><p>历史问题：甲方安全团队都是以救火方式开始的，SDL不是安全建设的第一个想到的事情。还需要摆平研发</p>
+</li>
+<li><p>业务模式：互联网以Web为主，事后修补成本低，加上产品生命周期不长。</p>
+</li>
+<li><p>SDL的门槛：第一，安全专家少，懂攻防又要懂开发，懂漏洞又要懂设计，对于研发部门缺少指导的安全设计；第二，工具支持少，静态代码扫描、动态Fuzz等，工欲善其事必先利其器。</p>
+<h3 id="因地制宜的SDL时间"><a href="#因地制宜的SDL时间" class="headerlink" title="因地制宜的SDL时间"></a>因地制宜的SDL时间</h3><p>1.重度的场景：对于偏底层的大型软件，迭代周期较长，对架构设计要求比较全面，后期改动成本大，这种应在事前切入，在立项设计阶段就英国进行安全设计和威胁建模等工作。<br>2.轻度的场景：架构简单、开发周期短、交付时间要求比较紧，SDL太过于笨重，攻防驱动修改就足以解决问题</p>
+</li>
+</ol>
+<h3 id="SDL在互联网企业的发展"><a href="#SDL在互联网企业的发展" class="headerlink" title="SDL在互联网企业的发展"></a>SDL在互联网企业的发展</h3><p>SDL在大部分不差钱的互联网企业属于形式上都有，落地比较粗糙，通常只有一两个环节，瓶颈是人和工具的缺失。</p>
+<h2 id="STRIDE威胁建模"><a href="#STRIDE威胁建模" class="headerlink" title="STRIDE威胁建模"></a>STRIDE威胁建模</h2><p> 这是微软开发的用于威胁建模的工具，有助于风险识别的覆盖面</p>
+<p> 6个维度：Spoofing（假冒）【认证】、Tampering（篡改）【完整性】、Repudiation（否认）【不可抵赖性】、Information Disclosure（信息泄露）【机密性】、Denial of service（拒绝服务）【可用性】、Elevation of Privilege（权限提升）【授权】</p>
+<p> 如何使用：画出数据流关系图（DFD），包含四个元素：数据流、数据存储、进程和交互方，再加上信任边界</p>
+<ul>
+<li>数据流：通过网络连接、命名管道、消息队列、RPC通道等移动的数据</li>
+<li>数据存储：文本、文件、关系型数据库、非结构化数据等</li>
+<li>进程：计算机运行的计算或程序</li>
+</ul>
+<p>画出图后，对每个节点元素和过程进行分析判断是否存在上述的6个维度的威胁，并制定对应的风险缓解措施。</p>
+<p>上面的high level的威胁建模，low level的威胁建模需要话了时序图后根据具体的协议和数据交互进行更进一步的分析。</p>
+<h2 id="关于ISO27001"><a href="#关于ISO27001" class="headerlink" title="关于ISO27001"></a>关于ISO27001</h2><h3 id="重建对安全标准的认知"><a href="#重建对安全标准的认知" class="headerlink" title="重建对安全标准的认知"></a>重建对安全标准的认知</h3><p>安全标准到底有什么用？归根结底为了给你一个参考和指引，当你把基础的技术防护手段实施之后，过了上任之初的救活阶段之后，就需要停下来思考一下整个企业安全范畴中，哪些事情是短板，哪些领域尚且空白，需要在哪些点上继续深挖才能覆盖公司整体的安全建设，而安全标准的价值就是告诉你，在安全建设的领域里可能有那么100件事情是需要做的，但具体选择只做80件还是99件还是100件全是你自己的事情，但标准也只告诉你100件事是什么，怎么实现，对应的技术方案和流程是没有的，实现和落地是需要自己想的，本质上是用于开拓视野。</p>
+<h3 id="最实用的参考"><a href="#最实用的参考" class="headerlink" title="最实用的参考"></a>最实用的参考</h3><ul>
+<li>ITIL（BS15000/ISO20000）：运维侧安全，绝大多数互联网公司的运维流程都是以这个为骨架建立的，把安全环节衔接到所有的发布、变更、配置、问题和事件管理之上，而不是打破原来既有的运维流程，在去独创一个什么安全流程（ISO20000的前身是英国标准BS 15000，ITIL提供了IT服务管理的最佳实践和框架，而BS15000和ISO/IEC 20000则是IT服务管理的标准和认证体系。）</li>
+<li>SDL：研发侧的安全管理</li>
+<li>ISO27001：安全管理领域的基础性安全标准</li>
+</ul>
+<h2 id="业务持续性管理"><a href="#业务持续性管理" class="headerlink" title="业务持续性管理"></a>业务持续性管理</h2><p>业务持续性管理（BCM）：项目管理——风险分析和回顾——业务影响分析——恢复策略——计划实施——测试和演练——程序管理</p>
+<h2 id="关于应急响应"><a href="#关于应急响应" class="headerlink" title="关于应急响应"></a>关于应急响应</h2><p>PDCERF 模型是应急响应的一个通用框架，用于指导组织在发生安全事件时如何有效应对。PDCERF 模型的六个阶段分别是：</p>
+<p>准备（Preparation）：在事件发生之前，组织需要做好充分的准备，包括制定应急计划、建立应急响应团队、培训人员等。包括工具准备，静态编译的ls,ifconfig,psdeng<br>检测（Detection）：在事件发生后，组织需要尽快发现和识别事件，以便及时采取措施。<br>遏制（Containment）：在事件发生后，组织需要采取措施控制事件，防止其扩大影响。<br>根除（Eradication）：在事件发生后，组织需要采取措施消除事件的影响，并防止事件再次发生。<br>恢复（Recovery）：在事件发生后，组织需要采取措施恢复业务，使其恢复到正常运行状态。<br>跟踪（Follow-up）：在事件发生后，组织需要对事件进行跟踪和分析，以便总结经验教训，提高应急响应能力。</p>
+<p>遏制或者作者说的抑制，首先要了解业务、数据流、各服务接口的调用关系，这些都是日常的积累，否则随便一个隔离又吧什么服务搞down了。如果安全团队平时连个数据流图都没有，发现单点出现问题，大致的系统间的影响和潜在的最大受害范围都估算不出来。</p>
+<h2 id="安全建设的马斯洛需求层次"><a href="#安全建设的马斯洛需求层次" class="headerlink" title="安全建设的马斯洛需求层次"></a>安全建设的马斯洛需求层次</h2><p>lv0：没有安全措施<br>lv1：自己认为自己是安全的：做过渗透测试，交付的代码没有高危漏洞<br>lv2：有救火的能力：由攻防团队，有基本的入侵检测能力<br>lv3：安全体系化：接近完整的纵深防御体系，覆盖入侵检测和防护<br>lv4：业务层面安全得到满足：账户的基础服务都有安全风控措施<br>lv5：最佳实践阶段：完整的纵深防御，高度自动化、大数据和机器学习，精准对抗</p>
+<h1 id="业界的模糊地带"><a href="#业界的模糊地带" class="headerlink" title="业界的模糊地带"></a>业界的模糊地带</h1><h2 id="大数据安全分类："><a href="#大数据安全分类：" class="headerlink" title="大数据安全分类："></a>大数据安全分类：</h2><ul>
+<li>Hadoop/Storm集群这套技术架构本身涉及的安全问题</li>
+<li>海量样本+机器学习的方法去处理安全检测问题——360</li>
+<li>由于处理的数据流比较大，需要Hadoop之类的技术解决数据规模和实时性这两个性能问题</li>
+</ul>
+<h2 id="解决方案的争议"><a href="#解决方案的争议" class="headerlink" title="解决方案的争议"></a>解决方案的争议</h2><p>新概念新产品层出不穷，大多数不能说是替代，而只是演进、升级和补充。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2023/09/05/《互联网企业安全高级指南》之理论篇/" title="《互联网企业安全高级指南》之理论篇">https://www.giantbranch.cn/2023/09/05/《互联网企业安全高级指南》之理论篇/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/企业安全/" rel="tag"># 企业安全</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2023/07/21/如何从活动的Linux恶意软件中恢复已删除的二进制文件/" rel="next" title="如何从活动的Linux恶意软件中恢复已删除的二进制文件">
+                <i class="fa fa-chevron-left"></i> 如何从活动的Linux恶意软件中恢复已删除的二进制文件
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2023/09/09/《互联网企业安全高级指南》之技术篇/" rel="prev" title="《互联网企业安全高级指南》之技术篇">
+                《互联网企业安全高级指南》之技术篇 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">168</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">208</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#安全大环境与背景"><span class="nav-number">1.</span> <span class="nav-text">安全大环境与背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#甲方安全建设方法论"><span class="nav-number">2.</span> <span class="nav-text">甲方安全建设方法论</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#从零开始"><span class="nav-number">2.1.</span> <span class="nav-text">从零开始</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#不同阶段的安全建设重点"><span class="nav-number">2.2.</span> <span class="nav-text">不同阶段的安全建设重点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何推动安全策略"><span class="nav-number">2.3.</span> <span class="nav-text">如何推动安全策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#选择不同维度做防御"><span class="nav-number">2.4.</span> <span class="nav-text">选择不同维度做防御</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#需要自己发明安全机制吗"><span class="nav-number">2.5.</span> <span class="nav-text">需要自己发明安全机制吗</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何看待SDL"><span class="nav-number">2.6.</span> <span class="nav-text">如何看待SDL</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#攻防驱动修改"><span class="nav-number">2.6.1.</span> <span class="nav-text">攻防驱动修改</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SDL落地率低的原因"><span class="nav-number">2.6.2.</span> <span class="nav-text">SDL落地率低的原因</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#因地制宜的SDL时间"><span class="nav-number">2.6.3.</span> <span class="nav-text">因地制宜的SDL时间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SDL在互联网企业的发展"><span class="nav-number">2.6.4.</span> <span class="nav-text">SDL在互联网企业的发展</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#STRIDE威胁建模"><span class="nav-number">2.7.</span> <span class="nav-text">STRIDE威胁建模</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关于ISO27001"><span class="nav-number">2.8.</span> <span class="nav-text">关于ISO27001</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#重建对安全标准的认知"><span class="nav-number">2.8.1.</span> <span class="nav-text">重建对安全标准的认知</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#最实用的参考"><span class="nav-number">2.8.2.</span> <span class="nav-text">最实用的参考</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#业务持续性管理"><span class="nav-number">2.9.</span> <span class="nav-text">业务持续性管理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关于应急响应"><span class="nav-number">2.10.</span> <span class="nav-text">关于应急响应</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安全建设的马斯洛需求层次"><span class="nav-number">2.11.</span> <span class="nav-text">安全建设的马斯洛需求层次</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#业界的模糊地带"><span class="nav-number">3.</span> <span class="nav-text">业界的模糊地带</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#大数据安全分类："><span class="nav-number">3.1.</span> <span class="nav-text">大数据安全分类：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决方案的争议"><span class="nav-number">3.2.</span> <span class="nav-text">解决方案的争议</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2023/09/05/《互联网企业安全高级指南》之理论篇/';
+          this.page.identifier = '2023/09/05/《互联网企业安全高级指南》之理论篇/';
+          this.page.title = '《互联网企业安全高级指南》之理论篇';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

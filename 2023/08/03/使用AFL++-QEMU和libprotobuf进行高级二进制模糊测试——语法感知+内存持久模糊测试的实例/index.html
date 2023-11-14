@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="fuzzing,qemu,afl++,libprotobuf,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="Binary-only fuzzing 的一些常见问题QEMU是AFL++支持的后端之一，用于Binary-only的模糊测试，这是通过patch QEMU来执行原始二进制文件，以收集覆盖率信息。 此外，针对QEMU模式，可以配置不同的环境比那里来优化模糊测试的性能和覆盖率。 插桩相关：   AFL_INST_LIBS：设置 AFL_INST_LIBS 会导致qemu翻译器对任何动态链接库中的代码">
+<meta name="keywords" content="fuzzing,qemu,afl++,libprotobuf">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例">
+<meta property="og:url" content="https://www.giantbranch.cn/2023/08/03/使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="Binary-only fuzzing 的一些常见问题QEMU是AFL++支持的后端之一，用于Binary-only的模糊测试，这是通过patch QEMU来执行原始二进制文件，以收集覆盖率信息。 此外，针对QEMU模式，可以配置不同的环境比那里来优化模糊测试的性能和覆盖率。 插桩相关：   AFL_INST_LIBS：设置 AFL_INST_LIBS 会导致qemu翻译器对任何动态链接库中的代码">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1691397194041.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1691461355412.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1691461516756.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1691463573454.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1691475752339.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1691480246092.png">
+<meta property="og:updated_time" content="2023-11-14T08:32:18.389Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例">
+<meta name="twitter:description" content="Binary-only fuzzing 的一些常见问题QEMU是AFL++支持的后端之一，用于Binary-only的模糊测试，这是通过patch QEMU来执行原始二进制文件，以收集覆盖率信息。 此外，针对QEMU模式，可以配置不同的环境比那里来优化模糊测试的性能和覆盖率。 插桩相关：   AFL_INST_LIBS：设置 AFL_INST_LIBS 会导致qemu翻译器对任何动态链接库中的代码">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1691397194041.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2023/08/03/使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例/">
+
+
+
+
+
+  <title>使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例 | giantbranch's blog</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-121265336-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2023/08/03/使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2023-08-03T00:00:00+00:00">
+                2023-08-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2023/08/03/使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2023/08/03/使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Binary-only-fuzzing-的一些常见问题"><a href="#Binary-only-fuzzing-的一些常见问题" class="headerlink" title="Binary-only fuzzing 的一些常见问题"></a>Binary-only fuzzing 的一些常见问题</h1><p>QEMU是AFL++支持的后端之一，用于Binary-only的模糊测试，这是通过patch QEMU来执行原始二进制文件，以收集覆盖率信息。</p>
+<p>此外，针对QEMU模式，可以配置不同的环境比那里来优化模糊测试的性能和覆盖率。</p>
+<p><strong>插桩相关：</strong> </p>
+<ul>
+<li>AFL_INST_LIBS：设置 AFL_INST_LIBS 会导致qemu翻译器对任何动态链接库中的代码进行插桩（特别是包括glibc在内的库）。比如设置AFL_INST_LIBS=1即可。</li>
+<li>AFL_QEMU_INST_RANGES：您可以使用 AFL_QEMU_INST_RANGES=0xaaaa-0xbbbb,0xcccc-0xdddd 来仅插桩特定的内存位置，或者是特定的库 ，值得注意的是排除范围优先于包含范围的变量的。</li>
+</ul>
+<p><strong>变异相关：</strong></p>
+<ul>
+<li>AFL_CUSTOM_MUTATOR_LIBRARY，这个设置自定义的共享库路径，一般里面实现了afl_custom_fuzz()去生成样本</li>
+<li>AFL_CUSTOM_MUTATOR_ONLY，假如这个设置了，就只是用上面的库进行变异，其他默认的变异策略都不使用</li>
+</ul>
+<p><strong>执行相关：</strong></p>
+<ul>
+<li>AFL_ENTRYPOINT：允许您指定二进制文件的特定入口点（这对性能非常有好处！）。入口点以十六进制地址的形式指定，例如， 0x4004110 。请注意，地址必须是基本块的地址。</li>
+<li>AFL_QEMU_PERSISTENT_ADDR：当目标为i386/x86_64时，可以使用 AFL_QEMU_PERSISTENT_ADDR=start addr 指定需要执行persistent loop的函数地址。</li>
+<li>AFL_QEMU_PERSISTENT_HOOK：（persistent hook）会在每次持久迭代（在START处开始）执行一个在共享对象中定义的函数，您可以通过指定AFL_QEMU_PERSISTENT_HOOK=/path/to/hook.so来指定共享对象的路径。</li>
+<li>AFL_DISABLE_TRIM ：设置 AFL_DISABLE_TRIM 告诉 afl-fuzz 不要修剪测试用例。这通常是一个坏主意！</li>
+<li>AFL_DEBUG：会将二进制文件的入口点打印到stderr。如果您不确定入口点是否正确，请使用此选项。但直接使用，例如 afl-qemu-trace ./program 。</li>
+<li>AFL_DEBUG_CHILD ：设置 AFL_DEBUG_CHILD 这样可以看到子进程的所有输出，从而更好地发现问题。</li>
+</ul>
+<p>从理论到实践有时看起来很乏味，经常会引发一些反复出现的问题，比如：</p>
+<ul>
+<li>我们希望插桩到哪些代码</li>
+<li>模糊测试的入口点的最佳选择是什么</li>
+<li>移动入口点对于测试用例的格式产生什么影响</li>
+<li>如何利用afl++提供的环境变量，提高fuzzing的性能</li>
+</ul>
+<h1 id="学习示例"><a href="#学习示例" class="headerlink" title="学习示例"></a>学习示例</h1><h2 id="一个简单的X509解析器"><a href="#一个简单的X509解析器" class="headerlink" title="一个简单的X509解析器"></a>一个简单的X509解析器</h2><p>这是一个二进制文件，它接收一个文件名作为输入，并尝试解析相应文件的内容作为X509证书。</p>
+<p>学习示例源码：<a href="https://github.com/airbus-seclab/AFLplusplus-blogpost/tree/main/src" target="_blank" rel="noopener">https://github.com/airbus-seclab/AFLplusplus-blogpost/tree/main/src</a></p>
+<p>main函数：调用init初始化，之后将文件作为参数传递给parse_cert函数<br>parse_cert函数：调用read_file函数读取文件，之后调用base64_decode进行文件解码，最后调用parse_cert_buf<br>parse_cert_buf函数：使用openssl库的d2i_X509进行解析，尝试获取CN并打印。</p>
+<p>注：在证书中，”CN” 代表 “Common Name”，即 “通用名称”。它是用于标识证书（如SSL证书）所关联的实体（例如网站、服务器等）的一个字段。通常情况下，CN字段会包含一个域名（或者IP地址），用于指示证书所属的主体实体的名称。在SSL证书中，CN字段通常用于验证证书是否与访问的域名匹配，以确保通信的安全性。</p>
+<p>原作者故意在函数中留了一个缓冲区溢出漏洞：<code>strcpy(cn, subj);  // Oops</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">int parse_cert_buf(const unsigned char *buf, size_t len) &#123;</span><br><span class="line">    X509 *cert;</span><br><span class="line">    char cn[MAX_CN_SIZE];</span><br><span class="line"></span><br><span class="line">    cert = d2i_X509(NULL, &amp;buf, len);</span><br><span class="line">    ...</span><br><span class="line">    char *subj = X509_NAME_oneline(X509_get_subject_name(cert), NULL, 0);</span><br><span class="line">    strcpy(cn, subj);  // Oops</span><br><span class="line">    printf(&quot;Got CN=&apos;%s&apos; from certificate\n&quot;, cn);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而且作者在主函数的开头故意添加了一个虚拟的 init 函数，以模拟一个初始化阶段，这会花费一些时间并使目标变得缓慢启动，不过才usleep50毫秒。</p>
+<h2 id="探索目标"><a href="#探索目标" class="headerlink" title="探索目标"></a>探索目标</h2><p>在现实生活中，目标显然不像我们上面的X509解析器那样简单。事实上，对于一个只有二进制文件没有源码的目标进行有效的模糊测试，总是要先进行逆向工程，一般有以下阶段：</p>
+<ol>
+<li>了解目标，它的工作原理，以及它与环境的交互等</li>
+<li>找到有趣的特征进行研究</li>
+<li>寻找可能成为模糊测试目标的函数</li>
+<li>分析上下文、结构体、用户可控的参数等</li>
+<li>构建一个harness，以适当的参数和模糊输入调用目标函数</li>
+<li>生成或者收集一个初始语料库，以启动模糊测试</li>
+</ol>
+<p>由于上面的示例比较简单，所以不需要花太长时间来找到易受攻击的代码、调用追踪并确定感兴趣的函数就是parse_cert_buf</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">int __cdecl main(int argc, const char **argv, const char **envp)</span><br><span class="line">&#123;</span><br><span class="line">  if ( argc == 2 )</span><br><span class="line">  &#123;</span><br><span class="line">    init((__int64)argv[1]);</span><br><span class="line">    return parse_cert((__int64)argv[1]);</span><br><span class="line">  &#125;</span><br><span class="line">  else</span><br><span class="line">  &#123;</span><br><span class="line">    puts(&quot;Usage: ./target &lt;file path&gt;&quot;);</span><br><span class="line">    return 1;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">__int64 __fastcall parse_cert(__int64 a1)</span><br><span class="line">&#123;</span><br><span class="line">  __int64 result; // rax</span><br><span class="line">  int v2; // eax</span><br><span class="line"></span><br><span class="line">  result = read_file(a1, &amp;state[1], &amp;state[513]);</span><br><span class="line">  if ( !(_DWORD)result )</span><br><span class="line">  &#123;</span><br><span class="line">    v2 = base64_decode(&amp;state[1], LODWORD(state[513]));</span><br><span class="line">    LODWORD(state[513]) = v2;</span><br><span class="line">    if ( v2 &lt; 0 )</span><br><span class="line">    &#123;</span><br><span class="line">      puts(&quot;Failed to decode base64 data&quot;);</span><br><span class="line">      return 1LL;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">      return parse_cert_buf((__int64)&amp;state[1], v2);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Corpus-语料库"><a href="#Corpus-语料库" class="headerlink" title="Corpus 语料库"></a>Corpus 语料库</h2><p>需要收集目标程序期望的输入格式的文件，由于示例是一个证书解析器，那就可以用openssl生成一个证书：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ openssl req -nodes -new -x509 -keyout key.pem -out cert.pem</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">这个命令是使用OpenSSL工具生成自签名的RSA密钥对和X.509数字证书文件的命令。下面是对每个选项的解释：</span><br><span class="line"></span><br><span class="line">openssl: OpenSSL工具的命令。</span><br><span class="line">req: 指定要执行证书请求相关操作。</span><br><span class="line">-nodes: 不使用加密对私钥进行保护，也就是不使用密码短语对私钥文件进行加密。</span><br><span class="line">-new: 创建新的证书请求。</span><br><span class="line">-x509: 创建自签名的X.509数字证书。</span><br><span class="line">-keyout key.pem: 指定将生成的私钥保存到key.pem文件中。</span><br><span class="line">-out cert.pem: 指定将生成的证书保存到cert.pem文件中。</span><br><span class="line">执行此命令后，OpenSSL将生成一个新的RSA密钥对，并使用该密钥对生成一个自签名的X.509证书。私钥将保存在key.pem文件中，证书将保存在cert.pem文件中。这对密钥和证书可以用于各种加密和身份验证场景，如HTTPS通信或客户端身份验证等。</span><br><span class="line"></span><br><span class="line">请注意，在实际使用中，生成的自签名证书由于没有经过受信任的第三方机构的签名，可能会在某些情况下被一些应用程序或服务器拒绝。因此，在生产环境中，通常会使用由受信任的证书颁发机构（CA）签署的证书。</span><br></pre></td></tr></table></figure>
+
+<p>作者把—–BEGIN CERTIFICATE—–和—–END CERTIFICATE—–以及前后空格给去掉当作</p>
+<h3 id="预处理语料库"><a href="#预处理语料库" class="headerlink" title="预处理语料库"></a>预处理语料库</h3><p>在使用这个语料库之前，我们可以进行预处理</p>
+<ol>
+<li>只保留不同执行路径的输入样本（使用 afl-cmin ）</li>
+<li>尽量减小每个输入样本的大小，以保留其独特的执行路径，同时使其尺寸尽可能小（使用 afl-tmin ）。这将使变异更加有效，因为文件样本小了。</li>
+</ol>
+<p>作者将其写成了脚本build_corpus.sh：先进行cmin，再缩减样本大小tmin</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">FUZZ_DIR=`dirname $(realpath -s $0)`</span><br><span class="line">source &quot;$FUZZ_DIR/afl_config.sh&quot;</span><br><span class="line"></span><br><span class="line">in_path=&quot;$FUZZ_DIR/corpus&quot;</span><br><span class="line">out_path=&quot;$corpus_path&quot;</span><br><span class="line"></span><br><span class="line">if [ -d &quot;$out_path&quot; ]</span><br><span class="line">then</span><br><span class="line">  echo &quot;$out_path alread exists, aborting&quot;</span><br><span class="line">  exit 1</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">&quot;$afl_path&quot;/afl-cmin -Q -i &quot;$in_path&quot; -o &quot;$out_path&quot; -- &quot;$target_path&quot; @@</span><br><span class="line"></span><br><span class="line">if [ -d &quot;$out_path&quot; ]</span><br><span class="line">then</span><br><span class="line">  cd &quot;$out_path&quot;</span><br><span class="line">  for i in *; do</span><br><span class="line">    &quot;$afl_path&quot;/afl-tmin -Q -i &quot;$i&quot; -o &quot;$i&quot;.min -- &quot;$target_path&quot; @@</span><br><span class="line">    rm &quot;$i&quot;</span><br><span class="line">  done</span><br><span class="line">else</span><br><span class="line">  echo &quot;afl-cmin failed, aborting&quot;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<p>其中afl_config.sh 文件如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ cat afl_config.sh </span><br><span class="line">FUZZ_DIR=`dirname $(realpath -s $0)`</span><br><span class="line"></span><br><span class="line">## Paths</span><br><span class="line"></span><br><span class="line">export BASEPATH=`dirname $FUZZ_DIR`</span><br><span class="line">export afl_path=&quot;$BASEPATH/AFLplusplus&quot;</span><br><span class="line">export corpus_path=&quot;$FUZZ_DIR/corpus_unique&quot;</span><br><span class="line">export output_path=&quot;$FUZZ_DIR/output&quot;</span><br><span class="line">export target_path=&quot;$BASEPATH/src/target&quot;</span><br><span class="line"></span><br><span class="line">## Debug</span><br><span class="line"></span><br><span class="line">#export AFL_NO_UI=1</span><br><span class="line">#export AFL_DEBUG=1</span><br><span class="line">#export AFL_DEBUG_CHILD=1</span><br><span class="line"></span><br><span class="line">export AFL_SKIP_CPUFREQ=1</span><br><span class="line">export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1</span><br><span class="line"></span><br><span class="line">#export AFL_BENCH_UNTIL_CRASH=1</span><br></pre></td></tr></table></figure>
+
+<h2 id="插桩"><a href="#插桩" class="headerlink" title="插桩"></a>插桩</h2><h3 id="默认设置（step-0）"><a href="#默认设置（step-0）" class="headerlink" title="默认设置（step 0）"></a>默认设置（step 0）</h3><p>通过默认的形式启动AFL++的QEMU模式，目标的所有基本块都被插桩，共享库不包含在插桩中。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">FUZZ_DIR=`dirname $(realpath -s $0)`</span><br><span class="line">source &quot;$FUZZ_DIR/afl_config.sh&quot;</span><br><span class="line"></span><br><span class="line">&quot;$afl_path&quot;/afl-fuzz -Q -i &quot;$corpus_path&quot; -o &quot;$output_path&quot; -- &quot;$target_path&quot; @@</span><br></pre></td></tr></table></figure>
+
+<p>我们可以在下面的不断优化中查看执行速度的变化</p>
+<p>在我的机器上，这个默认模式，速度大概是18每秒</p>
+<p><img src="http://pic.giantbranch.cn/pic/1691397194041.png" alt></p>
+<h3 id="插桩调优（step-1）"><a href="#插桩调优（step-1）" class="headerlink" title="插桩调优（step 1）"></a>插桩调优（step 1）</h3><p>对于插桩的调优，可能有以下原因：</p>
+<ul>
+<li>对于导入库的覆盖路径情况感兴趣</li>
+<li>要排除已经进行过安全测试的库的特定部分</li>
+<li>对整个库的二进制文件进行插桩可能会降低执行速度</li>
+</ul>
+<p>如果需要调优，可有下面变量可用</p>
+<ul>
+<li>AFL_INST_LIBS</li>
+<li>AFL_QEMU_INST_RANGES</li>
+<li>AFL_CODE_START</li>
+<li>AFL_CODE_END</li>
+</ul>
+<p>在上面证书解析的例子中，parse_cert_buf 的插桩很重要，但是对于main的插桩就不那么相关了，还有共享库libssl.so</p>
+<p>我们可以通过AFL_QEMU_INST_RANGES来将插桩限制在想要关注的函数上，即parse_cert_buf的第一条指令到最后一条指令</p>
+<p>注意：可以使用 AFL_CODE_START 和 AFL_CODE_END 来完成这个操作。然而， AFL_QEMU_INST_RANGES 更加灵活，因为它允许指定多个范围进行插桩。</p>
+<p>作者写好了脚本来设置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"># The base address at which QEMU loads our binary depends on the target</span><br><span class="line"># See https://github.com/AFLplusplus/AFLplusplus/blob/stable/qemu_mode/README.persistent.md#21-the-start-address</span><br><span class="line">case $(file &quot;$target_path&quot;) in</span><br><span class="line">  *&quot;statically linked&quot;*)</span><br><span class="line">    QEMU_BASE_ADDRESS=0</span><br><span class="line">    ;;</span><br><span class="line">  *&quot;32-bit&quot;*)</span><br><span class="line">    QEMU_BASE_ADDRESS=0x40000000</span><br><span class="line">    ;;</span><br><span class="line">  *&quot;64-bit&quot;*)</span><br><span class="line">    QEMU_BASE_ADDRESS=0x4000000000</span><br><span class="line">    ;;</span><br><span class="line">  *) echo &quot;Failed to guess QEMU_BASE_ADDRESS&quot;; exit 1</span><br><span class="line">esac</span><br><span class="line"></span><br><span class="line"># We use objdump to parse our target binary and obtain the address and size of a given function</span><br><span class="line">function find_func() &#123;</span><br><span class="line">    objdump -t &quot;$target_path&quot; | awk -n /&quot;$1&quot;&apos;$/&#123;print &quot;0x&quot;$1, &quot;0x&quot;$5&#125;&apos;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># Some environment variables for AFL++ must be hex encoded</span><br><span class="line">function hex_encode() &#123;</span><br><span class="line">    printf &quot;0x%x&quot; &quot;$1&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">read fuzz_func_addr fuzz_func_size &lt; &lt;(find_func &quot;parse_cert_buf&quot;)</span><br><span class="line">inst_start=$(hex_encode $((&quot;$QEMU_BASE_ADDRESS&quot; + &quot;$fuzz_func_addr&quot;)))</span><br><span class="line">inst_end=$(hex_encode $((&quot;$inst_start&quot; + &quot;$fuzz_func_size&quot;)))</span><br><span class="line">export AFL_QEMU_INST_RANGES=&quot;$inst_start-$inst_end&quot;</span><br></pre></td></tr></table></figure>
+
+<p>inst_start就是QEMU_BASE_ADDRESS+函数文件内偏移<br>inst_end就是函数文件内偏移+函数大小</p>
+<p>作者给的find_func函数有点难理解，下面的其实更好理解，双引号是正则匹配，后面是输出规则</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">function find_func() &#123;</span><br><span class="line">    objdump -t &quot;$target_path&quot; | awk -n &quot;/$1$/&quot;&apos;&#123;print &quot;0x&quot;$1, &quot;0x&quot;$5&#125;&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以使用下面的更简单</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">objdump -t &quot;$target_path&quot; | grep $1 | awk &apos;&#123;print &quot;0x&quot;$1, &quot;0x&quot;$5&#125;&apos;</span><br></pre></td></tr></table></figure>
+
+<p>上面脚本可添加<code>echo $fuzz_func_addr $fuzz_func_size</code>可以输出获取的值，看看是否正确</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ./find_func.sh parse_cert_buf</span><br><span class="line">0x0000000000001550 0x000000000000010c</span><br></pre></td></tr></table></figure>
+
+<p>之后启动afl的时候，通过启用AFL++-QEMU的调试模式（ AFL_DEBUG ），我们可以检查插桩范围是否与我们设置的一样</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ AFL_DEBUG=1 ./fuzz.sh | grep Instrument </span><br><span class="line">AFL forkserver entrypoint: 0x4000001320</span><br><span class="line">AFL forkserver entrypoint: 0x4000001320</span><br><span class="line">Instrument range: 0x4000001550-0x400000165c (&lt;noname&gt;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="Entrypoint-入口点（step-2）"><a href="#Entrypoint-入口点（step-2）" class="headerlink" title="Entrypoint 入口点（step 2）"></a>Entrypoint 入口点（step 2）</h2><p>在模糊测试时，AFL++会运行目标程序直到达到特定地址（AFL入口点），然后从该地址fork进行每一次迭代。默认情况下，AFL入口点被设置为目标程序的入口点（在我们的示例中， target 的 <code>_start</code> 函数）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ AFL_DEBUG=1 ./fuzz.sh | grep entrypoint</span><br><span class="line">AFL forkserver entrypoint: 0x4000001320</span><br><span class="line">AFL forkserver entrypoint: 0x4000001320</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，确实是1320偏移</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">.text:0000000000001320                 public _start</span><br><span class="line">.text:0000000000001320 _start          proc near               ; DATA XREF: LOAD:0000000000000018↑o</span><br><span class="line">.text:0000000000001320 ; __unwind &#123;</span><br><span class="line">.text:0000000000001320                 endbr64</span><br><span class="line">.text:0000000000001324                 xor     ebp, ebp</span><br><span class="line">.text:0000000000001326                 mov     r9, rdx         ; rtld_fini</span><br><span class="line">.text:0000000000001329                 pop     rsi             ; argc</span><br><span class="line">.text:000000000000132A                 mov     rdx, rsp        ; ubp_av</span><br><span class="line">.text:000000000000132D                 and     rsp, 0FFFFFFFFFFFFFFF0h</span><br><span class="line">.text:0000000000001331                 push    rax</span><br><span class="line">.text:0000000000001332                 push    rsp             ; stack_end</span><br><span class="line">.text:0000000000001333                 lea     r8, __libc_csu_fini ; fini</span><br><span class="line">.text:000000000000133A                 lea     rcx, __libc_csu_init ; init</span><br><span class="line">.text:0000000000001341                 lea     rdi, main       ; main</span><br><span class="line">.text:0000000000001348                 call    cs:__libc_start_main_ptr</span><br><span class="line">.text:000000000000134E                 hlt</span><br><span class="line">.text:000000000000134E ; &#125; // starts at 1320</span><br><span class="line">.text:000000000000134E _start          endp</span><br></pre></td></tr></table></figure>
+
+<p>在某些情况下（如我们的示例中），程序的初始化阶段可能需要一些时间。由于每次迭代都要进行初始化，这直接影响了模糊测试的速度。这正是 AFL_ENTRYPOINT 选项旨在解决的情况。</p>
+<p>这样的话我们可以跳过初始化阶段，直达AFL_ENTRYPOINT 地址，停在AFL_ENTRYPOINT地址与fuzzer同步，让fuzzer对目标进行快照，之后便可有在AFL_ENTRYPOINT之后继续执行。</p>
+<p>对于上面的例子，init函数是确定性的，也无需模糊测试，所以可以将AFL_ENTRYPOINT 设置为 parse_cert</p>
+<p>parse_cert是1550偏移</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ./find_func.sh parse_cert</span><br><span class="line">0x0000000000001660 0x0000000000000063</span><br></pre></td></tr></table></figure>
+
+<p>通过AFL_ENTRYPOINT环境变量设置一下即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">read fuzz_func_addr fuzz_func_size &lt; &lt;(find_func &quot;parse_cert&quot;)</span><br><span class="line">export AFL_ENTRYPOINT=$(hex_encode $((&quot;$QEMU_BASE_ADDRESS&quot; + &quot;$fuzz_func_addr&quot;)))</span><br></pre></td></tr></table></figure>
+
+<p>可以看到确实更改了入口点</p>
+<p><img src="http://pic.giantbranch.cn/pic/1691461355412.png" alt></p>
+<p>查看现在的速度，已经提升到600+，原始作者更牛逼，直接1000+，估计他的cpu性能更好</p>
+<p><img src="http://pic.giantbranch.cn/pic/1691461516756.png" alt></p>
+<h2 id="Persistence"><a href="#Persistence" class="headerlink" title="Persistence"></a>Persistence</h2><h3 id="Persistent-mode（step3）"><a href="#Persistent-mode（step3）" class="headerlink" title="Persistent mode（step3）"></a>Persistent mode（step3）</h3><p>“持久模式”是AFL++的一个功能，允许它在每次迭代时避免调用 fork 。相反，它会在子进程到达特定地址（ AFL_QEMU_PERSISTENT_ADDR ）时保存其状态，并在到达另一个地址（ AFL_QEMU_PERSISTENT_RET ）时恢复该状态。</p>
+<p>注意：如果没有设置 AFL_QEMU_PERSISTENT_RET ，可以使用 AFL_QEMU_PERSISTENT_RETADDR_OFFSET 。如果没有设置这些值，AFL++将在到达第一个 ret 指令时停止（仅当 AFL_QEMU_PERSISTENT_ADDR 指向函数的起始位置时，否则必须手动设置该值）。</p>
+<p>“恢复”状态可能意味着“恢复寄存器”（ AFL_QEMU_PERSISTENT_GPR ）和/或“恢复内存”（ AFL_QEMU_PERSISTENT_MEM ）。由于恢复内存状态的成本较高，只有在必要时才应该进行；在模糊测试时，要关注稳定性值，以确定是否需要启用此功能。</p>
+<p>使用 AFL_QEMU_PERSISTENT_GPR=1，QEMU将保存通用寄存器的原始值，并在每个持久周期中恢复它们。</p>
+<p>即使在使用持久模式时，AFL++ 仍会不时调用 fork （每 AFL_QEMU_PERSISTENT_CNT 次迭代，或默认为1000次）。如果稳定性足够高，增加此值可能会提高性能（最大值为10000）。</p>
+<p>目标中循环越稳定，您可以运行的时间就越长；循环越不稳定，循环计数值就应该越低。一个较低的值可以是100，最大值应该为10000。默认值是1000。可以使用AFL_QEMU_PERSISTENT_CNT来设置此值。</p>
+<h3 id="以上面的例子为例"><a href="#以上面的例子为例" class="headerlink" title="以上面的例子为例"></a>以上面的例子为例</h3><p>在上面的例子，以通过将 AFL_QEMU_PERSISTENT_ADDR 设置为与 AFL_ENTRYPOINT 相同的值（即 parse_cert 函数的地址）来开始。这样，AFL++将恢复进程到在读取输入文件内容之前的状态。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">read fuzz_func_addr fuzz_func_size &lt; &lt;(find_func &quot;parse_cert&quot;)</span><br><span class="line">export AFL_QEMU_PERSISTENT_ADDR=$(hex_encode $((&quot;$QEMU_BASE_ADDRESS&quot; + &quot;$fuzz_func_addr&quot;)))</span><br><span class="line">export AFL_QEMU_PERSISTENT_GPR=1</span><br><span class="line">export AFL_QEMU_PERSISTENT_CNT=10000</span><br></pre></td></tr></table></figure>
+
+<p>在这个例子中，稳定性保持在100%而无需恢复内存状态，因此我们只设置 AFL_QEMU_PERSISTENT_GPR 。我们还将 AFL_QEMU_PERSISTENT_CNT 增加到最大值，因为这不会对我们的稳定性产生负面影响。</p>
+<p>下面可以看到Persistent也设置为1660偏移， gpr开启</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ AFL_DEBUG=1 ./fuzz.sh | grep Persistent</span><br><span class="line">AFL forkserver entrypoint: 0x4000001660</span><br><span class="line">AFL forkserver entrypoint: 0x4000001660</span><br><span class="line">Instrument range: 0x4000001550-0x400000165c (&lt;noname&gt;)</span><br><span class="line">Persistent: 0x4000001660 [0x0] gpr </span><br><span class="line">Debug: Sending status c201ffff</span><br></pre></td></tr></table></figure>
+
+<p>再看看此时的速度是接近6000，速度有了10倍增长</p>
+<p><img src="http://pic.giantbranch.cn/pic/1691463573454.png" alt></p>
+<h3 id="In-memory-fuzzing（step-4）"><a href="#In-memory-fuzzing（step-4）" class="headerlink" title="In-memory fuzzing（step 4）"></a>In-memory fuzzing（step 4）</h3><p>尽管使用了持久模式，但在达到模糊函数之前，我们的目标仍然会执行一些不必要的操作，尤其是打开和读取由模糊器生成的文件的内容。</p>
+<p>我们可以使用“内存模糊测试”来跳过这一步骤，直接从模糊测试器的内存中读取输入！</p>
+<p>为了做到这一点，我们必须实施一个“hook’”。作者说这个源码比较简单，<a href="https://github.com/airbus-seclab/AFLplusplus-blogpost/blob/main/src/hook/hook.c" target="_blank" rel="noopener">源码地址</a></p>
+<p>定义了一个 afl_persistent_hook_init 函数，它声明了我们是否要使用内存模糊测试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">int afl_persistent_hook_init(void) &#123;</span><br><span class="line">  // 1 for shared memory input (faster), 0 for normal input (you have to use</span><br><span class="line">  // read(), input_buf will be NULL)</span><br><span class="line">  return 1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>更有趣的是，我们定义了一个函数<code>afl_persistent_hook</code>，可以在每次迭代之前覆盖寄存器值和内存，就在达到 AFL_QEMU_PERSISTENT_ADDR 地址之前。我们所要做的就是覆盖包含要解析的缓冲区的内存，并在正确的寄存器中设置其长度。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#define g2h(x) ((void *)((unsigned long)(x) + guest_base))</span><br><span class="line">#define h2g(x) ((uint64_t)(x) - guest_base)</span><br><span class="line"></span><br><span class="line">void afl_persistent_hook(struct x86_64_regs *regs, uint64_t guest_base, uint8_t *input_buf, uint32_t input_buf_len) &#123;</span><br><span class="line">  // Make sure we don&apos;t overflow the target buffer</span><br><span class="line">  if (input_buf_len &gt; 4096)</span><br><span class="line">    input_buf_len = 4096;</span><br><span class="line"></span><br><span class="line">  // Copy the fuzz data to the target&apos;s memory</span><br><span class="line">  memcpy(g2h(regs-&gt;rdi), input_buf, input_buf_len);</span><br><span class="line"></span><br><span class="line">  // Update the length</span><br><span class="line">  regs-&gt;rsi = input_buf_len;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>作者是受afl++的示例启发的： <a href="https://github.com/AFLplusplus/AFLplusplus/blob/stable/utils/qemu_persistent_hook/read_into_rdi.c" target="_blank" rel="noopener">https://github.com/AFLplusplus/AFLplusplus/blob/stable/utils/qemu_persistent_hook/read_into_rdi.c</a></p>
+<p><strong>注意：您可以通过运行 gdb 并在目标函数的开始的地方中断，或直接查看反汇编代码来确定要使用的寄存器。</strong></p>
+<p>这个钩子应该被编译为一个共享库，AFL++将在运行时加载它。</p>
+<p>要指示AFL++使用我们的hook，我们只需将 AFL_QEMU_PERSISTENT_HOOK 设置为我们 .so 文件的路径：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export AFL_QEMU_PERSISTENT_HOOK=&quot;$BASEPATH/src/hook/libhook.so&quot;</span><br></pre></td></tr></table></figure>
+
+<p>要使用内存模糊测试，需要在迭代过程中跳过read_file的调用，需要修改 AFL_QEMU_PERSISTENT_ADDR ，这里有两个选项：</p>
+<p>1、将AFL_QEMU_PERSISTENT_ADDR 设置为 base64_decode 的起始地址。在这种情况下，我们还要对 base64_decode 函数进行模糊测试；<br>2、或者我们将AFL_QEMU_PERSISTENT_ADDR 设置在 parse_cert_buf 。在这种情况下， base64_decode 将不会被测试。</p>
+<p>由于 base64_decode 是由一个我们不想进行模糊测试的可信外部库实现的（在这种情况下是OpenSSL），我们将选择第二个选项。</p>
+<p>因此，我们可以将 AFL_QEMU_PERSISTENT_ADDR 移动到 parse_cert_buf 的地址：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">read fuzz_func_addr fuzz_func_size &lt; &lt;(find_func &quot;parse_cert_buf&quot;)</span><br><span class="line">export AFL_QEMU_PERSISTENT_ADDR=$(hex_encode $((&quot;$QEMU_BASE_ADDRESS&quot; + &quot;$fuzz_func_addr&quot;)))</span><br></pre></td></tr></table></figure>
+
+<p>修改 AFL_QEMU_PERSISTENT_ADDR 对我们的语料库有影响。事实上，模糊测试器生成的缓冲区现在直接用于 parse_cert_buf （而不是传递给 base64_decode ）。这意味着我们需要重建我们的语料库。在我们的情况下，这很容易：我们只需要解码之前语料库中的base64文件，并将它们保存为原始二进制文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">base64 -d test.cert.b64 &gt; test.cert</span><br></pre></td></tr></table></figure>
+
+<p>这样我们不再从文件中读取数据，但是目标程序期望从一个文件中读取数据，否则它将立即退出。，所以我们需要创建一个空文件，传递给程序。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">int __cdecl main(int argc, const char **argv, const char **envp)</span><br><span class="line">&#123;</span><br><span class="line">  if ( argc == 2 )</span><br><span class="line">  &#123;</span><br><span class="line">    init((__int64)argv[1]);</span><br><span class="line">    return parse_cert((__int64)argv[1]);</span><br><span class="line">  &#125;</span><br><span class="line">  else</span><br><span class="line">  &#123;</span><br><span class="line">    puts(&quot;Usage: ./target &lt;file path&gt;&quot;);</span><br><span class="line">    return 1;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在Debug模式中也有successfully got fuzzing shared memory</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ AFL_DEBUG=1 ./fuzz.sh | grep  AFL</span><br><span class="line">AFL forkserver entrypoint: 0x4000001660</span><br><span class="line">AFL forkserver entrypoint: 0x4000001660</span><br><span class="line">Instrument range: 0x4000001550-0x400000165c (&lt;noname&gt;)</span><br><span class="line">Persistent: 0x4000001550 [0x0] gpr </span><br><span class="line">Debug: Sending status c301ffff</span><br><span class="line">[D] DEBUG: calibration stage 1/7</span><br><span class="line">[AFL] DEBUG: successfully got fuzzing shared memory</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://pic.giantbranch.cn/pic/1691475752339.png" alt></p>
+<p><strong>注意：由于执行速度并不是唯一重要的指标，当然你还应该关注其他指标，比如稳定性、新发现的路径、覆盖率等等。</strong></p>
+<h2 id="语法感知的变异器（step-5）"><a href="#语法感知的变异器（step-5）" class="headerlink" title="语法感知的变异器（step 5）"></a>语法感知的变异器（step 5）</h2><h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>回顾一下我们迄今为止取得的成就：</p>
+<ul>
+<li>使用QEMU来设置AFL++来对一个仅有二进制文件的目标进行模糊测试</li>
+<li>配置了插桩范围，只覆盖相关的地址</li>
+<li>调整的AFL++的QEMU模式的入口点，并启用持久模式减少初始化时间，还改用了共享内存fuzzing</li>
+</ul>
+<p>在大多数情况下，这样的配置足以运行成功模糊测试，尤其是与多处理器结合的时候。</p>
+<p>然而，对于这个例子，我们还决定使用高度结构化的数据格式为输入进行模糊测试。</p>
+<p>在这种情况下，引入新的方式来改变输入数据可能会很有趣。</p>
+<p>确实，AFL++的另一个可调节的方面是生成和变异逻辑。AFL++内置了一组简单（但非常有效）的变异方法：</p>
+<ul>
+<li><ul>
+<li>random bit flips; 随机位翻转；</li>
+</ul>
+</li>
+<li>random byte flips; 随机字节翻转；</li>
+<li>arithmetics; 算术运算；</li>
+<li>等等</li>
+</ul>
+<p>在大多数情况下，这些突变已足够用来探索代码进行模糊测试。但是某些数据格式具有内部约束，如果不满足这些约束，样本将被提前拒绝。</p>
+<p>这就是ASN.1的情况，这是我们示例中使用的格式：如果在生成突变时不考虑这些约束，可能会导致大多数样本被目标系统立即丢弃为无效样本，从而无法实现任何增加的覆盖率。这意味着模糊测试活动需要一段时间才能收敛到相关的生成案例，影响fuzzing的效率或者直接导致毫无成果。</p>
+<p>为了解决这种情况，AFL++允许用户提供自定义的变异器，以指导模糊测试工具生成更适合的输入。正如官方文档中所详细说明的那样，只要这个变异器实现了所需的API函数，就可以将其插入到AFL++中。</p>
+<h3 id="实施"><a href="#实施" class="headerlink" title="实施"></a>实施</h3><p>有几种方法可以在AFL++中实现语法感知的变异器，其中之一是AFL++项目中的<a href="https://github.com/AFLplusplus/Grammar-Mutator" target="_blank" rel="noopener">语法变异器</a>。</p>
+<p>然而，由于它不支持ASN.1，我们转而依赖于处理ASN.1的libprotobuf。</p>
+<p>我们从<a href="https://github.com/AFLplusplus/AFLplusplus/blob/stable/docs/custom_mutators.md" target="_blank" rel="noopener">官方文档</a>和<a href="https://github.com/P1umer/AFLplusplus-protobuf-mutator" target="_blank" rel="noopener">现有的框架</a>中汲取灵感，构建了AFL++和我们自定义变异器之间的“粘合剂”。</p>
+<p>最终实现为 <a href="https://github.com/airbus-seclab/AFLplusplus-blogpost/tree/main/src/mutator/custom_mutator.cpp" target="_blank" rel="noopener">custom_mutator.cpp</a></p>
+<p>实现了以下来自AFL++ API的函数：</p>
+<ul>
+<li>afl_custom_init ：初始化我们的自定义变异器；</li>
+<li>afl_custom_fuzz ：使用我们的protobuf变异器来改变输入；</li>
+<li>afl_custom_post_process ： 对突变数据进行后处理，以确保我们的目标接收到正确格式的输入；</li>
+<li>afl_custom_deinit ： 清理一切。</li>
+</ul>
+<h3 id="输入格式"><a href="#输入格式" class="headerlink" title="输入格式"></a>输入格式</h3><p>确实， afl_custom_post_process 函数发挥着重要的作用：我们的自定义变异器基于libprotobuf，因此需要protobuf数据作为输入。然而，我们的目标只能解析ASN.1数据，因此我们需要将数据从protobuf转换为ASN.1。幸运的是，protobuf变异器已经在 x509_certificate::X509CertificateToDER 中实现了这个功能。</p>
+<p>以下是整个过程：</p>
+<p><img src="http://pic.giantbranch.cn/pic/1691480246092.png" alt></p>
+<p>实际就是将输入通过afl_custom_fuzz进行变异，再通过afl_custom_post_process将数据从protobuf转换为ASN.1</p>
+<p>和以前一样，我们需要调整我们语料库中文件的格式，以与我们的模糊测试工具相匹配。这一次，我们需要将我们的ASN.1 DER文件转换为protobuf格式。为此，我们实现了一个自定义脚本（asn1_to_protobuf.py）</p>
+<h3 id="应用于我们的例子"><a href="#应用于我们的例子" class="headerlink" title="应用于我们的例子"></a>应用于我们的例子</h3><p>只需将 AFL_CUSTOM_MUTATOR_LIBRARY 设置为我们 .so 文件的路径</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export AFL_CUSTOM_MUTATOR_LIBRARY=&quot;$BASEPATH/libmutator.so&quot;</span><br></pre></td></tr></table></figure>
+
+<p>禁用了AFL++执行的所有默认变异和修剪操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export AFL_DISABLE_TRIM=1</span><br><span class="line">export AFL_CUSTOM_MUTATOR_ONLY=1</span><br></pre></td></tr></table></figure>
+
+<p>这一次，不是关于提高性能，而是关于深入探索更深层次的路径。在我们的例子中，这是一个非常小的目标，很难衡量这种影响。</p>
+<p>然而，通常会通过比较覆盖范围并使用自定义变异器来检查是否达到了新的分支来完成此操作。</p>
+<p>然而，您无需在使用自定义变异器和使用默认的AFL++变异器之间做出选择：通过运行多个模糊测试实例，您可以兼得两者的优点，我们将在下一步中讨论这个问题。</p>
+<p>（from实践者：由于这个使用了谷歌的proto，编译出了点问题，暂时放弃这个的实践）</p>
+<h2 id="多进程（step-6）"><a href="#多进程（step-6）" class="headerlink" title="多进程（step 6）"></a>多进程（step 6）</h2><p>这一步是我们将所有内容整合在一起来运行我们的实际模糊测试活动。实际上，在真实的活动中，你不会仅限于在一个核心/线程/机器上进行模糊测试。幸运的是，AFL++可以同时运行多个实例。</p>
+<p>在同一台机器上，由于AFL++的设计方式，有一个最大的CPU核心/线程数量是有用的，使用更多的核心会导致整体性能下降。这个值取决于目标，限制在每台机器32到64个核心之间。</p>
+<p>需要注意的是，即使在达到这个限制之前，性能的增加也不是成比例的（核心数量翻倍并不意味着每秒执行次数翻倍）：需要额外的开销来同步进程。</p>
+<p>当运行多个模糊测试实例时，可以通过并行使用各种策略和配置来优化覆盖率。然而，由于该页面主要针对源代码可用的模糊目标，因此对于仅有二进制代码的模糊测试，需要进行一些调整。</p>
+<h3 id="Binary-only-fuzzing的特殊性"><a href="#Binary-only-fuzzing的特殊性" class="headerlink" title="Binary-only fuzzing的特殊性"></a>Binary-only fuzzing的特殊性</h3><p>当对源代码可用的目标进行模糊测试时，许多功能（例如ASAN、UBSAN、CFISAN、COMPCOV）需要使用特定选项重新编译目标。</p>
+<p>尽管在处理二进制目标时重新编译不是一个选项，但是QEMU中仍然提供了一些这些功能</p>
+<p>例如， AFL_USE_QASAN 可以使用 LD_PRELOAD 自动注入库来使用 ASAN 和 QEMU。同样， AFL_COMPCOV_LEVEL 可以在 QEMU 中使用 COMPCOV，无需重新编译目标。</p>
+<p>下面的start_child用来启动子进程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">children=()</span><br><span class="line">function start_child() &#123;</span><br><span class="line">    eval &quot;$@ &gt; /dev/null 2&gt;&amp;1 &amp;&quot;</span><br><span class="line">    child_pid=&quot;$!&quot;</span><br><span class="line">    echo &quot;Started child with pid $child_pid and command line $@&quot;</span><br><span class="line">    children+=(&quot;$!&quot;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"># Run 1 afl-fuzz instance with CMPLOG (-c 0 + AFL_COMPCOV_LEVEL=2)</span><br><span class="line">AFL_COMPCOV_LEVEL=2 start_child &quot;&apos;$afl_path/afl-fuzz&apos; -Q -c 0 -S &apos;afl-compcov&apos; -i &apos;$corpus_path&apos; -o &apos;$output_path&apos; -- &apos;$target_path&apos; /tmp/.afl_fake_input&quot;</span><br><span class="line"></span><br><span class="line"># Run 1 afl-fuzz instance with QASAN (AFL_USE_QASAN=1)</span><br><span class="line"># We disable this for our example because it requires updating all addresses in</span><br><span class="line"># afl_config.sh (and ensuring that ASLR is properly disabled on the host)</span><br><span class="line"># If you want to use this, make sure to set QASAN_LOG=1 and QASAN_DEBUG=1, and</span><br><span class="line"># change QEMU_BASE_ADDRESS in afl_config.sh to the value shown in the maps</span><br><span class="line">AFL_USE_QASAN=1 start_child &quot;&apos;$afl_path/afl-fuzz&apos; -Q -S &apos;afl-qasan&apos; -i &apos;$corpus_path&apos; -o &apos;$output_path&apos; -- &apos;$target_path&apos; /tmp/.afl_fake_input&quot;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># Run 1 afl-fuzz instance with LAF (AFL_PRELOAD=libcmpcov.so + AFL_COMPCOV_LEVEL=2)</span><br><span class="line">AFL_COMPCOV_LEVEL=2 AFL_PRELOAD=&quot;$AFL_PRELOAD:$afl_path/libcompcov.so&quot; start_child &quot;&apos;$afl_path/afl-fuzz&apos; -Q -S &apos;afl-libcompcov&apos; -i &apos;$corpus_path&apos; -o &apos;$output_path&apos; -- &apos;$target_path&apos; /tmp/.afl_fake_input&quot;</span><br><span class="line"></span><br><span class="line"># Run 1 afl-fuzz instance with the custom mutator</span><br><span class="line">#AFL_DISABLE_TRIM=&quot;$_AFL_DISABLE_TRIM&quot; AFL_CUSTOM_MUTATOR_ONLY=&quot;$_AFL_CUSTOM_MUTATOR_ONLY&quot; AFL_CUSTOM_MUTATOR_LIBRARY=&quot;$_AFL_CUSTOM_MUTATOR_LIBRARY&quot; start_child &quot;&apos;$afl_path/afl-fuzz&apos; -Q -S &apos;afl-custom_mutator&apos; -i &apos;$protobuf_corpus_path&apos; -o &apos;$protobuf_output_path&apos; -- &apos;$target_path&apos; /tmp/.afl_fake_input&quot;</span><br><span class="line"></span><br><span class="line"># Note: if you have enough cores left, you should run as many &quot;regular&quot;</span><br><span class="line"># instances of afl-fuzz as possible here. For our example, it&apos;s not necessary</span><br><span class="line">#for i in `seq 4 $(nproc)`; do  # Start at 4 since there are instances started separately</span><br><span class="line">#    start_child &quot;&apos;$afl_path/afl-fuzz&apos; -Q -S &apos;afl-$i&apos; -i &apos;$corpus_path&apos; -o &apos;$output_path&apos; -- &apos;$target_path&apos; /tmp/.afl_fake_input&quot;</span><br><span class="line">#done</span><br><span class="line"></span><br><span class="line"># Run main afl-fuzz instance</span><br><span class="line">&quot;$afl_path/afl-fuzz&quot; -Q -M &quot;afl-main&quot; -i &quot;$corpus_path&quot; -o &quot;$output_path&quot; -- &quot;$target_path&quot; /tmp/.afl_fake_input</span><br></pre></td></tr></table></figure>
+
+<h1 id="评估fuzzing"><a href="#评估fuzzing" class="headerlink" title="评估fuzzing"></a>评估fuzzing</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ /AFLplusplus/afl-whatsup -s output/</span><br><span class="line">/AFLplusplus/afl-whatsup status check tool for afl-fuzz by Michal Zalewski</span><br><span class="line"></span><br><span class="line">Summary stats</span><br><span class="line">=============</span><br><span class="line"></span><br><span class="line">       Fuzzers alive : 3</span><br><span class="line">      Total run time : 15 minutes, 0 seconds</span><br><span class="line">         Total execs : 2 millions, 481 thousands</span><br><span class="line">    Cumulative speed : 8269 execs/sec</span><br><span class="line">       Average speed : 2756 execs/sec</span><br><span class="line">       Pending items : 0 faves, 0 total</span><br><span class="line">  Pending per fuzzer : 0 faves, 0 total (on average)</span><br><span class="line">       Crashes saved : 3</span><br><span class="line">Cycles without finds : 142/2938/554</span><br><span class="line">  Time without finds : 5 minutes, 24 seconds</span><br></pre></td></tr></table></figure>
+
+<p>查看edges、crashes执行速度随实践变化的情况</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ /AFLplusplus/afl-plot output/afl-main /tmp/plot</span><br><span class="line">progress plotting utility for afl-fuzz by Michal Zalewski</span><br><span class="line"></span><br><span class="line">[*] Generating plots...</span><br><span class="line">Warning: empty y range [23:23], adjusting to [22.77:23.23]</span><br><span class="line">[?] You can also use -g flag to view the plots in an GUI window, and interact with the plots (if you have built afl-plot-ui). Run &quot;afl-plot-h&quot; to know more.</span><br><span class="line">[*] Generating index.html...</span><br><span class="line">[+] All done - enjoy your charts!</span><br></pre></td></tr></table></figure>
+
+<p>通过afl-showmap输出覆盖情况</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&quot;$afl_path/afl-showmap&quot; -Q -C -i &quot;$output_path&quot;/afl-main/queue/ -o afl-main.cov -- &quot;$target_path&quot; /tmp/.afl_fake_input</span><br><span class="line">&quot;$afl_path/afl-showmap&quot; -Q -C -i &quot;$output_path&quot;/afl-compcov/queue/ -o afl-compcov.cov -- &quot;$target_path&quot; /tmp/.afl_fake_input</span><br><span class="line">&quot;$afl_path/afl-showmap&quot; -Q -C -i &quot;$output_path&quot;/afl-libcompcov/queue/ -o afl-libcompcov.cov -- &quot;$target_path&quot; /tmp/.afl_fake_input</span><br></pre></td></tr></table></figure>
+
+<h1 id="对于崩溃的文件"><a href="#对于崩溃的文件" class="headerlink" title="对于崩溃的文件"></a>对于崩溃的文件</h1><p>一旦AFL++识别出崩溃或卡死，它将把触发它的输入保存在您的输出目录中的一个专用文件夹中，以便您可以重现它。</p>
+<p>下面是一些有用的工具：</p>
+<ul>
+<li>afl-tmin： 重现崩溃的最小测试用例</li>
+<li>Lighthouse: 探索特定样本的覆盖范围</li>
+<li>使用Valgrind来调查内存问题；</li>
+</ul>
+<h1 id="From"><a href="#From" class="headerlink" title="From"></a>From</h1><p><a href="https://airbus-seclab.github.io/AFLplusplus-blogpost/" target="_blank" rel="noopener">https://airbus-seclab.github.io/AFLplusplus-blogpost/</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2023/08/03/使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例/" title="使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例">https://www.giantbranch.cn/2023/08/03/使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/fuzzing/" rel="tag"># fuzzing</a>
+          
+            <a href="/tags/qemu/" rel="tag"># qemu</a>
+          
+            <a href="/tags/afl/" rel="tag"># afl++</a>
+          
+            <a href="/tags/libprotobuf/" rel="tag"># libprotobuf</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2023/07/24/Blender试用/" rel="next" title="Blender试用">
+                <i class="fa fa-chevron-left"></i> Blender试用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2023/08/09/IDA插件lighthouse的安装与使用/" rel="prev" title="IDA插件lighthouse的安装与使用">
+                IDA插件lighthouse的安装与使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">172</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">213</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Binary-only-fuzzing-的一些常见问题"><span class="nav-number">1.</span> <span class="nav-text">Binary-only fuzzing 的一些常见问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#学习示例"><span class="nav-number">2.</span> <span class="nav-text">学习示例</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#一个简单的X509解析器"><span class="nav-number">2.1.</span> <span class="nav-text">一个简单的X509解析器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#探索目标"><span class="nav-number">2.2.</span> <span class="nav-text">探索目标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Corpus-语料库"><span class="nav-number">2.3.</span> <span class="nav-text">Corpus 语料库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#预处理语料库"><span class="nav-number">2.3.1.</span> <span class="nav-text">预处理语料库</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#插桩"><span class="nav-number">2.4.</span> <span class="nav-text">插桩</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#默认设置（step-0）"><span class="nav-number">2.4.1.</span> <span class="nav-text">默认设置（step 0）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#插桩调优（step-1）"><span class="nav-number">2.4.2.</span> <span class="nav-text">插桩调优（step 1）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Entrypoint-入口点（step-2）"><span class="nav-number">2.5.</span> <span class="nav-text">Entrypoint 入口点（step 2）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Persistence"><span class="nav-number">2.6.</span> <span class="nav-text">Persistence</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Persistent-mode（step3）"><span class="nav-number">2.6.1.</span> <span class="nav-text">Persistent mode（step3）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#以上面的例子为例"><span class="nav-number">2.6.2.</span> <span class="nav-text">以上面的例子为例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#In-memory-fuzzing（step-4）"><span class="nav-number">2.6.3.</span> <span class="nav-text">In-memory fuzzing（step 4）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#语法感知的变异器（step-5）"><span class="nav-number">2.7.</span> <span class="nav-text">语法感知的变异器（step 5）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#动机"><span class="nav-number">2.7.1.</span> <span class="nav-text">动机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实施"><span class="nav-number">2.7.2.</span> <span class="nav-text">实施</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#输入格式"><span class="nav-number">2.7.3.</span> <span class="nav-text">输入格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用于我们的例子"><span class="nav-number">2.7.4.</span> <span class="nav-text">应用于我们的例子</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多进程（step-6）"><span class="nav-number">2.8.</span> <span class="nav-text">多进程（step 6）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Binary-only-fuzzing的特殊性"><span class="nav-number">2.8.1.</span> <span class="nav-text">Binary-only fuzzing的特殊性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#评估fuzzing"><span class="nav-number">3.</span> <span class="nav-text">评估fuzzing</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#对于崩溃的文件"><span class="nav-number">4.</span> <span class="nav-text">对于崩溃的文件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#From"><span class="nav-number">5.</span> <span class="nav-text">From</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch(simplelogin.irjqx@aleeas.com)</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2023/08/03/使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例/';
+          this.page.identifier = '2023/08/03/使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例/';
+          this.page.title = '使用AFL++-QEMU和libprotobuf进行高级二进制模糊测试——语法感知+内存持久模糊测试的实例';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

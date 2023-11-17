@@ -71,8 +71,6 @@
 
 
 
-  
-
 
   <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
 
@@ -81,17 +79,17 @@
 
 
 
-<meta name="description" content="这个页面记录一下自己挖掘过的二进制漏洞（很水，大牛勿喷） 本地漏洞PDF阅读器迷你PDF阅读器(MINIPDF) v2.16.9.5：1个uaf，2个拒绝服务 极速PDF阅读器(v2.2.6.1001版本,v3.0.0.1006版本都存在)：2个拒绝服务 图片查看器人人极速相册(v2.7): 2个堆溢出，2个拒绝服务，1个double free 2345图片查看器：1个整数溢出漏洞 IOT漏洞路由">
+<meta name="description" content="这个页面记录一下自己挖掘过的二进制漏洞（很水，大牛勿喷） 201707-201803本地漏洞PDF阅读器迷你PDF阅读器(MINIPDF) v2.16.9.5：1个uaf，2个拒绝服务 极速PDF阅读器(v2.2.6.1001版本,v3.0.0.1006版本都存在)：2个拒绝服务 图片查看器人人极速相册(v2.7): 2个堆溢出，2个拒绝服务，1个double free 2345图片查看器：1个整">
 <meta property="og:type" content="website">
 <meta property="og:title" content="giantbranch&#39;s blog">
 <meta property="og:url" content="https://www.giantbranch.cn/vulfound/index.html">
 <meta property="og:site_name" content="giantbranch&#39;s blog">
-<meta property="og:description" content="这个页面记录一下自己挖掘过的二进制漏洞（很水，大牛勿喷） 本地漏洞PDF阅读器迷你PDF阅读器(MINIPDF) v2.16.9.5：1个uaf，2个拒绝服务 极速PDF阅读器(v2.2.6.1001版本,v3.0.0.1006版本都存在)：2个拒绝服务 图片查看器人人极速相册(v2.7): 2个堆溢出，2个拒绝服务，1个double free 2345图片查看器：1个整数溢出漏洞 IOT漏洞路由">
+<meta property="og:description" content="这个页面记录一下自己挖掘过的二进制漏洞（很水，大牛勿喷） 201707-201803本地漏洞PDF阅读器迷你PDF阅读器(MINIPDF) v2.16.9.5：1个uaf，2个拒绝服务 极速PDF阅读器(v2.2.6.1001版本,v3.0.0.1006版本都存在)：2个拒绝服务 图片查看器人人极速相册(v2.7): 2个堆溢出，2个拒绝服务，1个double free 2345图片查看器：1个整">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2023-10-13T13:14:33.138Z">
+<meta property="og:updated_time" content="2023-11-17T13:57:16.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="giantbranch&#39;s blog">
-<meta name="twitter:description" content="这个页面记录一下自己挖掘过的二进制漏洞（很水，大牛勿喷） 本地漏洞PDF阅读器迷你PDF阅读器(MINIPDF) v2.16.9.5：1个uaf，2个拒绝服务 极速PDF阅读器(v2.2.6.1001版本,v3.0.0.1006版本都存在)：2个拒绝服务 图片查看器人人极速相册(v2.7): 2个堆溢出，2个拒绝服务，1个double free 2345图片查看器：1个整数溢出漏洞 IOT漏洞路由">
+<meta name="twitter:description" content="这个页面记录一下自己挖掘过的二进制漏洞（很水，大牛勿喷） 201707-201803本地漏洞PDF阅读器迷你PDF阅读器(MINIPDF) v2.16.9.5：1个uaf，2个拒绝服务 极速PDF阅读器(v2.2.6.1001版本,v3.0.0.1006版本都存在)：2个拒绝服务 图片查看器人人极速相册(v2.7): 2个堆溢出，2个拒绝服务，1个double free 2345图片查看器：1个整">
 
 
 
@@ -241,6 +239,16 @@
         </li>
       
         
+        <li class="menu-item menu-item-vulfound">
+          <a href="/vulfound/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br>
+            
+            漏洞挖掘
+          </a>
+        </li>
+      
+        
         <li class="menu-item menu-item-book">
           <a href="/book/" rel="section">
             
@@ -299,11 +307,44 @@
         
         
           <p>这个页面记录一下自己挖掘过的二进制漏洞（很水，大牛勿喷）</p>
-<h1 id="本地漏洞"><a href="#本地漏洞" class="headerlink" title="本地漏洞"></a>本地漏洞</h1><h3 id="PDF阅读器"><a href="#PDF阅读器" class="headerlink" title="PDF阅读器"></a>PDF阅读器</h3><p>迷你PDF阅读器(MINIPDF) v2.16.9.5：1个uaf，2个拒绝服务</p>
+<h1 id="201707-201803"><a href="#201707-201803" class="headerlink" title="201707-201803"></a>201707-201803</h1><h2 id="本地漏洞"><a href="#本地漏洞" class="headerlink" title="本地漏洞"></a>本地漏洞</h2><h4 id="PDF阅读器"><a href="#PDF阅读器" class="headerlink" title="PDF阅读器"></a>PDF阅读器</h4><p>迷你PDF阅读器(MINIPDF) v2.16.9.5：1个uaf，2个拒绝服务</p>
 <p>极速PDF阅读器(v2.2.6.1001版本,v3.0.0.1006版本都存在)：2个拒绝服务</p>
-<h3 id="图片查看器"><a href="#图片查看器" class="headerlink" title="图片查看器"></a>图片查看器</h3><p>人人极速相册(v2.7): 2个堆溢出，2个拒绝服务，1个double free</p>
+<h4 id="图片查看器"><a href="#图片查看器" class="headerlink" title="图片查看器"></a>图片查看器</h4><p>人人极速相册(v2.7): 2个堆溢出，2个拒绝服务，1个double free</p>
 <p>2345图片查看器：1个整数溢出漏洞</p>
-<h1 id="IOT漏洞"><a href="#IOT漏洞" class="headerlink" title="IOT漏洞"></a>IOT漏洞</h1><h3 id="路由器"><a href="#路由器" class="headerlink" title="路由器"></a>路由器</h3><p>移动和路由器：3个XSS，一个命令注入（3个参数都存在注入），一个溢出（3个参数都存在溢出）</p>
+<h2 id="IOT漏洞"><a href="#IOT漏洞" class="headerlink" title="IOT漏洞"></a>IOT漏洞</h2><h4 id="路由器"><a href="#路由器" class="headerlink" title="路由器"></a>路由器</h4><p>移动和路由器：5个XSS，一个命令注入（3个参数都存在注入），一个栈溢出（3个参数都存在溢出）</p>
+<h1 id="2023"><a href="#2023" class="headerlink" title="2023"></a>2023</h1><p>CVE-2023-34474    A heap-based buffer overflow issue in ImageMagick’s ReadTIM2ImageData() function in coders/tim2.c.<br><a href="https://access.redhat.com/security/cve/CVE-2023-34474" target="_blank" rel="noopener">https://access.redhat.com/security/cve/CVE-2023-34474</a></p>
+<p>CVE-2023-34475    A heap use after free issue in ImageMagick’s ReplaceXmpValue() function in MagickCore/profile.c.<br><a href="https://access.redhat.com/security/cve/CVE-2023-34475" target="_blank" rel="noopener">https://access.redhat.com/security/cve/CVE-2023-34475</a></p>
+<p>NVDB-CITIVD-2023381458    UOS看图软件deepin-image-viewer越界读取漏洞    </p>
+<p>NVDB-CITIVD-2023412815    UOS看图软件deepin-image-viewer堆越界写漏洞  </p>
+<p>NVDB-CITIVD-2023375516    UOS看图软件deepin-image-viewer浮点数异常漏洞  </p>
+<h1 id="2022"><a href="#2022" class="headerlink" title="2022"></a>2022</h1><p>CVE-2022-28068    A heap buffer overflow in r_sleb128 function in radare2 5.4.2 and 5.4.0.<br><a href="https://github.com/radareorg/radare2/commit/637f4bd1af6752e28e0a9998e954e2e9ce6fa992" target="_blank" rel="noopener">https://github.com/radareorg/radare2/commit/637f4bd1af6752e28e0a9998e954e2e9ce6fa992</a><br><a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28068" target="_blank" rel="noopener">https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28068</a></p>
+<p>CVE-2022-28069    A heap buffer overflow in vax_opfunction in radare2 5.4.2 and 5.4.0.<br><a href="https://github.com/radareorg/radare2/commit/49b0cebfdf0db9704e36f8a5533f1df6d3e2ed3a" target="_blank" rel="noopener">https://github.com/radareorg/radare2/commit/49b0cebfdf0db9704e36f8a5533f1df6d3e2ed3a</a><br><a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28069" target="_blank" rel="noopener">https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28069</a></p>
+<p>CVE-2022-28070    A null pointer deference in __core_anal_fcn function in radare2 5.4.2 and 5.4.0.<br><a href="https://github.com/radareorg/radare2/commit/4aff1bb00224de4f5bc118f987dfd5d2fe3450d0" target="_blank" rel="noopener">https://github.com/radareorg/radare2/commit/4aff1bb00224de4f5bc118f987dfd5d2fe3450d0</a><br><a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28070" target="_blank" rel="noopener">https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28070</a></p>
+<p>CVE-2022-28071    A use after free in r_reg_get_name_idx function in radare2 5.4.2 and 5.4.0.<br><a href="https://github.com/radareorg/radare2/commit/65448811e5b9582a19cf631e03cfcaa025a92ef5" target="_blank" rel="noopener">https://github.com/radareorg/radare2/commit/65448811e5b9582a19cf631e03cfcaa025a92ef5</a><br><a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28071" target="_blank" rel="noopener">https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28071</a></p>
+<p>CVE-2022-28072    A heap buffer overflow in r_read_le32 function in radare25.4.2 and 5.4.0.<br><a href="https://github.com/radareorg/radare2/commit/027cd9b7274988bb1af866539ba6c2fa2ff63e45" target="_blank" rel="noopener">https://github.com/radareorg/radare2/commit/027cd9b7274988bb1af866539ba6c2fa2ff63e45</a><br><a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28072" target="_blank" rel="noopener">https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28072</a></p>
+<p>CVE-2022-28073    A use after free in r_reg_set_value function in radare2 5.4.2 and 5.4.0.<br><a href="https://github.com/radareorg/radare2/commit/59a9dfb60acf8b5c0312061cffd9693fc9526053" target="_blank" rel="noopener">https://github.com/radareorg/radare2/commit/59a9dfb60acf8b5c0312061cffd9693fc9526053</a><br><a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28073" target="_blank" rel="noopener">https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28073</a></p>
+<h1 id="2021"><a href="#2021" class="headerlink" title="2021"></a>2021</h1><p>CVE-2021-34335    Denial of service due to FPE in Exiv2::Internal::resolveLens0xffff<br><a href="https://github.com/Exiv2/exiv2/security/advisories/GHSA-pvjp-m4f6-q984" target="_blank" rel="noopener">https://github.com/Exiv2/exiv2/security/advisories/GHSA-pvjp-m4f6-q984</a></p>
+<p>CVE-2021-37615    Null pointer dereference in Exiv2::Internal::resolveLens0x319<br><a href="https://github.com/Exiv2/exiv2/security/advisories/GHSA-h9x9-4f77-336w" target="_blank" rel="noopener">https://github.com/Exiv2/exiv2/security/advisories/GHSA-h9x9-4f77-336w</a></p>
+<p>CVE-2021-37616    Null pointer dereference in Exiv2::Internal::resolveLens0x8ff<br><a href="https://github.com/Exiv2/exiv2/security/advisories/GHSA-54f7-vvj7-545w" target="_blank" rel="noopener">https://github.com/Exiv2/exiv2/security/advisories/GHSA-54f7-vvj7-545w</a></p>
+<p>CVE-2021-37618    Out-of-bounds read in Exiv2::Jp2Image::printStructure<br><a href="https://github.com/Exiv2/exiv2/security/advisories/GHSA-583f-w9pm-99r2" target="_blank" rel="noopener">https://github.com/Exiv2/exiv2/security/advisories/GHSA-583f-w9pm-99r2</a></p>
+<p>CVE-2021-29473    Out-of-bounds read in Exiv2::Jp2Image::doWriteMetadata<br><a href="https://github.com/Exiv2/exiv2/security/advisories/GHSA-7569-phvm-vwc2" target="_blank" rel="noopener">https://github.com/Exiv2/exiv2/security/advisories/GHSA-7569-phvm-vwc2</a></p>
+<p>CVE-2021-29470    Out-of-bounds read in Exiv2::Jp2Image::encodeJp2Header<br><a href="https://github.com/Exiv2/exiv2/security/advisories/GHSA-8949-hhfh-j7rj" target="_blank" rel="noopener">https://github.com/Exiv2/exiv2/security/advisories/GHSA-8949-hhfh-j7rj</a></p>
+<p>CVE-2021-42586    Heap-buffer-overflow in copy_bytes<br><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-42586" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2021-42586</a><br><a href="https://github.com/LibreDWG/libredwg/issues/350" target="_blank" rel="noopener">https://github.com/LibreDWG/libredwg/issues/350</a> </p>
+<p>CVE-2021-42585    Heap-buffer-overflow in copy_compressed_bytes<br><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-42585" target="_blank" rel="noopener">https://nvd.nist.gov/vuln/detail/CVE-2021-42585</a><br><a href="https://github.com/LibreDWG/libredwg/issues/351" target="_blank" rel="noopener">https://github.com/LibreDWG/libredwg/issues/351</a></p>
+<p>CVE-2021-28275    A Denial of Service vulnerability exists in jhead 3.04 and 3.05<br><a href="https://github.com/Matthias-Wandel/jhead/issues/17" target="_blank" rel="noopener">https://github.com/Matthias-Wandel/jhead/issues/17</a><br><a href="https://www.cve.org/CVERecord?id=CVE-2021-28275" target="_blank" rel="noopener">https://www.cve.org/CVERecord?id=CVE-2021-28275</a></p>
+<p>CVE-2021-28276    A Denial of Service vulnerability exists in jhead 3.04 and 3.05<br><a href="https://github.com/Matthias-Wandel/jhead/issues/17" target="_blank" rel="noopener">https://github.com/Matthias-Wandel/jhead/issues/17</a><br><a href="https://www.cve.org/CVERecord?id=CVE-2021-28276" target="_blank" rel="noopener">https://www.cve.org/CVERecord?id=CVE-2021-28276</a></p>
+<p>CVE-2021-28277    A Heap-based Buffer Overflow vulnerability exists in jhead 3.04 and 3.05<br><a href="https://github.com/Matthias-Wandel/jhead/issues/16" target="_blank" rel="noopener">https://github.com/Matthias-Wandel/jhead/issues/16</a><br><a href="https://www.cve.org/CVERecord?id=CVE-2021-28277" target="_blank" rel="noopener">https://www.cve.org/CVERecord?id=CVE-2021-28277</a></p>
+<p>CVE-2021-28278<br>A Heap-based Buffer Overflow vulnerability exists in jhead 3.04 and 3.05 </p>
+<p><a href="https://github.com/Matthias-Wandel/jhead/issues/15" target="_blank" rel="noopener">https://github.com/Matthias-Wandel/jhead/issues/15</a><br><a href="https://www.cve.org/CVERecord?id=CVE-2021-28278" target="_blank" rel="noopener">https://www.cve.org/CVERecord?id=CVE-2021-28278</a></p>
+<p>CNVD-2021-34780    flvmeta amf_object_get_name函数堆越界读取漏洞    </p>
+<p>CNVD-2021-34779    flvmeta amf_string_new 函数堆越界读取漏洞    </p>
+<p>CNVD-2021-34778    flvmeta check_flv_file函数栈溢出漏洞    </p>
+<p>CNVD-2021-08398     jhead process_DQT函数堆越界读取漏洞    </p>
+<p>CNVD-2021-08397     jhead RemoveSectionType函数堆越界读取漏洞    </p>
+<p>CNVD-2021-08396     jhead RemoveUnknownSections函数堆越界读取漏洞</p>
+<p>CVE-2020-24119    upx: heap buffer overflow read in p_lx_elf.cpp<br><a href="https://github.com/upx/upx/issues/388" target="_blank" rel="noopener">https://github.com/upx/upx/issues/388</a></p>
+<h1 id="2020"><a href="#2020" class="headerlink" title="2020"></a>2020</h1><p>CVE-2020-27796    upx: heap-based buffer over-read in invert_pt_dynamic function in p_lx_elf.cpp<br>CVE-2020-27797    upx: invalid memory address reference elf_lookup function in p_lx_elf.cpp<br>CVE-2020-27798    upx: invalid memory address reference in adjABS function in p_lx_elf.cpp<br>CVE-2020-27799    upx: heap-based buffer over-read in acc_ua_get_be32 function in miniacc.h<br>CVE-2020-27800    upx: heap-based buffer over-read in get_le32 function in bele.h<br>CVE-2020-27801    upx: heap-based buffer over-read in get_le64 function in bele.h (affected code: upx - upx4.0.0-git-8d1d605b3d8c+)<br>CVE-2020-27802    upx: floating point exception in elf_lookup function in p_lx_elf.cpp<br>CVE-2020-27818    pngcheck: global buffer overflow in check_chunk_name function<br>CVE-2020-35511    pngcheck: global buffer overflow  in pngcheck function</p>
+<p>CNVD-2020-58346    mkclean libebml2 ebmlmaster.c EBML_MasterFindFirstElt函数释放后重用漏洞<br>CNVD-2020-58377    mkclean libebml2 ebmlmaster.c EBML_MasterUseChecksum函数释放后重用漏洞<br>CNVD-2020-58376    mkclean Node_Release函数释放后重用漏洞<br>CNVD-2020-58833    mkvalidator libebml2 ebmlmain.c EBML_ReadCodedSizeValue函数堆越界读取漏洞<br>CNVD-2020-58835    mkvalidator libebml2 ebmlcrc.c EBML_CRCMatches函数释放后重用漏洞<br>CNVD-2020-58834    mkvalidator libebml2 ebmlcrc.c EBML_CRCMatches函数堆越界读取漏洞<br>CNVD-2020-62736    lepton makeEncoder函数堆越界写漏洞<br>CNVD-2020-69471    pngcheck check_chunk_name函数全局缓冲区越界读漏洞<br>CNVD-2020-69470    pngcheck print_buffer函数全局缓冲区越界读漏洞    </p>
 
         
       </div>
@@ -477,7 +518,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#本地漏洞"><span class="nav-number">1.</span> <span class="nav-text">本地漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PDF阅读器"><span class="nav-number">1.0.1.</span> <span class="nav-text">PDF阅读器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#图片查看器"><span class="nav-number">1.0.2.</span> <span class="nav-text">图片查看器</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#IOT漏洞"><span class="nav-number">2.</span> <span class="nav-text">IOT漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#路由器"><span class="nav-number">2.0.1.</span> <span class="nav-text">路由器</span></a></li></ol></li></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#201707-201803"><span class="nav-number">1.</span> <span class="nav-text">201707-201803</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#本地漏洞"><span class="nav-number">1.1.</span> <span class="nav-text">本地漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#PDF阅读器"><span class="nav-number">1.1.0.1.</span> <span class="nav-text">PDF阅读器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#图片查看器"><span class="nav-number">1.1.0.2.</span> <span class="nav-text">图片查看器</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IOT漏洞"><span class="nav-number">1.2.</span> <span class="nav-text">IOT漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#路由器"><span class="nav-number">1.2.0.1.</span> <span class="nav-text">路由器</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#2023"><span class="nav-number">2.</span> <span class="nav-text">2023</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2022"><span class="nav-number">3.</span> <span class="nav-text">2022</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2021"><span class="nav-number">4.</span> <span class="nav-text">2021</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2020"><span class="nav-number">5.</span> <span class="nav-text">2020</span></a></li></div>
             
 
           </div>

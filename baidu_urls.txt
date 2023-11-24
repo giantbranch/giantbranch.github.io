@@ -1,3 +1,5 @@
+https://www.giantbranch.cn/2023/11/23/Xvfb的使用与vnc连接/
+https://www.giantbranch.cn/2023/11/20/wazuh文档学习：搭建实践/
 https://www.giantbranch.cn/2023/11/18/OSSEC文档阅读学习实践/
 https://www.giantbranch.cn/2023/11/16/译-绕过 403/
 https://www.giantbranch.cn/2023/10/29/试用Kong/

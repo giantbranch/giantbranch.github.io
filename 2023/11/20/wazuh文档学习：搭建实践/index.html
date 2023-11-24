@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="xdr,wazuh,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="简介根据官网，Wazuh是一个免费的开源安全平台,它统一了XDR和SIEM的功能。它可以保护本地、虚拟化、容器化和基于云的环境中的工作负载。 Wazuh由多种开源项目组成,可以替代商业的XDR和SIEM解决方案。它可以保护从传统数据中心到公有云在内的多种环境。 Wazuh解决方案由一个通用代理和三个核心组件组成:Wazuh服务器,Wazuh索引器和Wazuh控制面板。 组件Wazuh解决方案基于部">
+<meta name="keywords" content="xdr,wazuh">
+<meta property="og:type" content="article">
+<meta property="og:title" content="wazuh文档学习：搭建实践">
+<meta property="og:url" content="https://www.giantbranch.cn/2023/11/20/wazuh文档学习：搭建实践/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="简介根据官网，Wazuh是一个免费的开源安全平台,它统一了XDR和SIEM的功能。它可以保护本地、虚拟化、容器化和基于云的环境中的工作负载。 Wazuh由多种开源项目组成,可以替代商业的XDR和SIEM解决方案。它可以保护从传统数据中心到公有云在内的多种环境。 Wazuh解决方案由一个通用代理和三个核心组件组成:Wazuh服务器,Wazuh索引器和Wazuh控制面板。 组件Wazuh解决方案基于部">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1700636612719.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1700635356881.png">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1700635891276.png">
+<meta property="og:updated_time" content="2023-11-24T08:54:53.271Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="wazuh文档学习：搭建实践">
+<meta name="twitter:description" content="简介根据官网，Wazuh是一个免费的开源安全平台,它统一了XDR和SIEM的功能。它可以保护本地、虚拟化、容器化和基于云的环境中的工作负载。 Wazuh由多种开源项目组成,可以替代商业的XDR和SIEM解决方案。它可以保护从传统数据中心到公有云在内的多种环境。 Wazuh解决方案由一个通用代理和三个核心组件组成:Wazuh服务器,Wazuh索引器和Wazuh控制面板。 组件Wazuh解决方案基于部">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1700636612719.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2023/11/20/wazuh文档学习：搭建实践/">
+
+
+
+
+
+  <title>wazuh文档学习：搭建实践 | giantbranch's blog</title>
+  
+
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SQ8CHXJB60"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SQ8CHXJB60');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-vulfound">
+          <a href="/vulfound/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br>
+            
+            漏洞挖掘
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2023/11/20/wazuh文档学习：搭建实践/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">wazuh文档学习：搭建实践</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2023-11-20T00:00:00+00:00">
+                2023-11-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2023/11/20/wazuh文档学习：搭建实践/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2023/11/20/wazuh文档学习：搭建实践/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>根据官网，Wazuh是一个免费的开源安全平台,它统一了XDR和SIEM的功能。它可以保护本地、虚拟化、容器化和基于云的环境中的工作负载。</p>
+<p>Wazuh由多种开源项目组成,可以替代商业的XDR和SIEM解决方案。它可以保护从传统数据中心到公有云在内的多种环境。</p>
+<p>Wazuh解决方案由一个通用代理和三个核心组件组成:Wazuh服务器,Wazuh索引器和Wazuh控制面板。</p>
+<h1 id="组件"><a href="#组件" class="headerlink" title="组件"></a>组件</h1><p>Wazuh解决方案基于部署在监控端点上的Wazuh代理,以及三个核心组件:Wazuh服务器、Wazuh索引器和Wazuh控制面板。</p>
+<ul>
+<li>Wazuh索引器是一个高度可扩展的全文搜索和分析引擎。这个核心组件索引和存储由Wazuh服务器生成的警报。</li>
+<li>Wazuh服务器分析从代理收到的数据。它通过解码器和规则处理数据,使用威胁情报查找已知的渗透指标(IOCs)。单个服务器可以分析数百或数千个代理的数据,并在设置为集群时水平扩展。这个核心组件也用于管理代理,在必要时远程配置和升级它们。</li>
+<li>Wazuh控制面板是用于数据可视化和分析的Web用户界面。它内置了安全事件、法规合规(如PCI DSS、GDPR、CIS、HIPAA、NIST 800-53)、检测到的易受攻击的应用程序、文件完整性监控数据、配置评估结果、云基础架构监控事件等的控制面板。它也用于管理Wazuh配置和监控其状态。</li>
+<li>Wazuh代理安装在端点上,如笔记本电脑、台式机、服务器、云实例或虚拟机。它们提供威胁防范、检测和响应能力。它们运行在诸如Linux、Windows、macOS、Solaris、AIX和HP-UX之类的操作系统上。</li>
+</ul>
+<p>下图表示 Wazuh 组件和数据流。</p>
+<p><img src="http://pic.giantbranch.cn/pic/1700636612719.png" alt></p>
+<h1 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h1><p>Wazuh基于在被监控端点上运行的代理,这些代理将安全数据转发到中央服务器。无代理设备如防火墙、交换机、路由器和接入点也受支持,可以通过Syslog、SSH或使用其API主动提交日志数据。中央服务器解码和分析传入的信息,并将结果传递给Wazuh索引器进行索引和存储。</p>
+<p>Wazuh索引器集群是一组一个或多个节点的集合,这些节点相互通信以对索引执行读写操作。不需要处理大量数据的小型Wazuh部署可以轻松地由单节点集群处理。当有许多监控端点时,当预计有大量的数据量时,或者当需要高可用性时,建议使用多节点集群。</p>
+<p>对于生产环境,建议将Wazuh服务器和Wazuh索引器部署到不同的主机上。在这种场景中,Filebeat使用TLS加密通过安全地转发Wazuh警报和存档事件到Wazuh索引器集群(单节点或多节点)。</p>
+<p>下图是Wazuh部署架构。它显示了解决方案的组件以及如何将Wazuh服务器和Wazuh索引器节点配置为集群,从而提供负载平衡和高可用性。</p>
+<p><img src="http://pic.giantbranch.cn/pic/1700635356881.png" alt></p>
+<h2 id="Wazuh代理与Wazuh服务器之间的通信"><a href="#Wazuh代理与Wazuh服务器之间的通信" class="headerlink" title="Wazuh代理与Wazuh服务器之间的通信"></a>Wazuh代理与Wazuh服务器之间的通信</h2><p>Wazuh代理持续地将事件发送到Wazuh服务器进行分析和威胁检测。为开始传输这些数据,代理与服务器上的代理连接服务建立连接,默认监听在1514端口上(这可以配置)。然后Wazuh服务器使用分析引擎解码并用规则检查接收到的事件。触发规则的事件会被添加警报数据,如规则ID和规则名称。事件可以根据是否触发了规则被缓存到下列一个或两个文件中:</p>
+<p>/var/ossec/logs/archives/archives.json包含所有事件,无论是否触发了规则。<br>/var/ossec/logs/alerts/alerts.json仅包含优先级足够高的触发了规则的事件(阈值可以配置)。<br>Wazuh消息协议默认使用128 bits per block 和256-bit keys.的AES加密。也可选用Blowfish加密。</p>
+<h2 id="Wazuh服务器与Wazuh索引器之间的通信"><a href="#Wazuh服务器与Wazuh索引器之间的通信" class="headerlink" title="Wazuh服务器与Wazuh索引器之间的通信"></a>Wazuh服务器与Wazuh索引器之间的通信</h2><p>Wazuh服务器使用Filebeat通过TLS加密将警报和事件数据发送到Wazuh索引器。Filebeat读取Wazuh服务器的输出数据并将其发送到Wazuh索引器(默认监听在9200/TCP端口)。一旦数据被Wazuh索引器索引,Wazuh控制面板用于挖掘和可视化信息。</p>
+<p>Wazuh控制面板查询Wazuh RESTful API(默认在Wazuh服务器的55000/TCP端口上监听)来显示Wazuh服务器和代理的配置和状态相关信息。它还可以通过API调用修改代理或服务器配置设置。此通信使用TLS加密,并使用用户名和密码进行认证。</p>
+<h2 id="下面是Wazuh组件的默认端口"><a href="#下面是Wazuh组件的默认端口" class="headerlink" title="下面是Wazuh组件的默认端口"></a>下面是Wazuh组件的默认端口</h2><p><img src="http://pic.giantbranch.cn/pic/1700635891276.png" alt></p>
+<h2 id="Archival-data-storage"><a href="#Archival-data-storage" class="headerlink" title="Archival data storage"></a>Archival data storage</h2><p>警报和非警报事件除了被发送到Wazuh索引器,也存储在Wazuh服务器上的文件中。这些文件可以以JSON格式(.json)或纯文本格式(.log)编写。这些文件使用MD5、SHA1和SHA256校验和每天压缩和签名。目录和文件名结构如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">root@wazuh-manager:/var/ossec/logs/archives/2022/Jan# ls -l</span><br><span class="line">total 176</span><br><span class="line">-rw-r----- 1 wazuh wazuh 234350 Jan  2 00:00 ossec-archive-01.json.gz</span><br><span class="line">-rw-r----- 1 wazuh wazuh    350 Jan  2 00:00 ossec-archive-01.json.sum</span><br><span class="line">-rw-r----- 1 wazuh wazuh 176221 Jan  2 00:00 ossec-archive-01.log.gz</span><br><span class="line">-rw-r----- 1 wazuh wazuh    346 Jan  2 00:00 ossec-archive-01.log.sum</span><br><span class="line">-rw-r----- 1 wazuh wazuh 224320 Jan  2 00:00 ossec-archive-02.json.gz</span><br><span class="line">-rw-r----- 1 wazuh wazuh    350 Jan  2 00:00 ossec-archive-02.json.sum</span><br><span class="line">-rw-r----- 1 wazuh wazuh 151642 Jan  2 00:00 ossec-archive-02.log.gz</span><br><span class="line">-rw-r----- 1 wazuh wazuh    346 Jan  2 00:00 ossec-archive-02.log.sum</span><br><span class="line">-rw-r----- 1 wazuh wazuh 315251 Jan  2 00:00 ossec-archive-03.json.gz</span><br><span class="line">-rw-r----- 1 wazuh wazuh    350 Jan  2 00:00 ossec-archive-03.json.sum</span><br><span class="line">-rw-r----- 1 wazuh wazuh 156296 Jan  2 00:00 ossec-archive-03.log.gz</span><br><span class="line">-rw-r----- 1 wazuh wazuh    346 Jan  2 00:00 ossec-archive-03.log.sum</span><br></pre></td></tr></table></figure>
+
+<p>根据Wazuh服务器的存储容量,建议轮换和备份存档文件。通过使用cron作业,您可以轻松管理仅在服务器上本地保留存档文件的特定时间窗口,例如过去一年或过去三个月。（应该是通过cron定期删除过去一年或者过去三个月的文件）</p>
+<p>也可以选择不存储存档文件，而只需依靠 Wazuh 索引器进行存档存储。</p>
+<p>如果您定期运行Wazuh索引器快照备份和/或拥有用于高可用性的分片副本的多节点Wazuh索引器集群,则此替代方案可能更可取。</p>
+<p>您甚至可以使用cron作业将快照索引移动到最终的数据存储服务器并使用MD5、SHA1和SHA256哈希算法对其进行签名。</p>
+<h1 id="安装Wazuh管理端"><a href="#安装Wazuh管理端" class="headerlink" title="安装Wazuh管理端"></a>安装Wazuh管理端</h1><p>注：下面以Ubuntu 20.04为例</p>
+<p>下载并运行 Wazuh 安装助手</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -sO https://packages.wazuh.com/4.6/wazuh-install.sh &amp;&amp; sudo bash ./wazuh-install.sh -a</span><br></pre></td></tr></table></figure>
+
+<p>注意：假如不能连接GitHub，可以将<code>https://raw.githubusercontent.com/wazuh/wazuh/${source_branch}/extensions/elasticsearch/7.x/wazuh-template.json</code>提前下载到自己服务器，再修改脚本的地址</p>
+<p>下面表示安装成功</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">INFO: --- Summary ---</span><br><span class="line">INFO: You can access the web interface https://&lt;wazuh-dashboard-ip&gt;</span><br><span class="line">    User: admin</span><br><span class="line">    Password: &lt;ADMIN_PASSWORD&gt;</span><br><span class="line">INFO: Installation finished.</span><br></pre></td></tr></table></figure>
+
+<p>可以在wazuh-install-files.tar中的wazuh-passwords.txt文件中找到所有Wazuh索引器和Wazuh API用户的密码。要打印它们,请运行以下命令:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo tar -O -xvf wazuh-install-files.tar wazuh-install-files/wazuh-passwords.txt</span><br></pre></td></tr></table></figure>
+
+<h1 id="安装agent代理"><a href="#安装agent代理" class="headerlink" title="安装agent代理"></a>安装agent代理</h1><h2 id="linux"><a href="#linux" class="headerlink" title="linux"></a>linux</h2><p>安装了服务端登录，点击添加agent，就会给出命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-agent/wazuh-agent_4.6.0-1_amd64.deb &amp;&amp; sudo WAZUH_MANAGER=&apos;192.168.X.X&apos; dpkg -i ./wazuh-agent_4.6.0-1_amd64.deb</span><br></pre></td></tr></table></figure>
+
+<p>启动agent服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl daemon-reload</span><br><span class="line">sudo systemctl enable wazuh-agent</span><br><span class="line">sudo systemctl start wazuh-agent</span><br></pre></td></tr></table></figure>
+
+<h2 id="windows"><a href="#windows" class="headerlink" title="windows"></a>windows</h2><p>powershell管理员运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Invoke-WebRequest -Uri https://packages.wazuh.com/4.x/windows/wazuh-agent-4.6.0-1.msi -OutFile $&#123;env.tmp&#125;\wazuh-agent; msiexec.exe /i $&#123;env.tmp&#125;\wazuh-agent /q WAZUH_MANAGER=&apos;192.168.X.X&apos; WAZUH_AGENT_NAME=&apos;FuzzManager&apos; WAZUH_REGISTRATION_SERVER=&apos;192.168.X.X&apos; </span><br><span class="line">NET START WazuhSvc</span><br></pre></td></tr></table></figure>
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://documentation.wazuh.com/current/index.html" target="_blank" rel="noopener">https://documentation.wazuh.com/current/index.html</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>自愿打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://paypic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://paypic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://paypic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2023/11/20/wazuh文档学习：搭建实践/" title="wazuh文档学习：搭建实践">https://www.giantbranch.cn/2023/11/20/wazuh文档学习：搭建实践/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/xdr/" rel="tag"># xdr</a>
+          
+            <a href="/tags/wazuh/" rel="tag"># wazuh</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2023/11/18/OSSEC文档阅读学习实践/" rel="next" title="OSSEC文档阅读学习实践">
+                <i class="fa fa-chevron-left"></i> OSSEC文档阅读学习实践
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2023/11/23/Xvfb的使用与vnc连接/" rel="prev" title="Xvfb的使用与vnc连接">
+                Xvfb的使用与vnc连接 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">176</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">220</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#组件"><span class="nav-number">2.</span> <span class="nav-text">组件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#架构"><span class="nav-number">3.</span> <span class="nav-text">架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Wazuh代理与Wazuh服务器之间的通信"><span class="nav-number">3.1.</span> <span class="nav-text">Wazuh代理与Wazuh服务器之间的通信</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Wazuh服务器与Wazuh索引器之间的通信"><span class="nav-number">3.2.</span> <span class="nav-text">Wazuh服务器与Wazuh索引器之间的通信</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#下面是Wazuh组件的默认端口"><span class="nav-number">3.3.</span> <span class="nav-text">下面是Wazuh组件的默认端口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Archival-data-storage"><span class="nav-number">3.4.</span> <span class="nav-text">Archival data storage</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#安装Wazuh管理端"><span class="nav-number">4.</span> <span class="nav-text">安装Wazuh管理端</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#安装agent代理"><span class="nav-number">5.</span> <span class="nav-text">安装agent代理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#linux"><span class="nav-number">5.1.</span> <span class="nav-text">linux</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#windows"><span class="nav-number">5.2.</span> <span class="nav-text">windows</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch(simplelogin.irjqx@aleeas.com)</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/">粤ICP备16051028号-1</a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2023/11/20/wazuh文档学习：搭建实践/';
+          this.page.identifier = '2023/11/20/wazuh文档学习：搭建实践/';
+          this.page.title = 'wazuh文档学习：搭建实践';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -405,7 +405,7 @@
 <ol start="2">
 <li>去源码的./brower/config目录复制mozconfig文件到源码根目录，之后打开文件添加如下配置（其实直接在源码根目录直接新建就可以了感觉）</li>
 </ol>
-<figure class="highlight moonscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ac_add_options --enable-application=browser</span><br><span class="line">export MOZ_DEBUG_SYMBOLS=1</span><br><span class="line">ac_add_options --enable-debug</span><br><span class="line">ac_add_options --disable-webgl</span><br></pre></td></tr></table></figure>
+<figure class="highlight moonscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ac_add_options <span class="comment">--enable-application=browser</span></span><br><span class="line"><span class="keyword">export</span> MOZ_DEBUG_SYMBOLS=<span class="number">1</span></span><br><span class="line">ac_add_options <span class="comment">--enable-debug</span></span><br><span class="line">ac_add_options <span class="comment">--disable-webgl</span></span><br></pre></td></tr></table></figure>
 
 <p>–disable-webgl的话是当时发现编译不了添加的</p>
 <p><img src="http://pic.giantbranch.cn/1507714054507.jpg" alt></p>
@@ -760,9 +760,9 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+        <div class="copyright"> 2017 &mdash; <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
-    <i class="fa fa-user"></i>
+    <i class="fa fa-user"></i> 
   </span>
   <span class="author" itemprop="copyrightHolder">giantbranch(simplelogin.irjqx@aleeas.com)</span>
 

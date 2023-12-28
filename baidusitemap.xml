@@ -160,13 +160,13 @@
     <loc>https://www.giantbranch.cn/2020/09/08/%E9%80%9A%E8%BF%87%E7%BC%96%E8%AF%91%E5%99%A8%E8%BD%AC%E6%8D%A2(llvm%20pass)%E8%A7%84%E9%81%BF%E6%A8%A1%E7%B3%8A%E6%B5%8B%E8%AF%95%E7%9A%84%E4%B8%80%E4%BA%9B%E9%9A%9C%E7%A2%8D/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
-    <loc>https://www.giantbranch.cn/2018/01/17/%E9%82%A3%E4%BA%9B%E4%BD%A0%E7%94%A8%E7%9A%84%E5%88%B0%E7%9A%84C++%E6%B3%A8%E5%86%8C%E8%A1%A8%E6%93%8D%E4%BD%9C/</loc>
-    <lastmod>2023-10-13</lastmod>
-  </url>  <url>
     <loc>https://www.giantbranch.cn/2018/05/08/%E9%93%81%E4%B8%89%E6%95%B0%E6%8D%AE%E8%B5%9B+%E4%BC%81%E4%B8%9A%E8%B5%9B%E5%BF%85%E7%9C%8B%E5%BF%85%E6%94%B6%E8%97%8F%E5%BF%85%E5%AE%9E%E8%B7%B5%E7%9A%84%E6%96%87%E7%AB%A0/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
     <loc>https://www.giantbranch.cn/2017/10/13/%E9%A9%B1%E5%8A%A8%E7%BC%96%E7%A8%8B%E2%80%94%E2%80%94%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%8E%E9%93%BE%E8%A1%A8/</loc>
+    <lastmod>2023-10-13</lastmod>
+  </url>  <url>
+    <loc>https://www.giantbranch.cn/2018/01/17/%E9%82%A3%E4%BA%9B%E4%BD%A0%E7%94%A8%E7%9A%84%E5%88%B0%E7%9A%84C++%E6%B3%A8%E5%86%8C%E8%A1%A8%E6%93%8D%E4%BD%9C/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
     <loc>https://www.giantbranch.cn/2018/09/17/ctf%20pwn%E9%A2%98%E7%9B%AE%E7%9A%84%E9%83%A8%E7%BD%B2/</loc>
@@ -187,6 +187,9 @@
     <loc>https://www.giantbranch.cn/2018/08/13/house%20of%20force%20%E2%80%94%E2%80%94%20BCTF%202016-bcloud/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
+    <loc>https://www.giantbranch.cn/2017/09/29/how2heap%E5%AD%A6%E4%B9%A0/</loc>
+    <lastmod>2023-10-13</lastmod>
+  </url>  <url>
     <loc>https://www.giantbranch.cn/2021/07/09/libdislocator%E5%8E%9F%E7%90%86%E5%8F%8Aafl++%E7%9A%84%E6%9B%B4%E6%96%B0/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
@@ -197,9 +200,6 @@
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
     <loc>https://www.giantbranch.cn/2023/06/29/pastis%E6%A0%B7%E6%9C%AC%E5%90%8C%E6%AD%A5%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB%E8%AE%B0%E5%BD%95/</loc>
-    <lastmod>2023-10-13</lastmod>
-  </url>  <url>
-    <loc>https://www.giantbranch.cn/2017/09/29/how2heap%E5%AD%A6%E4%B9%A0/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
     <loc>https://www.giantbranch.cn/2017/12/18/rop%20emporium%20challenges%20wp/</loc>
@@ -259,10 +259,10 @@
     <loc>https://www.giantbranch.cn/2018/01/21/%E4%BD%BF%E7%94%A8%E8%BF%9C%E7%A8%8B%E7%BA%BF%E7%A8%8B%E6%B3%A8%E5%85%A5DLL/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
-    <loc>https://www.giantbranch.cn/2018/07/25/%E5%85%A8%E7%AB%AF%E5%8F%A3%E7%9B%91%E6%8E%A7%E7%9A%84%E5%AE%9E%E7%8E%B0/</loc>
+    <loc>https://www.giantbranch.cn/2017/08/24/%E5%86%85%E6%A0%B8%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA%E5%AD%A6%E4%B9%A0%E4%B9%8B%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%86%85%E6%A0%B8%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA%E6%8F%90%E6%9D%83/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
-    <loc>https://www.giantbranch.cn/2017/08/24/%E5%86%85%E6%A0%B8%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA%E5%AD%A6%E4%B9%A0%E4%B9%8B%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%86%85%E6%A0%B8%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA%E6%8F%90%E6%9D%83/</loc>
+    <loc>https://www.giantbranch.cn/2018/07/25/%E5%85%A8%E7%AB%AF%E5%8F%A3%E7%9B%91%E6%8E%A7%E7%9A%84%E5%AE%9E%E7%8E%B0/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
     <loc>https://www.giantbranch.cn/2020/08/21/%E5%86%B0%E8%9D%8E%20Behinder_v3.0%20Beta%203%20%E9%87%8D%E7%82%B9%E6%9B%B4%E6%96%B0%E7%AE%80%E6%9E%90/</loc>
@@ -337,6 +337,9 @@
     <loc>https://www.giantbranch.cn/2019/03/01/Chrome%E6%B5%8F%E8%A7%88%E5%99%A8%E6%89%93%E5%BC%80PDF%E6%96%87%E4%BB%B6%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E%E7%AE%80%E6%9E%90/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
+    <loc>https://www.giantbranch.cn/2021/01/25/ClusterFuzz%E7%9A%84bot%E6%BA%90%E7%A0%81(fuzz%20engine%E7%9A%84%E9%80%89%E6%8B%A9%E4%B8%8E%E8%B0%83%E5%BA%A6%E4%B9%8Blibfuzzer)%E9%98%85%E8%AF%BB/</loc>
+    <lastmod>2023-10-13</lastmod>
+  </url>  <url>
     <loc>https://www.giantbranch.cn/2020/05/22/ClusterFuzz%E7%9A%84bot%E6%BA%90%E7%A0%81(fuzz%20task)%E9%98%85%E8%AF%BB/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
@@ -344,9 +347,6 @@
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
     <loc>https://www.giantbranch.cn/2018/05/13/DEFCON%20China%20%E5%8F%82%E4%BC%9A%E6%84%9F%E5%8F%97%E4%B8%8E%E8%A6%81%E7%82%B9%E8%AE%B0%E5%BD%95/</loc>
-    <lastmod>2023-10-13</lastmod>
-  </url>  <url>
-    <loc>https://www.giantbranch.cn/2021/01/25/ClusterFuzz%E7%9A%84bot%E6%BA%90%E7%A0%81(fuzz%20engine%E7%9A%84%E9%80%89%E6%8B%A9%E4%B8%8E%E8%B0%83%E5%BA%A6%E4%B9%8Blibfuzzer)%E9%98%85%E8%AF%BB/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
     <loc>https://www.giantbranch.cn/2017/08/26/Educatedscholar%E5%88%A9%E7%94%A8%E7%9A%84%E6%BC%8F%E6%B4%9Ems09-050%E5%88%86%E6%9E%90%E5%8F%8A%E5%85%B6%E5%88%A9%E7%94%A8%E7%9A%84shellcode%E5%88%86%E6%9E%90%E5%8F%8A%E4%B8%8Emsf%E5%88%A9%E7%94%A8%E5%AF%B9%E6%AF%94/</loc>
@@ -404,6 +404,9 @@
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
     <loc>https://www.giantbranch.cn/2017/12/20/3DSCTF%20PWN%20%E2%80%94%E2%80%94%20Mr.%20Robof/</loc>
+    <lastmod>2023-10-13</lastmod>
+  </url>  <url>
+    <loc>https://www.giantbranch.cn/2017/12/31/3DSCTF%20RE%20Scared%20Flag/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
     <loc>https://www.giantbranch.cn/2017/12/17/3dsctf%20Malware%20%E7%AC%AC%E4%B8%89%E9%A2%98%E5%BC%80%E6%9C%BA-%E9%94%81%E6%9C%BA-%E5%88%86%E6%9E%90%E5%8F%8A%E6%81%A2%E5%A4%8D%E6%96%B9%E6%B3%95/</loc>
@@ -517,16 +520,13 @@
     <loc>https://www.giantbranch.cn/2017/10/19/CVE-2017-11780%E8%A1%A5%E4%B8%81%E5%AF%B9%E6%AF%94/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
-    <loc>https://www.giantbranch.cn/2019/09/29/CVE-2019-0708%20%E5%BE%AE%E8%BD%AF%E8%BF%9C%E7%A8%8B%E6%A1%8C%E9%9D%A2%E6%9C%8D%E5%8A%A1%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E4%B8%8E%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/</loc>
-    <lastmod>2023-10-13</lastmod>
-  </url>  <url>
     <loc>https://www.giantbranch.cn/2019/05/15/CVE-2019-0708%20%E5%BE%AE%E8%BD%AF%E8%BF%9C%E7%A8%8B%E6%A1%8C%E9%9D%A2%E6%9C%8D%E5%8A%A1%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E4%B9%8B%E8%A1%A5%E4%B8%81%E5%88%86%E6%9E%90/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
-    <loc>https://www.giantbranch.cn/2019/06/19/CVE-2019-5736%20docker%20escape%20%E7%AE%80%E8%A6%81%E5%88%86%E6%9E%90/</loc>
+    <loc>https://www.giantbranch.cn/2019/09/29/CVE-2019-0708%20%E5%BE%AE%E8%BD%AF%E8%BF%9C%E7%A8%8B%E6%A1%8C%E9%9D%A2%E6%9C%8D%E5%8A%A1%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E4%B8%8E%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>  <url>
-    <loc>https://www.giantbranch.cn/2017/12/31/3DSCTF%20RE%20Scared%20Flag/</loc>
+    <loc>https://www.giantbranch.cn/2019/06/19/CVE-2019-5736%20docker%20escape%20%E7%AE%80%E8%A6%81%E5%88%86%E6%9E%90/</loc>
     <lastmod>2023-10-13</lastmod>
   </url>
 </urlset>

@@ -390,7 +390,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pDosHeader = (PIMAGE_DOS_HEADER)pFile;  </span><br><span class="line">pNtHeader = (PIMAGE_NT_HEADERS)((PCHAR)pFile + pDosHeader-&gt;e_lfanew);   // e_lfanew + 0x3c   </span><br><span class="line"></span><br><span class="line">dwImageBase = pNtHeader-&gt;OptionalHeader.ImageBase;  </span><br><span class="line">dwDiffer = dwImageBase - BaseAddr;  // pay attention to the order</span><br></pre></td></tr></table></figure>
 
 <p>获取重定位表RVA，并计算出File Offset  </p>
-<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> // Get reloc table RVA  </span><br><span class="line">PIMAGE_DATA_DIRECTORY pRelocTable = (PIMAGE_DATA_DIRECTORY)pNtHeader-&gt;OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress;   </span><br><span class="line"></span><br><span class="line">// Get reloc table File Offset  </span><br><span class="line">pRelocBlock = (PIMAGE_RELOCATION)( (PCHAR)pFile + RvaToFileOff( pFile, (DWORD)pRelocTable ) ); // the pRelocTable is file offset?</span><br></pre></td></tr></table></figure>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">// Get reloc table RVA  </span></span><br><span class="line">PIMAGE_DATA_DIRECTORY <span class="function"><span class="title">pRelocTable</span> = (PIMAGE_DATA_DIRECTORY)pNtHeader-&gt;</span>OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress;   </span><br><span class="line"></span><br><span class="line"><span class="comment">// Get reloc table File Offset  </span></span><br><span class="line">pRelocBlock = (PIMAGE_RELOCATION)( (PCHAR)pFile + RvaToFileOff( pFile, (DWORD)pRelocTable ) ); <span class="comment">// the pRelocTable is file offset?</span></span><br></pre></td></tr></table></figure>
 
 <p>之后根据重定位表循环计算真正的地址，具体如下</p>
 <p>1、一次获取一条记录，获取其RVA，算出File Offset<br>2、通过与pRelocAddr相加得到储存原始地址的地方（即要修正的地址）<br>3、将这个要修正的地址减去之前算出来的基址的差别即可<br>4、最后将结果写回文件即可</p>
@@ -739,9 +739,9 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+        <div class="copyright"> 2017 &mdash; <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
-    <i class="fa fa-user"></i>
+    <i class="fa fa-user"></i> 
   </span>
   <span class="author" itemprop="copyrightHolder">giantbranch(simplelogin.irjqx@aleeas.com)</span>
 

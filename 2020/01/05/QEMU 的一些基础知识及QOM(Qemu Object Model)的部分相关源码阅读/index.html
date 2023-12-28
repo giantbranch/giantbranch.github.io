@@ -595,8 +595,7 @@
 <p>先看<code>qemu_opts_foreach</code>函数的定义，就是对于@list的每个成员——member，调用<code>@func(@opaque, member, @errp)</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int qemu_opts_foreach(QemuOptsList *list, qemu_opts_loopfunc func,</span><br><span class="line">                      void *opaque, Error **errp)</span><br></pre></td></tr></table></figure>
 
-<p>当然之前还调用上面的之前是调用了下面两个，看了下default_driver_check就是将<code>qemu_opt_get(opts, &quot;driver&quot;)</code>获取到的driver与<code>default_list[i].driver</code>中的比较，相等就将<code>*(default_list[i].flag) = 0;</code>，<code>default_list</code>可以看这：<code>https://github.com/qemu/qemu/blob/dd5b0f95490883cd8bc7d070db8de70d5c979cbc/vl.c#L220:3</code>；
-而第二个<code>device_help_func</code>实际里面调用了<code>qdev_device_help(opts);</code>，简单看了下<code>qdev_device_help</code>，首先调用<code>driver = qemu_opt_get(opts, &quot;driver&quot;);</code>，接下来就是输出那个driver的help信息，还有那些option什么的：<code>https://github.com/qemu/qemu/blob/dd5b0f95490883cd8bc7d070db8de70d5c979cbc/qdev-monitor.c#L253:5</code></p>
+<p>当然之前还调用上面的之前是调用了下面两个，看了下default_driver_check就是将<code>qemu_opt_get(opts, &quot;driver&quot;)</code>获取到的driver与<code>default_list[i].driver</code>中的比较，相等就将<code>*(default_list[i].flag) = 0;</code>，<code>default_list</code>可以看这：<code>https://github.com/qemu/qemu/blob/dd5b0f95490883cd8bc7d070db8de70d5c979cbc/vl.c#L220:3</code>；<br>而第二个<code>device_help_func</code>实际里面调用了<code>qdev_device_help(opts);</code>，简单看了下<code>qdev_device_help</code>，首先调用<code>driver = qemu_opt_get(opts, &quot;driver&quot;);</code>，接下来就是输出那个driver的help信息，还有那些option什么的：<code>https://github.com/qemu/qemu/blob/dd5b0f95490883cd8bc7d070db8de70d5c979cbc/qdev-monitor.c#L253:5</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">qemu_opts_foreach(qemu_find_opts(&quot;device&quot;),</span><br><span class="line">                      default_driver_check, NULL, NULL);</span><br><span class="line">qemu_opts_foreach(qemu_find_opts(&quot;device&quot;),</span><br><span class="line">                          device_help_func, NULL, NULL)</span><br></pre></td></tr></table></figure>
 
 <p>扯远了，还是回到<code>device_init_func</code>，里面调用<code>qdev_device_add</code></p>
@@ -1038,9 +1037,9 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+        <div class="copyright"> 2017 &mdash; <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
-    <i class="fa fa-user"></i>
+    <i class="fa fa-user"></i> 
   </span>
   <span class="author" itemprop="copyrightHolder">giantbranch(simplelogin.irjqx@aleeas.com)</span>
 

@@ -406,7 +406,7 @@
 <p><img src="http://pic.giantbranch.cn/pic/1513253890912.jpg" alt></p>
 <h1 id="在-Tmux-的会话间切换"><a href="#在-Tmux-的会话间切换" class="headerlink" title="在 Tmux 的会话间切换"></a>在 Tmux 的会话间切换</h1><p>Ctrl-b 之后按 s</p>
 <h1 id="关闭会话什么的"><a href="#关闭会话什么的" class="headerlink" title="关闭会话什么的"></a>关闭会话什么的</h1><p>kill-pane, kill-server, kill-session, kill-window</p>
-<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root<span class="variable">@kali</span><span class="symbol">:~</span><span class="comment"># tmux ls</span></span><br><span class="line"><span class="number">3</span>: <span class="number">1</span> windows (created Thu Dec <span class="number">14</span> <span class="number">07</span><span class="symbol">:</span><span class="number">38</span><span class="symbol">:</span><span class="number">45</span> <span class="number">2017</span>) [<span class="number">145</span>x31]</span><br><span class="line">root<span class="variable">@kali</span><span class="symbol">:~</span><span class="comment"># tmux kill-session -t 3</span></span><br><span class="line">root<span class="variable">@kali</span><span class="symbol">:~</span><span class="comment"># tmux ls</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root<span class="variable">@kali</span><span class="symbol">:~</span><span class="comment"># tmux ls</span></span><br><span class="line"><span class="number">3</span>: <span class="number">1</span> windows (created Thu Dec <span class="number">14 07</span><span class="symbol">:</span><span class="number">38:45</span> <span class="number">2017</span>) [<span class="number">145x31</span>]</span><br><span class="line">root<span class="variable">@kali</span><span class="symbol">:~</span><span class="comment"># tmux kill-session -t 3</span></span><br><span class="line">root<span class="variable">@kali</span><span class="symbol">:~</span><span class="comment"># tmux ls</span></span><br></pre></td></tr></table></figure>
 
 <p>只是关闭窗口</p>
 <figure class="highlight tap"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~<span class="comment"># tmux ls</span></span><br><span class="line">0:<span class="number"> 1 </span>windows (created Thu Dec<span class="number"> 14 </span>07:16:25 2017) [145x31] (attached)</span><br><span class="line">1:<span class="number"> 1 </span>windows (created Thu Dec<span class="number"> 14 </span>07:20:22 2017) [145x31]</span><br><span class="line">root@kali:~<span class="comment"># tmux kill-window -t 1</span></span><br><span class="line">root@kali:~<span class="comment"># tmux ls</span></span><br><span class="line">0:<span class="number"> 1 </span>windows (created Thu Dec<span class="number"> 14 </span>07:16:25 2017) [145x31] (attached)</span><br></pre></td></tr></table></figure>
@@ -753,9 +753,9 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2023</span>
+        <div class="copyright"> 2017 &mdash; <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
-    <i class="fa fa-user"></i>
+    <i class="fa fa-user"></i> 
   </span>
   <span class="author" itemprop="copyrightHolder">giantbranch(simplelogin.irjqx@aleeas.com)</span>
 

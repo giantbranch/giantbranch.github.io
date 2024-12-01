@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="安卓安全,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="注：本次学习来源于：52pojie的正己的《安卓逆向这档事》，部分知识来源于查资料或者chatgpt等aihttps://www.52pojie.cn/thread-1695141-1-1.htmlhttps://github.com/ZJ595/AndroidReversehttps://aliyundrive.com/s/TJoKMK6du6x 关于：JVM、Dalvik 和 ART JVM（">
+<meta name="keywords" content="安卓安全">
+<meta property="og:type" content="article">
+<meta property="og:title" content="重学安卓逆向：初识smali，vip终结者">
+<meta property="og:url" content="https://www.giantbranch.cn/2024/01/21/重学安卓逆向：初识smali，vip终结者/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="注：本次学习来源于：52pojie的正己的《安卓逆向这档事》，部分知识来源于查资料或者chatgpt等aihttps://www.52pojie.cn/thread-1695141-1-1.htmlhttps://github.com/ZJ595/AndroidReversehttps://aliyundrive.com/s/TJoKMK6du6x 关于：JVM、Dalvik 和 ART JVM（">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1705813483901.png">
+<meta property="og:updated_time" content="2024-12-01T01:48:12.478Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="重学安卓逆向：初识smali，vip终结者">
+<meta name="twitter:description" content="注：本次学习来源于：52pojie的正己的《安卓逆向这档事》，部分知识来源于查资料或者chatgpt等aihttps://www.52pojie.cn/thread-1695141-1-1.htmlhttps://github.com/ZJ595/AndroidReversehttps://aliyundrive.com/s/TJoKMK6du6x 关于：JVM、Dalvik 和 ART JVM（">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1705813483901.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2024/01/21/重学安卓逆向：初识smali，vip终结者/">
+
+
+
+
+
+  <title>重学安卓逆向：初识smali，vip终结者 | giantbranch's blog</title>
+  
+
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SQ8CHXJB60"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SQ8CHXJB60');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-vulfound">
+          <a href="/vulfound/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br>
+            
+            漏洞挖掘
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2024/01/21/重学安卓逆向：初识smali，vip终结者/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">重学安卓逆向：初识smali，vip终结者</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2024-01-21T00:00:00+08:00">
+                2024-01-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/小书匠-日记-2024-01/" itemprop="url" rel="index">
+                    <span itemprop="name">/小书匠/日记/2024-01</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2024/01/21/重学安卓逆向：初识smali，vip终结者/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2024/01/21/重学安卓逆向：初识smali，vip终结者/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>注：本次学习来源于：52pojie的正己的《安卓逆向这档事》，部分知识来源于查资料或者chatgpt等ai</strong><br><a href="https://www.52pojie.cn/thread-1695141-1-1.html" target="_blank" rel="noopener">https://www.52pojie.cn/thread-1695141-1-1.html</a><br><a href="https://github.com/ZJ595/AndroidReverse" target="_blank" rel="noopener">https://github.com/ZJ595/AndroidReverse</a><br><a href="https://aliyundrive.com/s/TJoKMK6du6x" target="_blank" rel="noopener">https://aliyundrive.com/s/TJoKMK6du6x</a></p>
+<h1 id="关于：JVM、Dalvik-和-ART"><a href="#关于：JVM、Dalvik-和-ART" class="headerlink" title="关于：JVM、Dalvik 和 ART"></a>关于：JVM、Dalvik 和 ART</h1><ol>
+<li><p><strong>JVM（Java Virtual Machine）：</strong></p>
+<ul>
+<li><strong>定义：</strong> Java 虚拟机是 Java 程序的运行环境，它提供了一个抽象的计算平台，使得 Java 程序能够在不同的硬件和操作系统上运行，实现了“一次编写，到处运行”的理念。</li>
+<li><strong>工作原理：</strong> JVM 接收 Java 编译器生成的字节码，并将其翻译成本地机器码，以在特定的硬件和操作系统上执行 Java 程序。</li>
+</ul>
+</li>
+<li><p><strong>Dalvik：</strong></p>
+<ul>
+<li><strong>定义：</strong> Dalvik 是 Google Android 操作系统上的一个虚拟机，用于执行 Android 应用程序的字节码。</li>
+<li><strong>工作原理：</strong> Dalvik 虚拟机使用基于寄存器的架构，与传统的基于堆栈的 Java 虚拟机（如标准的 JVM）有所不同。Android应用程序的代码首先会被编译成Java字节码（.class文件），然后通过Android开发工具链中的工具将Java字节码转换为Dalvik字节码（.dex文件），然后在 Android 设备上执行。</li>
+</ul>
+</li>
+<li><p><strong>ART（Android Runtime）：</strong></p>
+<ul>
+<li><strong>定义：</strong> ART 是 Android 系统中的下一代运行时环境，取代了 Dalvik。ART 在 Android 5.0（Lollipop）及以后的版本中被引入为默认的运行时环境。</li>
+<li><strong>工作原理：</strong> 与 Dalvik 不同，ART 在应用安装时将字节码转换为本地机器码（Ahead-of-Time Compilation，AOT 编译），而不是在运行时即时编译。这有助于提高应用程序的性能，并减少在运行时的 CPU 和内存使用。ART 的引入带来了更好的性能、更低的功耗和更好的垃圾回收机制。</li>
+</ul>
+</li>
+</ol>
+<p>总体而言，JVM 是 Java 平台的标准虚拟机，而 Dalvik 和 ART 是针对 Android 平台的虚拟机和运行时环境。ART 的引入是为了提高 Android 设备上应用程序的性能和效率。</p>
+<p>Android Runtime（ART）在 Android 应用程序安装时，将应用程序的字节码转换为本地机器代码，这一过程称为”Ahead-of-Time Compilation”（AOT 编译）。在 ART 中，这种预先编译的方式有助于提高 Android 应用程序的性能，并减少在运行时的 CPU 和内存使用。</p>
+<p>具体步骤如下：</p>
+<ol>
+<li><p><strong>AOT 编译：</strong> 在 Android 应用程序安装时，ART 将 Dalvik 字节码转换为本地机器代码。这与 Dalvik 虚拟机的即时编译（Just-In-Time Compilation，JIT 编译）不同，JIT 编译是在应用程序运行时才将字节码转换为本地机器代码。</p>
+</li>
+<li><p><strong>本地机器代码：</strong> 转换后的本地机器代码以及应用程序的其他资源被存储在设备上，这样在应用程序运行时就无需再进行实时的字节码到机器代码的转换，提高了应用程序的启动速度和执行效率。</p>
+</li>
+<li><p><strong>执行：</strong> 在应用程序运行时，Android 系统执行已经转换为本地机器代码的应用程序，而不需要再解释和执行 Dalvik 字节码。</p>
+</li>
+</ol>
+<p>这种预先编译的方式是 ART 的一个重要特点，相较于 Dalvik 的即时编译，它带来了更好的性能、更低的功耗以及更好的垃圾回收机制。这也是为什么 Android 5.0（Lollipop）及以后版本中默认采用 ART 作为运行时环境的原因。</p>
+<h1 id="smali及语法"><a href="#smali及语法" class="headerlink" title="smali及语法"></a>smali及语法</h1><p>Smali 是一种与 Dalvik 虚拟机（现在逐渐被 ART 取代）相关的汇编语言，用于编写 Android 应用程序的 DEX 文件（Dalvik Executable）的人可读格式。DEX 文件包含 Dalvik 字节码，它是 Android 应用程序在运行时由 Dalvik 或 ART 运行时环境执行的二进制格式。</p>
+<p>Smali语言允许开发者以文本形式编写Dalvik字节码的汇编代码。通过Smali，开发者可以查看和理解应用程序的Dalvik字节码，并进行反汇编、修改和分析。它提供了一种可读性更强、更易于理解和编辑的方式来操作Dalvik字节码。</p>
+<p>Smali代码可以使用特定的工具（如smali/baksmali）进行转换，从Dalvik字节码到Smali代码的反汇编，以及从Smali代码到Dalvik字节码的汇编。</p>
+<p><strong>Smali的基础语法：</strong></p>
+<ol>
+<li><p><strong>基本结构：</strong> Smali 代码以 <code>.smali</code> 为扩展名，每个 <code>.smali</code> 文件通常对应一个类（Class）的 Dalvik 字节码。</p>
+</li>
+<li><p><strong>注释：</strong> 注释以 <code>#</code> 开头，可以是单行注释或放在行末。例如：</p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 这是一个单行注释</span></span><br><span class="line">const v0, 0x42  <span class="comment"># 这是一条带有行末注释的指令</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>寄存器：</strong> Dalvik 虚拟机使用寄存器进行操作，Smali 中的寄存器表示为 <code>vN</code>，其中 N 是一个整数。例如：</p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">const v0, 0x42  <span class="comment"># 将常量 0x42 存储到寄存器 v0 中</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>指令：</strong> 每一行都包含一个 Dalvik 字节码指令。指令的格式一般为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;指令助记符&gt; &lt;目标寄存器&gt;, &lt;操作数1&gt;, &lt;操作数2&gt;, ...</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">add-int v1, v2, v3  <span class="comment"># 将 v2 和 v3 寄存器中的整数相加，结果存入 v1</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>标签：</strong> 标签用于标记代码的跳转目标，以冒号结尾。例如：</p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">:start</span><br><span class="line">const v0, 0x42</span><br><span class="line">goto<span class="keyword"> :start</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>方法定义：</strong> 方法定义包含方法的修饰符、返回值类型、方法名和参数列表。方法体用花括号包裹。例如：</p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">.method</span><span class="keyword"> public</span><span class="keyword"> static</span> add(II)I</span><br><span class="line"><span class="keyword">   .registers</span> 2</span><br><span class="line">  <span class="built_in"> add-int </span>v0, p0, p1</span><br><span class="line">  <span class="built_in"> return </span>v0</span><br><span class="line"><span class="keyword">.end method</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>字段引用：</strong> 引用字段时使用 <code>sfield</code>（静态字段）或 <code>iget</code>（实例字段）指令。例如：</p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sget-object v0, <span class="class">Lcom/example/Class;</span>-&gt;staticField:<span class="class">Ljava/lang/String;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>方法调用：</strong> 使用 <code>invoke</code> 指令调用方法，根据方法类型选择 <code>invoke-static</code>、<code>invoke-direct</code>、<code>invoke-virtual</code> 等。例如：</p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">invoke-static &#123;v0, v1&#125;, <span class="class">Lcom/example/Class;</span>-&gt;add(II)I</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<p>这只是 Smali 语法的一小部分，更详细的语法规则和指令集可以在 Smali 的官方文档或其他资源中找到。理解 Smali 语法对于进行 Android 应用程序的逆向工程和分析非常有帮助。</p>
+<p>下面列出一些关键字及数字类型等</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>注释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>.class</td>
+<td>类名</td>
+</tr>
+<tr>
+<td>.super</td>
+<td>父类名，继承的上级类名名称</td>
+</tr>
+<tr>
+<td>.source</td>
+<td>源名</td>
+</tr>
+<tr>
+<td>.field</td>
+<td>变量</td>
+</tr>
+<tr>
+<td>.method</td>
+<td>方法名</td>
+</tr>
+<tr>
+<td>.register</td>
+<td>寄存器</td>
+</tr>
+<tr>
+<td>.end method</td>
+<td>方法名的结束</td>
+</tr>
+<tr>
+<td>public</td>
+<td>公有</td>
+</tr>
+<tr>
+<td>protected</td>
+<td>半公开，只有同一家人才能用</td>
+</tr>
+<tr>
+<td>private</td>
+<td>私有，只能自己使用</td>
+</tr>
+<tr>
+<td>.parameter</td>
+<td>方法参数</td>
+</tr>
+<tr>
+<td>.prologue</td>
+<td>方法开始</td>
+</tr>
+<tr>
+<td>.line xxx</td>
+<td>位于第xxx行</td>
+</tr>
+</tbody></table>
+<p>数据类型对应</p>
+<table>
+<thead>
+<tr>
+<th>smali类型</th>
+<th>java类型</th>
+<th>注释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>V</td>
+<td>void</td>
+<td>无返回值</td>
+</tr>
+<tr>
+<td>Z</td>
+<td>boolean</td>
+<td>布尔值类型，返回0或1</td>
+</tr>
+<tr>
+<td>B</td>
+<td>byte</td>
+<td>字节类型，返回字节</td>
+</tr>
+<tr>
+<td>S</td>
+<td>short</td>
+<td>短整数类型，返回数字</td>
+</tr>
+<tr>
+<td>C</td>
+<td>char</td>
+<td>字符类型，返回字符</td>
+</tr>
+<tr>
+<td>I</td>
+<td>int</td>
+<td>整数类型，返回数字</td>
+</tr>
+<tr>
+<td>J</td>
+<td>long （64位 需要2个寄存器存储）</td>
+<td>长整数类型，返回数字</td>
+</tr>
+<tr>
+<td>F</td>
+<td>float</td>
+<td>单浮点类型，返回数字</td>
+</tr>
+<tr>
+<td>D</td>
+<td>double （64位 需要2个寄存器存储）</td>
+<td>双浮点类型，返回数字</td>
+</tr>
+<tr>
+<td>string</td>
+<td>String</td>
+<td>文本类型，返回字符串</td>
+</tr>
+<tr>
+<td>Lxxx/xxx/xxx</td>
+<td>object</td>
+<td>对象类型，返回对象</td>
+</tr>
+</tbody></table>
+<p>常用指令</p>
+<table>
+<thead>
+<tr>
+<th>关键字</th>
+<th>注释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>const</td>
+<td>重写整数属性，真假属性内容，只能是数字类型</td>
+</tr>
+<tr>
+<td>const-string</td>
+<td>重写字符串内容</td>
+</tr>
+<tr>
+<td>const-wide</td>
+<td>重写长整数类型，多用于修改到期时间。</td>
+</tr>
+<tr>
+<td>return</td>
+<td>返回指令</td>
+</tr>
+<tr>
+<td>if-eq</td>
+<td>全称equal(a=b)，比较寄存器ab内容，相同则跳</td>
+</tr>
+<tr>
+<td>if-ne</td>
+<td>全称not equal(a!=b)，ab内容不相同则跳</td>
+</tr>
+<tr>
+<td>if-eqz</td>
+<td>全称equal zero(a=0)，z即是0的标记，a等于0则跳</td>
+</tr>
+<tr>
+<td>if-nez</td>
+<td>全称not equal zero(a!=0)，a不等于0则跳</td>
+</tr>
+<tr>
+<td>if-ge</td>
+<td>全称garden equal(a&gt;=b)，a大于或等于则跳</td>
+</tr>
+<tr>
+<td>if-le</td>
+<td>全称little equal(a&lt;=b)，a小于或等于则跳</td>
+</tr>
+<tr>
+<td>goto</td>
+<td>强制跳到指定位置</td>
+</tr>
+<tr>
+<td>switch</td>
+<td>分支跳转，一般会有多个分支线，并根据指令跳转到适当位置</td>
+</tr>
+<tr>
+<td>iget</td>
+<td>获取寄存器数据</td>
+</tr>
+<tr>
+<td># 寄存器</td>
+<td></td>
+</tr>
+<tr>
+<td>在 Smali 中，寄存器是用来存储和处理数据的虚拟寄存器。这些虚拟寄存器用于在 Dalvik 字节码中执行各种操作。以下是有关 Smali 寄存器的详细说明：</td>
+<td></td>
+</tr>
+</tbody></table>
+<ol>
+<li><p><strong>寄存器标识：</strong> 寄存器用 <code>vN</code> 表示，其中 N 是一个非负整数。例如，<code>v0</code>、<code>v1</code>、<code>v2</code> 等。</p>
+</li>
+<li><p><strong>常见寄存器：</strong></p>
+<ul>
+<li><code>v0</code> 到 <code>v15</code>：这些是普通的虚拟寄存器，用于存储局部变量和中间计算结果。</li>
+<li><code>p0</code> 到 <code>p&lt;n&gt;</code>：这些是参数寄存器，用于存储方法的参数。例如，<code>p0</code> 是第一个参数，<code>p1</code> 是第二个参数，以此类推。</li>
+</ul>
+</li>
+<li><p><strong>寄存器分配：</strong> 在 Smali 代码中，通过 <code>.registers</code> 指令来定义寄存器的数量。例如：</p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">.registers</span> 4</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>寄存器类型：</strong> 虚拟寄存器可以存储不同类型的数据，包括整数、浮点数、对象引用等。在使用寄存器之前，通常需要使用 <code>.local</code> 或 <code>.parameter</code> 指令声明寄存器的类型。例如：</p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">.local</span> v0, <span class="string">"integerVariable"</span>:I</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>寄存器的作用域：</strong> 寄存器的作用域通常限定在方法的范围内。在一个方法中定义的寄存器在该方法的整个生命周期内可用。</p>
+</li>
+<li><p><strong>寄存器的使用：</strong> 寄存器用于存储临时变量、方法参数和中间计算结果。例如，下面的 Smali 代码演示了将两个寄存器中的整数相加并将结果存储到另一个寄存器的操作：</p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">add-int v2, v0, v1  <span class="comment"># 将 v0 和 v1 寄存器中的整数相加，结果存储到 v2</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>寄存器重用：</strong> Dalvik 虚拟机会在需要时自动重用寄存器，因此在 Smali 代码中，同一个寄存器可能在不同的位置用于存储不同的数据。</p>
+</li>
+<li><p><strong>寄存器的生命周期：</strong> 寄存器的生命周期由其作用域决定。在方法执行期间，局部变量寄存器用于存储临时值，方法结束时这些寄存器的内容将被销毁。</p>
+</li>
+</ol>
+<p>总体而言，Smali 寄存器是 Dalvik 字节码中的虚拟寄存器，用于在方法执行期间存储和处理数据。在编写 Smali 代码时，理解寄存器的分配、作用域和类型是非常重要的。</p>
+<h1 id="绕过签名验证安装应用"><a href="#绕过签名验证安装应用" class="headerlink" title="绕过签名验证安装应用"></a>绕过签名验证安装应用</h1><p>因为在之前已经安装了LSPosed，之后再装核心破解的app，再点击通知栏模块未启用的通知，进去启用，勾选系统框架，再重启即可。</p>
+<p>之后因为签名验证导致无法安卓也能安装成功了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">adb install 教程demo(更新).apk</span><br><span class="line">Performing Streamed Install</span><br><span class="line">adb: failed to install D:\DownLoad\安卓逆向这档事\003第三节.初识smali，vip终结者\教程demo(更新).apk: Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE: Package com.zj.wuaipojie signatures do not match previously installed version; ignoring!]</span><br><span class="line"></span><br><span class="line">adb install 教程demo(更新).apk</span><br><span class="line">Performing Streamed Install</span><br><span class="line">Success</span><br></pre></td></tr></table></figure>
+
+<h1 id="收集硬币并完成一键3连"><a href="#收集硬币并完成一键3连" class="headerlink" title="收集硬币并完成一键3连"></a>收集硬币并完成一键3连</h1><p>第二关的任务是收集硬币并完成一键3连，长按之后弹出<code>请先充值大会员哦！</code>，所以一般只需定位到字符串，之后修改跳转逻辑</p>
+<p>实验使用jadx-gui，文本搜索大会员</p>
+<p><img src="http://pic.giantbranch.cn/pic/1705813483901.png" alt></p>
+<p>此外还可以通过开发者助手，先界面资源分析，之后赋值按钮的十六进制，再通过MT管理器搜索，搜索类型整数，选择十六禁止，即可。</p>
+<p>破解的方法可以有几种：修改判断、强制跳转、修改寄存器的值</p>
+<ul>
+<li>修改判断： 比如if-ge改为if-le，if-eqz改为ifnez</li>
+<li>强制跳转：使用goto，比如 <code>goto :label_name</code>（比如在vip功能执行之前加个标签<code>:goto_666</code>,之后再函数开头的地方直接<code>goto :goto_666</code>）</li>
+<li>修改寄存器的值：如果是基于寄存器进行判断，可以修改寄存器，从而使判断逆转，比如将下面<code>const/4 v0, 0x0</code>修改为<code>const/4 v0, 0x1</code></li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">.method public final isvip()Z</span><br><span class="line">    .registers 2</span><br><span class="line"></span><br><span class="line">    const/4 v0, 0x0</span><br><span class="line"></span><br><span class="line">    return v0</span><br><span class="line">.end method</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://pic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://pic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://pic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2024/01/21/重学安卓逆向：初识smali，vip终结者/" title="重学安卓逆向：初识smali，vip终结者">https://www.giantbranch.cn/2024/01/21/重学安卓逆向：初识smali，vip终结者/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/安卓安全/" rel="tag"># 安卓安全</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2024/01/20/重学安卓逆向：安卓模拟器环境搭建及APK的基础修改/" rel="next" title="重学安卓逆向：安卓模拟器环境搭建及APK的基础修改">
+                <i class="fa fa-chevron-left"></i> 重学安卓逆向：安卓模拟器环境搭建及APK的基础修改
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2024/01/23/重学安卓逆向：获得广告&弹窗静默卡/" rel="prev" title="重学安卓逆向：获得广告&弹窗静默卡">
+                重学安卓逆向：获得广告&弹窗静默卡 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">184</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">223</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#关于：JVM、Dalvik-和-ART"><span class="nav-number">1.</span> <span class="nav-text">关于：JVM、Dalvik 和 ART</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#smali及语法"><span class="nav-number">2.</span> <span class="nav-text">smali及语法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#绕过签名验证安装应用"><span class="nav-number">3.</span> <span class="nav-text">绕过签名验证安装应用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#收集硬币并完成一键3连"><span class="nav-number">4.</span> <span class="nav-text">收集硬币并完成一键3连</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright"> &copy; 2017 &mdash; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i> 
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch(simplelogin.irjqx@aleeas.com)</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/"></a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2024/01/21/重学安卓逆向：初识smali，vip终结者/';
+          this.page.identifier = '2024/01/21/重学安卓逆向：初识smali，vip终结者/';
+          this.page.title = '重学安卓逆向：初识smali，vip终结者';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

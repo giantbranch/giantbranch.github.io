@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="clang,代码审计,cpp,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="关于Clang Static AnalyzerClang 静态分析器是一款源代码分析工具，可查找 C、C++ 和 Objective-C 程序中的错误。它基于符号执行技术实现了路径敏感的程序间分析。 安装这个直接安装llvm整套就可以获得了 可以通过https://apt.llvm.org/ 或者 https://mirrors.tuna.tsinghua.edu.cn/help/llvm-apt">
+<meta name="keywords" content="clang,代码审计,cpp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Clang Static Analyzer">
+<meta property="og:url" content="https://www.giantbranch.cn/2024/09/23/Clang Static Analyzer/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="关于Clang Static AnalyzerClang 静态分析器是一款源代码分析工具，可查找 C、C++ 和 Objective-C 程序中的错误。它基于符号执行技术实现了路径敏感的程序间分析。 安装这个直接安装llvm整套就可以获得了 可以通过https://apt.llvm.org/ 或者 https://mirrors.tuna.tsinghua.edu.cn/help/llvm-apt">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://pic.giantbranch.cn/pic/1726974175799.png">
+<meta property="og:updated_time" content="2024-12-01T01:48:12.930Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Clang Static Analyzer">
+<meta name="twitter:description" content="关于Clang Static AnalyzerClang 静态分析器是一款源代码分析工具，可查找 C、C++ 和 Objective-C 程序中的错误。它基于符号执行技术实现了路径敏感的程序间分析。 安装这个直接安装llvm整套就可以获得了 可以通过https://apt.llvm.org/ 或者 https://mirrors.tuna.tsinghua.edu.cn/help/llvm-apt">
+<meta name="twitter:image" content="http://pic.giantbranch.cn/pic/1726974175799.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2024/09/23/Clang Static Analyzer/">
+
+
+
+
+
+  <title>Clang Static Analyzer | giantbranch's blog</title>
+  
+
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SQ8CHXJB60"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SQ8CHXJB60');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-vulfound">
+          <a href="/vulfound/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br>
+            
+            漏洞挖掘
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2024/09/23/Clang Static Analyzer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Clang Static Analyzer</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2024-09-23T00:00:00+08:00">
+                2024-09-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/小书匠-日记-2024-09/" itemprop="url" rel="index">
+                    <span itemprop="name">/小书匠/日记/2024-09</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2024/09/23/Clang Static Analyzer/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2024/09/23/Clang Static Analyzer/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="关于Clang-Static-Analyzer"><a href="#关于Clang-Static-Analyzer" class="headerlink" title="关于Clang Static Analyzer"></a>关于Clang Static Analyzer</h1><p>Clang 静态分析器是一款源代码分析工具，可查找 C、C++ 和 Objective-C 程序中的错误。它基于符号执行技术实现了路径敏感的程序间分析。</p>
+<h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>这个直接安装llvm整套就可以获得了</p>
+<p>可以通过<code>https://apt.llvm.org/</code> 或者 <code>https://mirrors.tuna.tsinghua.edu.cn/help/llvm-apt/</code> 指引安装，但是清华的源只含64位的包，需要大约140行的REPO_NAME，在deb后面添加<code>[arch=amd64]</code>，这样就只会下载64的包了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@vm:~# cat llvm.sh  | grep -n 64</span><br><span class="line">142:    REPO_NAME=&quot;deb [arch=amd64] $&#123;BASE_URL&#125;/$&#123;CODENAME&#125;/  llvm-toolchain$&#123;LINKNAME&#125;$&#123;LLVM_VERSION_STRING&#125; main&quot;</span><br></pre></td></tr></table></figure>
+
+<p>我当时安装默认安装的时llvm-18，所以我添加了bin的路径到PATH</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export PATH=&quot;$PATH:/usr/lib/llvm-18/bin&quot;</span><br></pre></td></tr></table></figure>
+
+<p>我是放在<code>~/.bashrc</code>文件里面</p>
+<h1 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h1><p>使用文件：</p>
+<p><a href="https://github.com/hardik05/Damn_Vulnerable_C_Program/blob/master/dvcp.c" target="_blank" rel="noopener">https://github.com/hardik05/Damn_Vulnerable_C_Program/blob/master/dvcp.c</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">root@vm:~/cppaudit/testcode# scan-build clang -c dvcp.c </span><br><span class="line">scan-build: Using &apos;/usr/lib/llvm-18/bin/clang&apos; for static analysis</span><br><span class="line">dvcp.c:62:5: warning: Attempt to free released memory [unix.Malloc]</span><br><span class="line">   62 |                                 free(buff1);</span><br><span class="line">      |                                 ^~~~~~~~~~~</span><br><span class="line">dvcp.c:67:14: warning: Use of memory after it is freed [unix.Malloc]</span><br><span class="line">   67 |                                         buff1[0]=&apos;a&apos;;</span><br><span class="line">      |                                         ~~~~~~~~^</span><br><span class="line">dvcp.c:90:9: warning: Value stored to &apos;OOBR&apos; during its initialization is never read [deadcode.DeadStores]</span><br><span class="line">   90 |                         char OOBR = buff3[size3];</span><br><span class="line">      |                              ^~~~   ~~~~~~~~~~~~</span><br><span class="line">dvcp.c:91:9: warning: Value stored to &apos;OOBR_heap&apos; during its initialization is never read [deadcode.DeadStores]</span><br><span class="line">   91 |                         char OOBR_heap = buff4[size3];</span><br><span class="line">      |                              ^~~~~~~~~   ~~~~~~~~~~~~</span><br><span class="line">dvcp.c:104:16: warning: Potential leak of memory pointed to by &apos;buff4&apos; [unix.Malloc]</span><br><span class="line">  104 |                         int size4 = img.width * img.height;</span><br><span class="line">      |                                     ^~~</span><br><span class="line">dvcp.c:114:12: warning: Potential leak of memory pointed to by &apos;buff5&apos; [unix.Malloc]</span><br><span class="line">  114 |                                 &#125;while(buff5);</span><br><span class="line">      |                                        ^~~~~</span><br><span class="line">6 warnings generated.</span><br><span class="line">scan-build: Analysis run complete.</span><br><span class="line">scan-build: 6 bugs found.</span><br><span class="line">scan-build: Run &apos;scan-view /tmp/scan-build-2024-09-22-025530-11924-1&apos; to examine bug reports.</span><br></pre></td></tr></table></figure>
+
+<p>可以看到默认是输出html报告到<code>/tmp/scan-build-XXX</code>目录，我们可以使用-o进行指定目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">常用选项</span><br><span class="line">-o &lt;directory&gt;：指定输出报告的目录。如果不指定，报告将默认保存在 /tmp 下的一个目录中。</span><br><span class="line">-v：增加输出的详细程度。</span><br><span class="line">-V：在构建完成后自动在浏览器中打开分析结果。</span><br></pre></td></tr></table></figure>
+
+<p>打开html报告，比命令行的好看很多</p>
+<p><img src="http://pic.giantbranch.cn/pic/1726974175799.png" alt><br>可以看到这个比上一篇用的cppcheck查找多多了，毕竟使用了符号执行技术</p>
+<h1 id="官方建议"><a href="#官方建议" class="headerlink" title="官方建议"></a>官方建议</h1><ol>
+<li>第一个Always Analyze a Project in its “Debug” Configuration</li>
+</ol>
+<blockquote>
+<p>大多数项目都可以在启用断言的“调试”模式下构建。静态分析器会拾取断言来修剪不可行的路径，这在某些情况下可以大大减少工具发出的误报（虚假错误报告）的数量。<br>使用scan-build工具的–force-analyze-debug-code标志，该标志将自动启用断言。</p>
+</blockquote>
+<ol start="2">
+<li>调试 scan-build 时使用详细输出<blockquote>
+<p>scan-build 使用一个 -v 选项来输出有关它正在做什么的详细内容；两个 -v 选项会输出更多信息。将 scan-build 的输出重定向到文本文件（确保重定向标准错误）对于提交针对 scan-build 或分析器的错误报告非常有用，因为我们可以看到传递给分析器的确切选项（和文件）。要获得更易懂的日志，请不要执行<strong>并行</strong>编译。</p>
+</blockquote>
+</li>
+<li>通过 scan-build 运行 ‘./configure’ <blockquote>
+<p>如果分析的项目使用 autoconf 生成的configure脚本，您可能需要通过scan-build运行configure脚本才能分析该项目。<br>例子<br>$ scan-build ./configure<br>$ scan-build –keep-cc make</p>
+<p>configure也需要通过scan-build运行的原因是因为scan-build通过干预编译器来扫描源文件。目前，这种插入是通过scan-build临时将环境变量CC设置为ccc-analyzer来完成的。 ccc-analyzer程序就像一个假编译器，将其命令行参数转发给编译器以执行常规编译，并使用clang来执行静态分析。</p>
+</blockquote>
+</li>
+</ol>
+<ol start="4">
+<li>fdsf<h1 id="项目审计"><a href="#项目审计" class="headerlink" title="项目审计"></a>项目审计</h1></li>
+</ol>
+<p>假如是整个项目审计，可以</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scan-build make -j4</span><br></pre></td></tr></table></figure>
+
+<p>而对于cmake的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">scan-build cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..</span><br><span class="line">scan-build make</span><br></pre></td></tr></table></figure>
+
+<h1 id="CodeChecker"><a href="#CodeChecker" class="headerlink" title="CodeChecker"></a>CodeChecker</h1><p>根据llvm官方描述，CodeChecker 得到了更积极的维护，提供了与流行编译器的多个版本一起使用的启发式方法，并且它还附带了一个基于 Web 的 GUI，用于查看、过滤、分类和抑制结果。</p>
+<p>官方安装指引：<a href="https://github.com/Ericsson/codechecker/#Install-guide" target="_blank" rel="noopener">https://github.com/Ericsson/codechecker/#Install-guide</a></p>
+<p>犹豫我已经装过clang了，我自己修改了下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install cppcheck g++ build-essential curl gcc-multilib git python3-dev python3-venv python3-setuptools</span><br><span class="line"></span><br><span class="line"># Install nodejs dependency for web. In case of Debian/Ubuntu you can use the</span><br><span class="line"># following commands. For more information see the official docs:</span><br><span class="line"># https://nodejs.org/en/download/package-manager/</span><br><span class="line">curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -</span><br><span class="line">sudo apt-get install -y nodejs</span><br><span class="line"></span><br><span class="line"># Check out CodeChecker source code.</span><br><span class="line">git clone https://github.com/Ericsson/CodeChecker.git --depth 1 ~/codechecker</span><br><span class="line">cd ~/codechecker</span><br><span class="line"></span><br><span class="line"># Create a Python virtualenv and set it as your environment.</span><br><span class="line"># NOTE: if you want to develop CodeChecker, use the `venv_dev` target instead</span><br><span class="line"># of `venv`.</span><br><span class="line">make venv</span><br><span class="line">source $PWD/venv/bin/activate</span><br><span class="line"></span><br><span class="line"># [Optional] If you want to use external authentication methods (LDAP / PAM)</span><br><span class="line"># follow the instructions in</span><br><span class="line"># docs/web/authentication.md#external-authentication-methods</span><br><span class="line"></span><br><span class="line"># Build and install a CodeChecker package.</span><br><span class="line">make package</span><br><span class="line"></span><br><span class="line"># For ease of access, add the build directory to PATH.</span><br><span class="line">export PATH=&quot;$PWD/build/CodeChecker/bin:$PATH&quot;</span><br><span class="line"></span><br><span class="line">cd ..</span><br></pre></td></tr></table></figure>
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://clang.llvm.org/docs/ClangStaticAnalyzer.html" target="_blank" rel="noopener">https://clang.llvm.org/docs/ClangStaticAnalyzer.html</a><br><a href="https://clang-analyzer.llvm.org/" target="_blank" rel="noopener">https://clang-analyzer.llvm.org/</a><br><a href="https://apt.llvm.org/" target="_blank" rel="noopener">https://apt.llvm.org/</a><br><a href="https://mirrors.tuna.tsinghua.edu.cn/help/llvm-apt/" target="_blank" rel="noopener">https://mirrors.tuna.tsinghua.edu.cn/help/llvm-apt/</a><br><a href="https://github.com/Ericsson/codechecker/#Install-guide" target="_blank" rel="noopener">https://github.com/Ericsson/codechecker/#Install-guide</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://pic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://pic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://pic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2024/09/23/Clang Static Analyzer/" title="Clang Static Analyzer">https://www.giantbranch.cn/2024/09/23/Clang Static Analyzer/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/clang-代码审计-cpp/" rel="tag"># clang,代码审计,cpp</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2024/09/21/Cppcheck的使用与VSCODE 插件/" rel="next" title="Cppcheck的使用与VSCODE 插件">
+                <i class="fa fa-chevron-left"></i> Cppcheck的使用与VSCODE 插件
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">184</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">223</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#关于Clang-Static-Analyzer"><span class="nav-number">1.</span> <span class="nav-text">关于Clang Static Analyzer</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#安装"><span class="nav-number">2.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#测试"><span class="nav-number">3.</span> <span class="nav-text">测试</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#官方建议"><span class="nav-number">4.</span> <span class="nav-text">官方建议</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#项目审计"><span class="nav-number">5.</span> <span class="nav-text">项目审计</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CodeChecker"><span class="nav-number">6.</span> <span class="nav-text">CodeChecker</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright"> &copy; 2017 &mdash; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i> 
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch(simplelogin.irjqx@aleeas.com)</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/"></a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2024/09/23/Clang Static Analyzer/';
+          this.page.identifier = '2024/09/23/Clang Static Analyzer/';
+          this.page.title = 'Clang Static Analyzer';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

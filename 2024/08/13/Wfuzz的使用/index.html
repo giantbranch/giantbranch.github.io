@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="web,fuzz,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="再fuzzing领域，最流行的是再二进制漏洞挖掘，后面也出来webfuzz，就是今天的wfuzz，其实有些在web领域算是暴力破解，但是说fuzz也没毛病。 安装及简介直接pip安装即可 1pip install wfuzz  kali的话是自带了的 或者直接下载源码，字典什么的比较好找 1git clone https://github.com/xmendez/wfuzz.git  官方文档：h">
+<meta name="keywords" content="web,fuzz">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Wfuzz的使用">
+<meta property="og:url" content="https://www.giantbranch.cn/2024/08/13/Wfuzz的使用/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="再fuzzing领域，最流行的是再二进制漏洞挖掘，后面也出来webfuzz，就是今天的wfuzz，其实有些在web领域算是暴力破解，但是说fuzz也没毛病。 安装及简介直接pip安装即可 1pip install wfuzz  kali的话是自带了的 或者直接下载源码，字典什么的比较好找 1git clone https://github.com/xmendez/wfuzz.git  官方文档：h">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2024-12-01T02:32:50.958Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Wfuzz的使用">
+<meta name="twitter:description" content="再fuzzing领域，最流行的是再二进制漏洞挖掘，后面也出来webfuzz，就是今天的wfuzz，其实有些在web领域算是暴力破解，但是说fuzz也没毛病。 安装及简介直接pip安装即可 1pip install wfuzz  kali的话是自带了的 或者直接下载源码，字典什么的比较好找 1git clone https://github.com/xmendez/wfuzz.git  官方文档：h">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2024/08/13/Wfuzz的使用/">
+
+
+
+
+
+  <title>Wfuzz的使用 | giantbranch's blog</title>
+  
+
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SQ8CHXJB60"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SQ8CHXJB60');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-vulfound">
+          <a href="/vulfound/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br>
+            
+            漏洞挖掘
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2024/08/13/Wfuzz的使用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Wfuzz的使用</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2024-08-13T00:00:00+08:00">
+                2024-08-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/小书匠-日记-2024-08/" itemprop="url" rel="index">
+                    <span itemprop="name">/小书匠/日记/2024-08</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2024/08/13/Wfuzz的使用/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2024/08/13/Wfuzz的使用/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>再fuzzing领域，最流行的是再二进制漏洞挖掘，后面也出来webfuzz，就是今天的wfuzz，其实有些在web领域算是暴力破解，但是说fuzz也没毛病。</p>
+<h1 id="安装及简介"><a href="#安装及简介" class="headerlink" title="安装及简介"></a>安装及简介</h1><p>直接pip安装即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install wfuzz</span><br></pre></td></tr></table></figure>
+
+<p>kali的话是自带了的</p>
+<p>或者直接下载源码，字典什么的比较好找</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/xmendez/wfuzz.git</span><br></pre></td></tr></table></figure>
+
+<p>官方文档：<a href="https://wfuzz.readthedocs.io/en/latest/" target="_blank" rel="noopener">https://wfuzz.readthedocs.io/en/latest/</a></p>
+<p>Wfuzz的核心理念是用给定的payload去替换HTTP请求中的占位符，从而发现潜在的安全问题，例如可预测的认证、注入漏洞、路径遍历、跨站脚本等</p>
+<h1 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h1><h2 id="目录爆破"><a href="#目录爆破" class="headerlink" title="目录爆破"></a>目录爆破</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-w wordlist               : Specify a wordlist file (alias for -z file,wordlist).</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wfuzz -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ</span><br></pre></td></tr></table></figure>
+
+<p>不过速度比御剑那些还是慢点，而且信息可读性低，没有汇总返回包200或者301等情况，可以使用–hc过滤掉404</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wfuzz -w wordlist/general/common.txt --hc 404 http://testphp.vulnweb.com/FUZZ</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--hc/hl/hw/hh N[,N]+      : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)</span><br></pre></td></tr></table></figure>
+
+<h2 id="子域爆破"><a href="#子域爆破" class="headerlink" title="子域爆破"></a>子域爆破</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-c                        : Output with colors</span><br><span class="line">-Z 指定要在扫描模式下输入的 URL，并忽略任何连接错误</span><br><span class="line">--hc XXX   过滤掉不存在的子域名</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ wfuzz -c -Z -w wordlist/general/common.txt --hc XXX http://FUZZ.vulnweb.com</span><br><span class="line">********************************************************</span><br><span class="line">* Wfuzz 3.1.0 - The Web Fuzzer                         *</span><br><span class="line">********************************************************</span><br><span class="line"></span><br><span class="line">Target: http://FUZZ.vulnweb.com/</span><br><span class="line">Total requests: 951</span><br><span class="line"></span><br><span class="line">=====================================================================</span><br><span class="line">ID           Response   Lines    Word       Chars       Payload                           </span><br><span class="line">=====================================================================</span><br><span class="line"></span><br><span class="line">000000936:   200        73 L     260 W      4018 Ch     &quot;www&quot;                             </span><br><span class="line"></span><br><span class="line">Total time: 0</span><br><span class="line">Processed Requests: 951</span><br><span class="line">Filtered Requests: 950</span><br><span class="line">Requests/sec.: 0</span><br></pre></td></tr></table></figure>
+
+<p>或者自己提供一个简单的列表来爆破</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ wfuzz -z list,www-testphp-admin-svn http://FUZZ.vulnweb.com/</span><br><span class="line">********************************************************</span><br><span class="line">* Wfuzz 3.1.0 - The Web Fuzzer                         *</span><br><span class="line">********************************************************</span><br><span class="line"></span><br><span class="line">Target: http://FUZZ.vulnweb.com/</span><br><span class="line">Total requests: 4</span><br><span class="line"></span><br><span class="line">=====================================================================</span><br><span class="line">ID           Response   Lines    Word       Chars       Payload                           </span><br><span class="line">=====================================================================</span><br><span class="line"></span><br><span class="line">000000001:   200        73 L     260 W      4018 Ch     &quot;www&quot;                             </span><br><span class="line">000000002:   200        109 L    388 W      4958 Ch     &quot;testphp&quot;                         </span><br><span class="line"></span><br><span class="line">Total time: 0</span><br><span class="line">Processed Requests: 2</span><br><span class="line">Filtered Requests: 0</span><br><span class="line">Requests/sec.: 0</span><br><span class="line"></span><br><span class="line"> /usr/lib/python3/dist-packages/wfuzz/wfuzz.py:78: UserWarning:Fatal exception: Pycurl error 52: Empty reply from server</span><br></pre></td></tr></table></figure>
+
+<h2 id="多重模糊测试（多位置模糊）"><a href="#多重模糊测试（多位置模糊）" class="headerlink" title="多重模糊测试（多位置模糊）"></a>多重模糊测试（多位置模糊）</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wfuzz -w wordlist/general/common.txt -w wordlist/general/common.txt -w wordlist/general/extensions_common.txt --hc 404 http://testphp.vulnweb.com/FUZZ/FUZ2ZFUZ3Z</span><br></pre></td></tr></table></figure>
+
+<p>每个字典对应后面的FUZZ 、FUZ2Z 和 FUZ3Z</p>
+<h2 id="登录暴力破解"><a href="#登录暴力破解" class="headerlink" title="登录暴力破解"></a>登录暴力破解</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-d postdata               : Use post data (ex: &quot;id=FUZZ&amp;catalogue=1&quot;)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ wfuzz -z file,wordlist/others/common_pass.txt -d &quot;uname=FUZZ&amp;pass=FUZZ&quot;  --hc 302 http://testphp.vulnweb.com/userinfo.php</span><br><span class="line">********************************************************</span><br><span class="line">* Wfuzz 3.1.0 - The Web Fuzzer                         *</span><br><span class="line">********************************************************</span><br><span class="line"></span><br><span class="line">Target: http://testphp.vulnweb.com/userinfo.php</span><br><span class="line">Total requests: 52</span><br><span class="line"></span><br><span class="line">=====================================================================</span><br><span class="line">ID           Response   Lines    Word       Chars       Payload                           </span><br><span class="line">=====================================================================</span><br><span class="line"></span><br><span class="line">000000044:   200        119 L    448 W      5969 Ch     &quot;test - test&quot;                     </span><br><span class="line"></span><br><span class="line">Total time: 0</span><br><span class="line">Processed Requests: 52</span><br><span class="line">Filtered Requests: 51</span><br><span class="line">Requests/sec.: 0</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ wfuzz -w wordlist/general/common.txt -d &quot;uname=FUZZ&amp;pass=FUZZ&quot;  --hc 302 http://testphp.vulnweb.com/userinfo.php</span><br><span class="line">********************************************************</span><br><span class="line">* Wfuzz 3.1.0 - The Web Fuzzer                         *</span><br><span class="line">********************************************************</span><br><span class="line"></span><br><span class="line">Target: http://testphp.vulnweb.com/userinfo.php</span><br><span class="line">Total requests: 951</span><br><span class="line"></span><br><span class="line">=====================================================================</span><br><span class="line">ID           Response   Lines    Word       Chars       Payload                           </span><br><span class="line">=====================================================================</span><br><span class="line"></span><br><span class="line">000000830:   200        119 L    448 W      5985 Ch     &quot;test - test&quot;                     </span><br><span class="line"></span><br><span class="line">Total time: 44.66879</span><br><span class="line">Processed Requests: 951</span><br><span class="line">Filtered Requests: 950</span><br><span class="line">Requests/sec.: 21.29003</span><br></pre></td></tr></table></figure>
+
+<h2 id="Cookie-模糊测试"><a href="#Cookie-模糊测试" class="headerlink" title="Cookie 模糊测试"></a>Cookie 模糊测试</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-b cookie                 : Specify a cookie for the requests</span><br></pre></td></tr></table></figure>
+
+<p>带上cookie去请求</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ wfuzz -z file,wordlist/general/common.txt -b &quot;login=test%2Ftest&quot; --hc 404 http://testphp.vulnweb.com/FUZZ</span><br></pre></td></tr></table></figure>
+
+<p>fuzz cookie</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wfuzz -z file,wordlist/general/common.txt -b login=FUZZ http://testphp.vulnweb.com/</span><br></pre></td></tr></table></figure>
+
+<h2 id="HEADER模糊测试"><a href="#HEADER模糊测试" class="headerlink" title="HEADER模糊测试"></a>HEADER模糊测试</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ wfuzz -w wordlist/Injections/SQL.txt -H &quot;X-Forwarded-By: 127.0.0.1FUZZ&quot; http://testphp.vulnweb.com/</span><br><span class="line">********************************************************</span><br><span class="line">* Wfuzz 3.1.0 - The Web Fuzzer                         *</span><br><span class="line">********************************************************</span><br><span class="line"></span><br><span class="line">Target: http://testphp.vulnweb.com/</span><br><span class="line">Total requests: 125</span><br><span class="line"></span><br><span class="line">=====================================================================</span><br><span class="line">ID           Response   Lines    Word       Chars       Payload                           </span><br><span class="line">=====================================================================</span><br><span class="line"></span><br><span class="line">000000014:   200        109 L    388 W      4958 Ch     &quot;\x3D%20\x3B&apos;&quot;                    </span><br><span class="line">000000012:   200        109 L    388 W      4958 Ch     &quot;\x23&quot;                            </span><br><span class="line">000000003:   200        109 L    388 W      4958 Ch     &quot;#&quot;                               </span><br><span class="line">000000007:   200        109 L    388 W      4958 Ch     &quot;--&apos;;&quot;                            </span><br><span class="line">000000001:   200        109 L    388 W      4958 Ch     &quot;&apos;&quot;                               </span><br><span class="line">000000016:   200        109 L    388 W      4958 Ch     &quot;\x27\x4F\x52 SELECT *&quot;           </span><br><span class="line">000000011:   200        109 L    388 W      4958 Ch     &quot;=%20--&quot;                          </span><br><span class="line">000000010:   200        109 L    388 W      4958 Ch     &quot;=%20;&quot;                           </span><br><span class="line">000000013:   200        109 L    388 W      4958 Ch     &quot;\x27&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="请求方法模糊测试"><a href="#请求方法模糊测试" class="headerlink" title="请求方法模糊测试"></a>请求方法模糊测试</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">$ wfuzz -z list,GET-HEAD-POST-TRACE-OPTIONS -X FUZZ http://testphp.vulnweb.com/</span><br><span class="line">********************************************************</span><br><span class="line">* Wfuzz 3.1.0 - The Web Fuzzer                         *</span><br><span class="line">********************************************************</span><br><span class="line"></span><br><span class="line">Target: http://testphp.vulnweb.com/</span><br><span class="line">Total requests: 5</span><br><span class="line"></span><br><span class="line">=====================================================================</span><br><span class="line">ID           Response   Lines    Word       Chars       Payload                           </span><br><span class="line">=====================================================================</span><br><span class="line"></span><br><span class="line">000000002:   200        0 L      0 W        0 Ch        &quot;HEAD - HEAD&quot;                     </span><br><span class="line">000000005:   405        7 L      11 W       157 Ch      &quot;OPTIONS - OPTIONS&quot;               </span><br><span class="line">000000001:   200        109 L    388 W      4958 Ch     &quot;GET - GET&quot;                       </span><br><span class="line">000000003:   200        109 L    388 W      4958 Ch     &quot;POST - POST&quot;                     </span><br><span class="line">000000004:   405        7 L      11 W       157 Ch      &quot;TRACE - TRACE&quot;                   </span><br><span class="line"></span><br><span class="line">Total time: 0</span><br><span class="line">Processed Requests: 5</span><br><span class="line">Filtered Requests: 0</span><br><span class="line">Requests/sec.: 0</span><br></pre></td></tr></table></figure>
+
+<h2 id="通过代理进行模糊测试"><a href="#通过代理进行模糊测试" class="headerlink" title="通过代理进行模糊测试"></a>通过代理进行模糊测试</h2><p>比如下面可以给到burp</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wfuzz -z file,wordlist/general/common.txt -p localhost:8080 http://testphp.vulnweb.com/FUZZ</span><br></pre></td></tr></table></figure>
+
+<p>下面是SOCKS5代理的例子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wfuzz -z file,wordlist/general/common.txt -p localhost:9500:SOCKS5 http://testphp.vulnweb.com/FUZZ</span><br></pre></td></tr></table></figure>
+
+<h2 id="身份验证模糊"><a href="#身份验证模糊" class="headerlink" title="身份验证模糊"></a>身份验证模糊</h2><blockquote>
+<p>–basic：提供基本的用户名和密码验证<br>–ntlm：Windows 身份验证<br>–digest：通过摘要访问进行网络服务器协商</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ wfuzz -z list,nonvalid-httpwatch --basic FUZZ:FUZZ https://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx</span><br><span class="line">********************************************************</span><br><span class="line">* Wfuzz 3.1.0 - The Web Fuzzer                         *</span><br><span class="line">********************************************************</span><br><span class="line"></span><br><span class="line">Target: https://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx</span><br><span class="line">Total requests: 2</span><br><span class="line"></span><br><span class="line">=====================================================================</span><br><span class="line">ID           Response   Lines    Word       Chars       Payload                           </span><br><span class="line">=====================================================================</span><br><span class="line"></span><br><span class="line">000000001:   401        0 L      11 W       58 Ch       &quot;nonvalid - nonvalid&quot;             </span><br><span class="line">000000002:   200        20 L     159 W      5037 Ch     &quot;httpwatch - httpwatch&quot;           </span><br><span class="line"></span><br><span class="line">Total time: 0</span><br><span class="line">Processed Requests: 2</span><br><span class="line">Filtered Requests: 0</span><br><span class="line">Requests/sec.: 0</span><br></pre></td></tr></table></figure>
+
+<h2 id="编码器"><a href="#编码器" class="headerlink" title="编码器"></a>编码器</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ wfuzz -z file,wordlist/general/common.txt,md5 http://testphp.vulnweb.com/FUZZ</span><br><span class="line">********************************************************</span><br><span class="line">* Wfuzz 3.1.0 - The Web Fuzzer                         *</span><br><span class="line">********************************************************</span><br><span class="line"></span><br><span class="line">Target: http://testphp.vulnweb.com/FUZZ</span><br><span class="line">Total requests: 951</span><br><span class="line"></span><br><span class="line">=====================================================================</span><br><span class="line">ID           Response   Lines    Word       Chars       Payload                           </span><br><span class="line">=====================================================================</span><br><span class="line"></span><br><span class="line">000000001:   404        7 L      11 W       153 Ch      &quot;518ed29525738cebdac49c49e60ea9d3&quot;</span><br><span class="line">000000009:   404        7 L      11 W       153 Ch      &quot;a9b7ba70783b617e9998dc4dd82eb3c5&quot;</span><br><span class="line">000000004:   404        7 L      11 W       153 Ch      &quot;a2ef406e2c2351e0b9e80029c909242d&quot;</span><br><span class="line">000000005:   404        7 L      11 W       153 Ch      &quot;e45ee7ce7e88149af8dd32b27f9512ce&quot;</span><br><span class="line">000000008:   404        7 L      11 W       153 Ch      &quot;f899139df5e1059396431415e770c6dd&quot;</span><br><span class="line">000000003:   404        7 L      11 W       153 Ch      &quot;96a3be3cf272e017046d1b2674a52bd3&quot;</span><br><span class="line">000000010:   404        7 L      11 W       153 Ch      &quot;202cb962ac59075b964b07152d234b70&quot;</span><br><span class="line">000000002:   404        7 L      11 W       153 Ch      &quot;b4b147bc522828731f1a016bfa72c073&quot;</span><br><span class="line">000000007:   404        7 L      11 W       153 Ch      &quot;d3d9446802a44259755d38e6d163e820&quot;</span><br></pre></td></tr></table></figure>
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://www.ddosi.org/wfuzz-guide/" target="_blank" rel="noopener">https://www.ddosi.org/wfuzz-guide/</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://pic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://pic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://pic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2024/08/13/Wfuzz的使用/" title="Wfuzz的使用">https://www.giantbranch.cn/2024/08/13/Wfuzz的使用/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/web-fuzz/" rel="tag"># web,fuzz</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2024/07/16/利用bettercap进行蓝牙扫描/" rel="next" title="利用bettercap进行蓝牙扫描">
+                <i class="fa fa-chevron-left"></i> 利用bettercap进行蓝牙扫描
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2024/09/03/reqable的使用/" rel="prev" title="reqable的使用">
+                reqable的使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">198</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">234</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#安装及简介"><span class="nav-number">1.</span> <span class="nav-text">安装及简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#使用"><span class="nav-number">2.</span> <span class="nav-text">使用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#目录爆破"><span class="nav-number">2.1.</span> <span class="nav-text">目录爆破</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#子域爆破"><span class="nav-number">2.2.</span> <span class="nav-text">子域爆破</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多重模糊测试（多位置模糊）"><span class="nav-number">2.3.</span> <span class="nav-text">多重模糊测试（多位置模糊）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#登录暴力破解"><span class="nav-number">2.4.</span> <span class="nav-text">登录暴力破解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cookie-模糊测试"><span class="nav-number">2.5.</span> <span class="nav-text">Cookie 模糊测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HEADER模糊测试"><span class="nav-number">2.6.</span> <span class="nav-text">HEADER模糊测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#请求方法模糊测试"><span class="nav-number">2.7.</span> <span class="nav-text">请求方法模糊测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通过代理进行模糊测试"><span class="nav-number">2.8.</span> <span class="nav-text">通过代理进行模糊测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#身份验证模糊"><span class="nav-number">2.9.</span> <span class="nav-text">身份验证模糊</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编码器"><span class="nav-number">2.10.</span> <span class="nav-text">编码器</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright"> &copy; 2017 &mdash; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i> 
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch(simplelogin.irjqx@aleeas.com)</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/"></a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2024/08/13/Wfuzz的使用/';
+          this.page.identifier = '2024/08/13/Wfuzz的使用/';
+          this.page.title = 'Wfuzz的使用';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

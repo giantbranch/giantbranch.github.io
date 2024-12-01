@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="安卓安全,Frida,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="Frida安装python虚拟环境安装123pip config --global set global.index-url https://mirrors.cloud.tencent.com/pypi/simplepip install virtualenvwrapper-win  设置环境变量WORKON_HOME为下面自己建立好的路径，当然默认也可以不设置，默认在用户目录下 1C:\WORK">
+<meta name="keywords" content="安卓安全,Frida">
+<meta property="og:type" content="article">
+<meta property="og:title" content="安卓Frida Hook基础">
+<meta property="og:url" content="https://www.giantbranch.cn/2024/03/16/安卓Frida Hook基础/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="Frida安装python虚拟环境安装123pip config --global set global.index-url https://mirrors.cloud.tencent.com/pypi/simplepip install virtualenvwrapper-win  设置环境变量WORKON_HOME为下面自己建立好的路径，当然默认也可以不设置，默认在用户目录下 1C:\WORK">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/b11813499c27ca00139e8b0d7648f5fb_1721117588001.png">
+<meta property="og:updated_time" content="2024-12-01T02:32:49.714Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="安卓Frida Hook基础">
+<meta name="twitter:description" content="Frida安装python虚拟环境安装123pip config --global set global.index-url https://mirrors.cloud.tencent.com/pypi/simplepip install virtualenvwrapper-win  设置环境变量WORKON_HOME为下面自己建立好的路径，当然默认也可以不设置，默认在用户目录下 1C:\WORK">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/b11813499c27ca00139e8b0d7648f5fb_1721117588001.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2024/03/16/安卓Frida Hook基础/">
+
+
+
+
+
+  <title>安卓Frida Hook基础 | giantbranch's blog</title>
+  
+
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SQ8CHXJB60"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SQ8CHXJB60');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-vulfound">
+          <a href="/vulfound/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br>
+            
+            漏洞挖掘
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2024/03/16/安卓Frida Hook基础/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">安卓Frida Hook基础</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2024-03-16T00:00:00+08:00">
+                2024-03-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/小书匠-日记-2024-03/" itemprop="url" rel="index">
+                    <span itemprop="name">/小书匠/日记/2024-03</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2024/03/16/安卓Frida Hook基础/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2024/03/16/安卓Frida Hook基础/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Frida安装"><a href="#Frida安装" class="headerlink" title="Frida安装"></a>Frida安装</h1><h2 id="python虚拟环境安装"><a href="#python虚拟环境安装" class="headerlink" title="python虚拟环境安装"></a>python虚拟环境安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pip config --global set global.index-url https://mirrors.cloud.tencent.com/pypi/simple</span><br><span class="line"></span><br><span class="line">pip install virtualenvwrapper-win</span><br></pre></td></tr></table></figure>
+
+<p>设置环境变量WORKON_HOME为下面自己建立好的路径，当然默认也可以不设置，默认在用户目录下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">C:\WORKON_HOME</span><br></pre></td></tr></table></figure>
+
+<p>新建环境<code>mkvirtualenv fridatest</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">c新建环境</span><br><span class="line">rmvirtualenv 删除环境</span><br></pre></td></tr></table></figure>
+
+<p>下次打开cmd进入环境</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">workon fridatest</span><br></pre></td></tr></table></figure>
+
+<h2 id="Frida安装以及多版本处理"><a href="#Frida安装以及多版本处理" class="headerlink" title="Frida安装以及多版本处理"></a>Frida安装以及多版本处理</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install frida-tools</span><br></pre></td></tr></table></figure>
+
+<h2 id="Frida-server"><a href="#Frida-server" class="headerlink" title="Frida-server"></a>Frida-server</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(fridatest) C:\Users\PF&gt;pip list</span><br><span class="line">Package           Version</span><br><span class="line">----------------- -------</span><br><span class="line">colorama          0.4.6</span><br><span class="line">frida             16.2.1</span><br><span class="line">frida-tools       12.3.0</span><br><span class="line">pip               24.0</span><br><span class="line">prompt-toolkit    3.0.43</span><br><span class="line">Pygments          2.17.2</span><br><span class="line">setuptools        69.1.0</span><br><span class="line">typing_extensions 4.10.0</span><br><span class="line">wcwidth           0.2.13</span><br><span class="line">wheel             0.42.0</span><br></pre></td></tr></table></figure>
+
+<p>上面frida 是16.2.1，所以也下载16.2.1</p>
+<p><img src="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/b11813499c27ca00139e8b0d7648f5fb_1721117588001.png" alt><br>解压，push到手机，给执行权限并运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">adb push frida-server-16.2.1-android-arm64 /data/local/tmp</span><br><span class="line"></span><br><span class="line">adb shell</span><br><span class="line">su</span><br><span class="line">OnePlus3:/data/local/tmp # chmod +x frida-server-16.2.1-android-arm64</span><br><span class="line">OnePlus3:/data/local/tmp # ./frida-server-16.2.1-android-arm64</span><br></pre></td></tr></table></figure>
+
+<p>自定义端口运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./frida-server-16.2.1-android-arm64 -l 0.0.0.0:6666</span><br></pre></td></tr></table></figure>
+
+<p>通过在电脑端，执行下面命令，可以看到手机进程说明没问题了 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">frida-ps -U</span><br></pre></td></tr></table></figure>
+
+<h1 id="Frida基础知识"><a href="#Frida基础知识" class="headerlink" title="Frida基础知识"></a>Frida基础知识</h1><h2 id="1-基础指令"><a href="#1-基础指令" class="headerlink" title="1.基础指令"></a>1.基础指令</h2><p>1.frida-ps -U  查看当前手机运行的进程<br>2.frida-ps –help 查看help指令</p>
+<h2 id="2-操作模式"><a href="#2-操作模式" class="headerlink" title="2.操作模式:"></a>2.操作模式:</h2><table>
+<thead>
+<tr>
+<th>操作模式</th>
+<th>描述</th>
+<th>优点</th>
+<th>主要用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CLI（命令行）模式</td>
+<td>通过命令行直接将JavaScript脚本注入进程中，对进程进行操作</td>
+<td>便于直接注入和操作</td>
+<td>在较小规模的操作或者需求比较简单的场景中使用</td>
+</tr>
+<tr>
+<td>RPC模式</td>
+<td>使用Python进行JavaScript脚本的注入工作，实际对进程进行操作的还是JavaScript脚本，可以通过RPC传输给Python脚本来进行复杂数据的处理</td>
+<td>在对复杂数据的处理上可以通过RPC传输给Python脚本来进行，有利于减少被注入进程的性能损耗</td>
+<td>在大规模调用中更加普遍，特别是对于复杂数据处理的需求</td>
+</tr>
+</tbody></table>
+<h2 id="3-注入模式与启动命令"><a href="#3-注入模式与启动命令" class="headerlink" title="3.注入模式与启动命令"></a>3.注入模式与启动命令</h2><table>
+<thead>
+<tr>
+<th>注入模式</th>
+<th>描述</th>
+<th>命令或参数</th>
+<th>优点</th>
+<th>主要用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Spawn模式</td>
+<td>将启动App的权利交由Frida来控制，即使目标App已经启动，在使用Frida注入程序时还是会重新启动App</td>
+<td>在CLI模式中，Frida通过加上 -f 参数指定包名以spawn模式操作App</td>
+<td>适合于需要在App启动时即进行注入的场景，可以在App启动时即捕获其行为</td>
+<td>当需要监控App从启动开始的所有行为时使用</td>
+</tr>
+<tr>
+<td>Attach模式</td>
+<td>在目标App已经启动的情况下，Frida通过ptrace注入程序从而执行Hook的操作</td>
+<td>在CLI模式中，如果不添加 -f 参数，则默认会通过attach模式注入App</td>
+<td>适合于已经运行的App，不会重新启动App，对用户体验影响较小</td>
+<td>在App已经启动，或者我们只关心特定时刻或特定功能的行为时使用</td>
+</tr>
+<tr>
+<td>Spawn模式</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">frida -U -f 包名 -l hook.js</span><br></pre></td></tr></table></figure>
+
+<p>attach模式 ：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">frida -U 进程名 -l hook.js</span><br></pre></td></tr></table></figure>
+
+<p><code>logcat |grep &quot;D.zj2595&quot;</code>日志捕获<br><code>adb connect 127.0.0.1:62001</code>模拟器端口转发</p>
+<h2 id="4-基础语法"><a href="#4-基础语法" class="headerlink" title="4. 基础语法"></a>4. 基础语法</h2><table>
+<thead>
+<tr>
+<th>API名称</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Java.use(className)</code></td>
+<td>获取指定的Java类并使其在JavaScript代码中可用。</td>
+</tr>
+<tr>
+<td><code>Java.perform(callback)</code></td>
+<td>确保回调函数在Java的主线程上执行。</td>
+</tr>
+<tr>
+<td><code>Java.choose(className, callbacks)</code></td>
+<td>枚举指定类的所有实例。</td>
+</tr>
+<tr>
+<td><code>Java.cast(obj, cls)</code></td>
+<td>将一个Java对象转换成另一个Java类的实例。</td>
+</tr>
+<tr>
+<td><code>Java.enumerateLoadedClasses(callbacks)</code></td>
+<td>枚举进程中已经加载的所有Java类。</td>
+</tr>
+<tr>
+<td><code>Java.enumerateClassLoaders(callbacks)</code></td>
+<td>枚举进程中存在的所有Java类加载器。</td>
+</tr>
+<tr>
+<td><code>Java.enumerateMethods(targetClassMethod)</code></td>
+<td>枚举指定类的所有方法。</td>
+</tr>
+</tbody></table>
+<h2 id="5-日志输出语法区别"><a href="#5-日志输出语法区别" class="headerlink" title="5.日志输出语法区别"></a>5.日志输出语法区别</h2><table>
+<thead>
+<tr>
+<th>日志方法</th>
+<th>描述</th>
+<th>区别</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>console.log()</code></td>
+<td>使用JavaScript直接进行日志打印</td>
+<td>多用于在CLI模式中，<code>console.log()</code>直接输出到命令行界面，使用户可以实时查看。在RPC模式中，<code>console.log()</code>同样输出在命令行，但可能被Python脚本的输出内容掩盖。</td>
+</tr>
+<tr>
+<td><code>send()</code></td>
+<td>Frida的专有方法，用于发送数据或日志到外部Python脚本</td>
+<td>多用于RPC模式中，它允许JavaScript脚本发送数据到Python脚本，Python脚本可以进一步处理或记录这些数据。</td>
+</tr>
+</tbody></table>
+<h2 id="6-Hook框架模板"><a href="#6-Hook框架模板" class="headerlink" title="6.Hook框架模板"></a>6.Hook框架模板</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">function main()&#123;</span><br><span class="line">    Java.perform(function()&#123;</span><br><span class="line">        hookTest1();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line">setImmediate(main);</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-Frida常用API"><a href="#7-Frida常用API" class="headerlink" title="7.Frida常用API"></a>7.Frida常用API</h2><h3 id="1-Hook普通方法、打印参数和修改返回值"><a href="#1-Hook普通方法、打印参数和修改返回值" class="headerlink" title="1.Hook普通方法、打印参数和修改返回值"></a>1.Hook普通方法、打印参数和修改返回值</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">//定义一个名为hookTest1的函数</span><br><span class="line">function hookTest1()&#123;</span><br><span class="line">	//获取一个名为&quot;类名&quot;的Java类，并将其实例赋值给JavaScript变量utils</span><br><span class="line">    var utils = Java.use(&quot;类名&quot;);</span><br><span class="line">    //修改&quot;类名&quot;的&quot;method&quot;方法的实现。这个新的实现会接收两个参数（a和b）</span><br><span class="line">    utils.method.implementation = function(a, b)&#123;</span><br><span class="line">	    //将参数a和b的值改为123和456。</span><br><span class="line">        a = 123;</span><br><span class="line">        b = 456;</span><br><span class="line">        //调用修改过的&quot;method&quot;方法，并将返回值存储在`retval`变量中</span><br><span class="line">        var retval = this.method(a, b);</span><br><span class="line">        //在控制台上打印参数a，b的值以及&quot;method&quot;方法的返回值</span><br><span class="line">        console.log(a, b, retval);</span><br><span class="line">        //返回&quot;method&quot;方法的返回值</span><br><span class="line">        return retval;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>实例</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">//定义一个名为hookTest1的函数</span><br><span class="line">function hookTest1()&#123;</span><br><span class="line">	//获取一个名为&quot;类名&quot;的Java类，并将其实例赋值给JavaScript变量utils</span><br><span class="line">    var utils = Java.use(&quot;com.zj.wuaipojie.Demo&quot;);</span><br><span class="line">    //修改&quot;类名&quot;的&quot;a&quot;方法的实现。这个新的实现会接收两个参数（a和b）</span><br><span class="line">    utils.a.implementation = function(teststr)&#123;</span><br><span class="line">	    //将参数a和b的值改为123和456。</span><br><span class="line">        teststr = &quot;hahaha,frida!&quot;;</span><br><span class="line">        //调用修改过的&quot;a&quot;方法，并将返回值存储在`retval`变量中</span><br><span class="line">        var retval = this.a(teststr);</span><br><span class="line">        //在控制台上打印参数a，b的值以及&quot;a&quot;方法的返回值</span><br><span class="line">        console.log(teststr, retval);</span><br><span class="line">        //返回&quot;a&quot;方法的返回值</span><br><span class="line">        return retval;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function main()&#123;</span><br><span class="line">    Java.perform(function()&#123;</span><br><span class="line">        hookTest1();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line">setImmediate(main);</span><br></pre></td></tr></table></figure>
+
+<p>hook</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">frida -U wuaipojie -l hook.js</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-Hook重载参数"><a href="#2-Hook重载参数" class="headerlink" title="2.Hook重载参数"></a>2.Hook重载参数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// .overload()</span><br><span class="line">// .overload(&apos;自定义参数&apos;)</span><br><span class="line">// .overload(&apos;int&apos;)</span><br><span class="line">function hookTest2()&#123;</span><br><span class="line">    var utils = Java.use(&quot;com.zj.wuaipojie.Demo&quot;);</span><br><span class="line">    //overload定义重载函数，根据函数的参数类型填</span><br><span class="line">    utils.Inner.overload(&apos;com.zj.wuaipojie.Demo$Animal&apos;,&apos;java.lang.String&apos;).implementation = function(a, b)&#123;</span><br><span class="line">        b = &quot;自定义参数已经被修改&quot;;</span><br><span class="line">        this.Inner(a,b);</span><br><span class="line">        console.log(b);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-Hook构造函数"><a href="#3-Hook构造函数" class="headerlink" title="3.Hook构造函数"></a>3.Hook构造函数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">function hookTest3()&#123;</span><br><span class="line">    var utils = Java.use(&quot;com.zj.wuaipojie.Demo&quot;);</span><br><span class="line">    //修改类的构造函数的实现，$init表示构造函数</span><br><span class="line">    utils.$init.overload(&apos;java.lang.String&apos;).implementation = function(str)&#123;</span><br><span class="line">        // 原来的参数</span><br><span class="line">        console.log(str);</span><br><span class="line">        str = &quot;52破解hook33333&quot;;</span><br><span class="line">        this.$init(str);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-Hook字段"><a href="#4-Hook字段" class="headerlink" title="4.Hook字段"></a>4.Hook字段</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">function hookTest5()&#123;</span><br><span class="line">    Java.perform(function()&#123;</span><br><span class="line">        //静态字段的修改</span><br><span class="line">        var utils = Java.use(&quot;com.zj.wuaipojie.Demo&quot;);</span><br><span class="line">        //修改类的静态字段&quot;flag&quot;的值</span><br><span class="line">        utils.staticField.value = &quot;我是被修改的静态变量&quot;;</span><br><span class="line">        console.log(utils.staticField.value);</span><br><span class="line">        //非静态字段的修改</span><br><span class="line">        //使用`Java.choose()`枚举类的所有实例</span><br><span class="line">        Java.choose(&quot;com.zj.wuaipojie.Demo&quot;, &#123;</span><br><span class="line">            onMatch: function(obj)&#123;</span><br><span class="line">	            //修改实例的非静态字段&quot;_privateInt&quot;的值为&quot;123456&quot;，并修改非静态字段&quot;privateInt&quot;的值为9999。</span><br><span class="line">                // obj._privateInt.value = &quot;123456&quot;; //字段名与函数名相同 前面加个下划线</span><br><span class="line">                console.log(&quot;here!&quot;)</span><br><span class="line">                obj.publicInt.value = 8888;</span><br><span class="line">                obj.privateInt.value = 9999;</span><br><span class="line">                //由于样本代码的原因，需要再主动调用一下Demo类日志输出函数test()，才能在adb的log界面看到输出改变</span><br><span class="line">                obj.test();</span><br><span class="line">                console.log(obj.privateInt.value )</span><br><span class="line">            &#125;,</span><br><span class="line">            onComplete: function()&#123;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        </span><br><span class="line">    &#125;);</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-Hook内部类"><a href="#5-Hook内部类" class="headerlink" title="5.Hook内部类"></a>5.Hook内部类</h3><p>不过好像不太行，eeeeeeee没有输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">function hookTest6()&#123;</span><br><span class="line">    Java.perform(function()&#123;</span><br><span class="line">        //内部类</span><br><span class="line">        var innerClass = Java.use(&quot;com.zj.wuaipojie.Demo$innerClass&quot;);</span><br><span class="line">        console.log(innerClass);</span><br><span class="line">        innerClass.$init.implementation = function()&#123;</span><br><span class="line">            console.log(&quot;eeeeeeee&quot;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-枚举所有的类与类的所有方法"><a href="#6-枚举所有的类与类的所有方法" class="headerlink" title="6.枚举所有的类与类的所有方法"></a>6.枚举所有的类与类的所有方法</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">function hookTest7()&#123;</span><br><span class="line">    Java.perform(function()&#123;</span><br><span class="line">        //枚举所有的类与类的所有方法,异步枚举</span><br><span class="line">        Java.enumerateLoadedClasses(&#123;</span><br><span class="line">            onMatch: function(name,handle)&#123;</span><br><span class="line">	            //过滤类名</span><br><span class="line">                if(name.indexOf(&quot;com.zj.wuaipojie.Demo&quot;) !=-1)&#123;</span><br><span class="line">                    console.log(name);</span><br><span class="line">                    var clazz =Java.use(name);</span><br><span class="line">                    console.log(clazz);</span><br><span class="line">                    var methods = clazz.class.getDeclaredMethods();</span><br><span class="line">                    console.log(methods);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;,</span><br><span class="line">            onComplete: function()&#123;&#125;</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-枚举所有方法"><a href="#7-枚举所有方法" class="headerlink" title="7.枚举所有方法"></a>7.枚举所有方法</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">function hookTest8()&#123;</span><br><span class="line">    Java.perform(function()&#123;</span><br><span class="line">        var Demo = Java.use(&quot;com.zj.wuaipojie.Demo&quot;);</span><br><span class="line">        //getDeclaredMethods枚举所有方法</span><br><span class="line">        var methods =Demo.class.getDeclaredMethods();</span><br><span class="line">        for(var j=0; j &lt; methods.length; j++)&#123;</span><br><span class="line">            var methodName = methods[j].getName();</span><br><span class="line">            console.log(methodName);</span><br><span class="line">            for(var k=0; k&lt;Demo[methodName].overloads.length;k++)&#123;</span><br><span class="line">                Demo[methodName].overloads[k].implementation = function()&#123;</span><br><span class="line">                    for(var i=0;i&lt;arguments.length;i++)&#123;</span><br><span class="line">                        console.log(arguments[i]);</span><br><span class="line">                    &#125;</span><br><span class="line">                    return this[methodName].apply(this,arguments);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-主动调用"><a href="#8-主动调用" class="headerlink" title="8.主动调用"></a>8.主动调用</h3><p>静态方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">function hookTest9()&#123;</span><br><span class="line">    Java.perform(function()&#123;</span><br><span class="line">        var ClassName=Java.use(&quot;com.zj.wuaipojie.Encode&quot;); </span><br><span class="line">        var ret = ClassName.encode(&quot;aaaaaaaaaaaa&quot;);</span><br><span class="line">        console.log(ret);</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>非静态方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">function hookTest10()&#123;</span><br><span class="line">    var ret = null;</span><br><span class="line">    Java.perform(function () &#123;</span><br><span class="line">        Java.choose(&quot;com.zj.wuaipojie.Demo&quot;,&#123;    //要hook的类</span><br><span class="line">            onMatch:function(instance)&#123;</span><br><span class="line">                ret=instance.privateFunc(&quot;aaaaaaa&quot;); //要hook的方法</span><br><span class="line">            &#125;,</span><br><span class="line">            onComplete:function()&#123;</span><br><span class="line">            	// console.log(&quot;result: &quot; + ret);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;)</span><br><span class="line">    //return ret;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://pic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://pic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://pic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2024/03/16/安卓Frida Hook基础/" title="安卓Frida Hook基础">https://www.giantbranch.cn/2024/03/16/安卓Frida Hook基础/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/安卓安全-Frida/" rel="tag"># 安卓安全,Frida</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2024/03/15/安卓so动态调试/" rel="next" title="安卓so动态调试">
+                <i class="fa fa-chevron-left"></i> 安卓so动态调试
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2024/03/17/安卓Frida Hook之objection/" rel="prev" title="安卓Frida Hook之objection">
+                安卓Frida Hook之objection <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">198</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">234</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Frida安装"><span class="nav-number">1.</span> <span class="nav-text">Frida安装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#python虚拟环境安装"><span class="nav-number">1.1.</span> <span class="nav-text">python虚拟环境安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Frida安装以及多版本处理"><span class="nav-number">1.2.</span> <span class="nav-text">Frida安装以及多版本处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Frida-server"><span class="nav-number">1.3.</span> <span class="nav-text">Frida-server</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Frida基础知识"><span class="nav-number">2.</span> <span class="nav-text">Frida基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-基础指令"><span class="nav-number">2.1.</span> <span class="nav-text">1.基础指令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-操作模式"><span class="nav-number">2.2.</span> <span class="nav-text">2.操作模式:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-注入模式与启动命令"><span class="nav-number">2.3.</span> <span class="nav-text">3.注入模式与启动命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-基础语法"><span class="nav-number">2.4.</span> <span class="nav-text">4. 基础语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-日志输出语法区别"><span class="nav-number">2.5.</span> <span class="nav-text">5.日志输出语法区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Hook框架模板"><span class="nav-number">2.6.</span> <span class="nav-text">6.Hook框架模板</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-Frida常用API"><span class="nav-number">2.7.</span> <span class="nav-text">7.Frida常用API</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Hook普通方法、打印参数和修改返回值"><span class="nav-number">2.7.1.</span> <span class="nav-text">1.Hook普通方法、打印参数和修改返回值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Hook重载参数"><span class="nav-number">2.7.2.</span> <span class="nav-text">2.Hook重载参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Hook构造函数"><span class="nav-number">2.7.3.</span> <span class="nav-text">3.Hook构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Hook字段"><span class="nav-number">2.7.4.</span> <span class="nav-text">4.Hook字段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-Hook内部类"><span class="nav-number">2.7.5.</span> <span class="nav-text">5.Hook内部类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-枚举所有的类与类的所有方法"><span class="nav-number">2.7.6.</span> <span class="nav-text">6.枚举所有的类与类的所有方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-枚举所有方法"><span class="nav-number">2.7.7.</span> <span class="nav-text">7.枚举所有方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-主动调用"><span class="nav-number">2.7.8.</span> <span class="nav-text">8.主动调用</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright"> &copy; 2017 &mdash; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i> 
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch(simplelogin.irjqx@aleeas.com)</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/"></a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2024/03/16/安卓Frida Hook基础/';
+          this.page.identifier = '2024/03/16/安卓Frida Hook基础/';
+          this.page.title = '安卓Frida Hook基础';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

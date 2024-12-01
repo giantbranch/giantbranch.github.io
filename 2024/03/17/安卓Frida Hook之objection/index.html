@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Frida,Hook,安卓安全,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="objection什么是ObjectionObjection 是一种用于移动应用安全测试和逆向工程的开源工具，特别是针对 Android 应用程序。它提供了一套强大的功能和命令行工具，帮助安全研究人员、渗透测试人员和开发人员分析和评估移动应用的安全性。 一些 Objection 提供的功能包括：  Runtime Mobile Exploration（RME）： 允许用户在设备上动态地探索和分析移">
+<meta name="keywords" content="Frida,Hook,安卓安全">
+<meta property="og:type" content="article">
+<meta property="og:title" content="安卓Frida Hook之objection">
+<meta property="og:url" content="https://www.giantbranch.cn/2024/03/17/安卓Frida Hook之objection/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="objection什么是ObjectionObjection 是一种用于移动应用安全测试和逆向工程的开源工具，特别是针对 Android 应用程序。它提供了一套强大的功能和命令行工具，帮助安全研究人员、渗透测试人员和开发人员分析和评估移动应用的安全性。 一些 Objection 提供的功能包括：  Runtime Mobile Exploration（RME）： 允许用户在设备上动态地探索和分析移">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/3d5d1185189ca52ba2504f8597c20ba1_1721117607153.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/fad6b8e02b1e401644cd029f31b974ec_1721117607165.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/c429182dba50ef71f604014a847b903a_1721117607166.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/8c17874276a7f68f612076c7fd5befc8_1721117607167.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/060a358c224dd4c62d30e849776fd994_1721117607168.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/fcaa2fd1b687ca6b8a0ac1dcc762a0f7_1721117607169.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/f962fb9f544aefd24c2b23c569629048_1721117607170.png">
+<meta property="og:updated_time" content="2024-12-01T02:32:49.302Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="安卓Frida Hook之objection">
+<meta name="twitter:description" content="objection什么是ObjectionObjection 是一种用于移动应用安全测试和逆向工程的开源工具，特别是针对 Android 应用程序。它提供了一套强大的功能和命令行工具，帮助安全研究人员、渗透测试人员和开发人员分析和评估移动应用的安全性。 一些 Objection 提供的功能包括：  Runtime Mobile Exploration（RME）： 允许用户在设备上动态地探索和分析移">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/3d5d1185189ca52ba2504f8597c20ba1_1721117607153.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2024/03/17/安卓Frida Hook之objection/">
+
+
+
+
+
+  <title>安卓Frida Hook之objection | giantbranch's blog</title>
+  
+
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SQ8CHXJB60"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SQ8CHXJB60');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-vulfound">
+          <a href="/vulfound/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br>
+            
+            漏洞挖掘
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2024/03/17/安卓Frida Hook之objection/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">安卓Frida Hook之objection</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2024-03-17T00:00:00+08:00">
+                2024-03-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/小书匠-日记-2024-03/" itemprop="url" rel="index">
+                    <span itemprop="name">/小书匠/日记/2024-03</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2024/03/17/安卓Frida Hook之objection/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2024/03/17/安卓Frida Hook之objection/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="objection"><a href="#objection" class="headerlink" title="objection"></a>objection</h1><h2 id="什么是Objection"><a href="#什么是Objection" class="headerlink" title="什么是Objection"></a>什么是Objection</h2><p>Objection 是一种用于移动应用安全测试和逆向工程的开源工具，特别是针对 Android 应用程序。它提供了一套强大的功能和命令行工具，帮助安全研究人员、渗透测试人员和开发人员分析和评估移动应用的安全性。</p>
+<p>一些 Objection 提供的功能包括：</p>
+<ol>
+<li><p><strong>Runtime Mobile Exploration（RME）：</strong> 允许用户在设备上动态地探索和分析移动应用程序。可以在运行时修改应用程序的行为、检查内存中的变量等。</p>
+</li>
+<li><p><strong>SSL Pinning Bypass：</strong> 可用于绕过应用程序中实现的 SSL Pinning 机制，从而更轻松地进行网络流量分析。</p>
+</li>
+<li><p><strong>Frida Scripting：</strong> 集成了 Frida 功能，可以编写脚本来 Hook 和修改应用程序的行为。</p>
+</li>
+<li><p><strong>API 集成：</strong> 可以通过 API 接口与 Objection 进行交互，使自动化测试和集成更容易。</p>
+</li>
+<li><p><strong>数据解密和加密分析：</strong> 可以帮助用户解密应用程序中的数据，并分析加密算法和实现。</p>
+<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2></li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mkvirtualenv frida14</span><br><span class="line">pip install objection</span><br><span class="line">pip install frida-tools</span><br></pre></td></tr></table></figure>
+
+<h2 id="objection快速上手"><a href="#objection快速上手" class="headerlink" title="objection快速上手"></a>objection快速上手</h2><h3 id="注入命令"><a href="#注入命令" class="headerlink" title="注入命令"></a>注入命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">objection -g 包名 explore</span><br><span class="line"></span><br><span class="line">-   help：不知道当前命令的效果是什么，在当前命令前加help比如:help env，回车之后会出现当前命令的解释信息</span><br><span class="line">-   按空格：不知道输入什么就按空格，会有提示出来</span><br><span class="line">-   jobs：可以进行多项hook</span><br><span class="line">-   日志：objection的日志文件生成在 C:\Users\Administrator\.objection</span><br></pre></td></tr></table></figure>
+
+<h3 id="启动前就hook"><a href="#启动前就hook" class="headerlink" title="启动前就hook"></a>启动前就hook</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">objection -g 进程名 explore --startup-command &quot;android hooking watch class 路径.类名&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="objection基础api"><a href="#objection基础api" class="headerlink" title="objection基础api"></a>objection基础api</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">memory list modules   -查看内存中加载的库</span><br><span class="line">memory list exports so名称 - 查看库的导出函数</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">com.zj.wuaipojie on (OnePlus: 11) [usb] # memory list exports libandroidio.so</span><br><span class="line">Save the output by adding `--json exports.json` to this command</span><br><span class="line">Type      Name                                        Address</span><br><span class="line">--------  ------------------------------------------  ------------</span><br><span class="line">function  async_close_monitor_create                  0x7625e87124</span><br><span class="line">function  async_close_monitor_destroy                 0x7625e87190</span><br><span class="line">function  async_close_monitor_signal_blocked_threads  0x7625e870ac</span><br><span class="line">function  async_close_monitor_static_init             0x7625e87014</span><br><span class="line">function  async_close_monitor_was_signalled           0x7625e87200</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android hooking list activities -查看内存中加载的activity   android hooking list services -查看内存中加载的services</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">android intent launch_activity 类名 -启动`activity`或`service`(可以用于一些没有验证的activity,在一些简单的ctf中有时候可以出奇效)</span><br><span class="line"></span><br><span class="line">例子：android intent launch_activity com.zj.wuaipojie.ui.ChallengeThird</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">关闭ssl校验  <span class="keyword">android </span>sslpinning <span class="keyword">disable</span></span><br><span class="line"><span class="keyword">关闭root检测 </span> <span class="keyword">android </span>root <span class="keyword">disable</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="objection内存漫游"><a href="#objection内存漫游" class="headerlink" title="objection内存漫游"></a>objection内存漫游</h2><ol>
+<li>内存搜刮类实例</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">com.zj.wuaipojie on (google: 13) [usb] # android heap search instances com.zj.wuaipojie.Demo</span><br><span class="line">Class instance enumeration complete for com.zj.wuaipojie.Demo</span><br><span class="line"> Hashcode  Class                  toString()</span><br><span class="line">---------  ---------------------  -----------------------------</span><br><span class="line">127867717  com.zj.wuaipojie.Demo  com.zj.wuaipojie.Demo@79f1b45</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>调用实例的方法</li>
+</ol>
+<p>无参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">com.zj.wuaipojie on (google: 13) [usb] # android heap execute 127867717 getPublicInt</span><br><span class="line">Handle 127867717 is to class</span><br><span class="line">        com.zj.wuaipojie.Demo</span><br><span class="line">Executing method: getPublicInt()</span><br><span class="line">200</span><br></pre></td></tr></table></figure>
+
+<p>有参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">com.zj.wuaipojie on (google: 13) [usb] # android heap evaluate 127867717</span><br><span class="line">(The hashcode at `127867717` will be available as the `clazz` variable.)</span><br><span class="line">console.log(clazz.a(&quot;修改后的&quot;));</span><br><span class="line">JavaScript capture complete. Evaluating...</span><br><span class="line">Handle 127867717 is to class</span><br><span class="line">        com.zj.wuaipojie.Demo</span><br><span class="line">这是一个修改后的方法</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>android hooking list classes -列出内存中所有的类(结果比静态分析的更准确)<br>这个列出的太多了，一般用不到</li>
+<li>android hooking search classes 关键类名 -在内存中所有已加载的类中搜索包含特定关键词的类</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">com.zj.wuaipojie on (google: 13) [usb] # android hooking search classes wuaipojie</span><br><span class="line">Note that Java classes are only loaded when they are used, so if the expected class has not been found, it might not have been loaded yet.</span><br><span class="line">com.zj.wuaipojie.Demo</span><br><span class="line">com.zj.wuaipojie.Demo$Animal</span><br><span class="line">com.zj.wuaipojie.Demo$Companion</span><br><span class="line">com.zj.wuaipojie.Demo$InnerClass</span><br><span class="line">com.zj.wuaipojie.Demo$test$1</span><br><span class="line">com.zj.wuaipojie.MainApplication</span><br><span class="line">com.zj.wuaipojie.databinding.ActivityMainBinding</span><br><span class="line">com.zj.wuaipojie.databinding.FragmentHomeBinding</span><br><span class="line">com.zj.wuaipojie.ui.Adapter.ChallengeAdapter</span><br><span class="line">com.zj.wuaipojie.ui.Adapter.ChallengeAdapter$$ExternalSyntheticLambda0</span><br><span class="line">com.zj.wuaipojie.ui.Adapter.ChallengeAdapter$ViewHolder</span><br><span class="line">com.zj.wuaipojie.ui.Challenge</span><br><span class="line">com.zj.wuaipojie.ui.ChallengeSixth</span><br><span class="line">com.zj.wuaipojie.ui.ChallengeSixth$$ExternalSyntheticLambda0</span><br><span class="line">com.zj.wuaipojie.ui.ChallengeSixth$$ExternalSyntheticLambda1</span><br><span class="line">com.zj.wuaipojie.ui.ChallengeSixth$$ExternalSyntheticLambda2</span><br><span class="line">com.zj.wuaipojie.ui.ChallengeSixth$$ExternalSyntheticLambda3</span><br><span class="line">com.zj.wuaipojie.ui.Fragment.ChallengeFragment</span><br><span class="line">com.zj.wuaipojie.ui.Fragment.HomeFragment</span><br><span class="line">com.zj.wuaipojie.ui.MainActivity</span><br><span class="line">com.zj.wuaipojie.ui.MainActivity$$ExternalSyntheticLambda0</span><br><span class="line">com.zj.wuaipojie.ui.MainActivity$handler$1</span><br><span class="line">com.zj.wuaipojie.ui.MainActivity$inlined$sam$i$androidx_navigation_ui_AppBarConfiguration_OnNavigateUpListener$0</span><br><span class="line">com.zj.wuaipojie.ui.MainActivity$onCreate$$inlined$AppBarConfiguration$default$1</span><br><span class="line">com.zj.wuaipojie.util.SPUtils</span><br><span class="line"></span><br><span class="line">Found 25 classes</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>android hooking search methods 关键方法名 -在内存中所有已加载的类的方法中搜索包含特定关键词的方法(一般不建议使用，特别耗时，还可能崩溃)</li>
+</ol>
+<ol start="6">
+<li>android hooking list class_methods 类名 -内存漫游类中的所有方法</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">com.zj.wuaipojie on (google: 13) [usb] # android hooking list class_methods com.zj.wuaipojie.Demo</span><br><span class="line">private final void com.zj.wuaipojie.Demo.complexParameterFunc(java.lang.String,java.util.HashMap&lt;java.lang.Object, java.lang.Object&gt;)</span><br><span class="line">private final void com.zj.wuaipojie.Demo.privateFunc(java.lang.String)</span><br><span class="line">private final void com.zj.wuaipojie.Demo.refl()</span><br><span class="line">private final void com.zj.wuaipojie.Demo.repleaceFunc()</span><br><span class="line">private final void com.zj.wuaipojie.Demo.staticPrivateFunc(java.lang.String)</span><br><span class="line">public final int com.zj.wuaipojie.Demo.getPublicInt()</span><br><span class="line">public final java.lang.String com.zj.wuaipojie.Demo.a(java.lang.String)</span><br><span class="line">public final void com.zj.wuaipojie.Demo.Inner(com.zj.wuaipojie.Demo$Animal,java.lang.String)</span><br><span class="line">public final void com.zj.wuaipojie.Demo.setPublicInt(int)</span><br><span class="line">public final void com.zj.wuaipojie.Demo.test()</span><br><span class="line">public static final java.lang.String com.zj.wuaipojie.Demo.access$getStaticField$cp()</span><br><span class="line"></span><br><span class="line">Found 11 method(s)</span><br><span class="line"></span><br><span class="line">com.zj.wuaipojie on (google: 13) [usb] # android hooking list class_methods com.zj.wuaipojie.ui.ChallengeSixth</span><br><span class="line">private static final void com.zj.wuaipojie.ui.ChallengeSixth.onCreate$lambda-0(com.zj.wuaipojie.ui.ChallengeSixth,android.view.View)</span><br><span class="line">private static final void com.zj.wuaipojie.ui.ChallengeSixth.onCreate$lambda-1(com.zj.wuaipojie.ui.ChallengeSixth,android.view.View)</span><br><span class="line">private static final void com.zj.wuaipojie.ui.ChallengeSixth.onCreate$lambda-2(com.zj.wuaipojie.ui.ChallengeSixth,android.view.View)</span><br><span class="line">private static final void com.zj.wuaipojie.ui.ChallengeSixth.onCreate$lambda-3(com.zj.wuaipojie.ui.ChallengeSixth,android.view.View)</span><br><span class="line">protected void com.zj.wuaipojie.ui.ChallengeSixth.onCreate(android.os.Bundle)</span><br><span class="line">public final java.lang.String com.zj.wuaipojie.ui.ChallengeSixth.hexToString(java.lang.String)</span><br><span class="line">public final java.lang.String com.zj.wuaipojie.ui.ChallengeSixth.unicodeToString(java.lang.String)</span><br><span class="line">public final void com.zj.wuaipojie.ui.ChallengeSixth.toastPrint(java.lang.String)</span><br><span class="line">public static void com.zj.wuaipojie.ui.ChallengeSixth.$r8$lambda$1lrkrgiCEFWXZDHzLRibYURG1h8(com.zj.wuaipojie.ui.ChallengeSixth,android.view.View)</span><br><span class="line">public static void com.zj.wuaipojie.ui.ChallengeSixth.$r8$lambda$IUqwMqbTKaOGiTaeOmvy_GjNBso(com.zj.wuaipojie.ui.ChallengeSixth,android.view.View)</span><br><span class="line">public static void com.zj.wuaipojie.ui.ChallengeSixth.$r8$lambda$Kc_cRYZjjhjsTl6GYNHbgD-i6sE(com.zj.wuaipojie.ui.ChallengeSixth,android.view.View)</span><br><span class="line">public static void com.zj.wuaipojie.ui.ChallengeSixth.$r8$lambda$PDKm2AfziZQo6Lv1HEFkJWkUsoE(com.zj.wuaipojie.ui.ChallengeSixth,android.view.View)</span><br><span class="line"></span><br><span class="line">Found 12 method(s)</span><br></pre></td></tr></table></figure>
+
+<h2 id="objectionHook"><a href="#objectionHook" class="headerlink" title="objectionHook"></a>objectionHook</h2><ol>
+<li><p>hook类的所有方法</p>
+<p>好像没什么效果</p>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">com.zj.wuaipojie on (google: 13) [usb] # android hooking watch class com.zj.wuaipojie.Demo --dump-backtrace --dump-args</span><br><span class="line"> --dump-return</span><br><span class="line">(agent) Hooking com.zj.wuaipojie.Demo.access$getStaticField$cp()</span><br><span class="line">(agent) Hooking com.zj.wuaipojie.Demo.complexParameterFunc(java.lang.String, java.util.HashMap)</span><br><span class="line">(agent) Hooking com.zj.wuaipojie.Demo.privateFunc(java.lang.String)</span><br><span class="line">(agent) Hooking com.zj.wuaipojie.Demo.refl()</span><br><span class="line">(agent) Hooking com.zj.wuaipojie.Demo.repleaceFunc()</span><br><span class="line">(agent) Hooking com.zj.wuaipojie.Demo.staticPrivateFunc(java.lang.String)</span><br><span class="line">(agent) Hooking com.zj.wuaipojie.Demo.Inner(com.zj.wuaipojie.Demo$Animal, java.lang.String)</span><br><span class="line">(agent) Hooking com.zj.wuaipojie.Demo.a(java.lang.String)</span><br><span class="line">(agent) Hooking com.zj.wuaipojie.Demo.getPublicInt()</span><br><span class="line">(agent) Hooking com.zj.wuaipojie.Demo.setPublicInt(int)</span><br><span class="line">(agent) Hooking com.zj.wuaipojie.Demo.test()</span><br><span class="line">(agent) Registering job 919624. Type: watch-class for: com.zj.wuaipojie.Demo</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>hook方法的参数、返回值和调用栈</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">com.zj.wuaipojie on (google: 13) [usb] # android hooking watch class_method com.zj.wuaipojie.Demo.a --dump-args --dump-</span><br><span class="line">return --dump-backtrace</span><br><span class="line">(agent) Attempting to watch class com.zj.wuaipojie.Demo and method a.</span><br><span class="line">(agent) Hooking com.zj.wuaipojie.Demo.a(java.lang.String)</span><br><span class="line">(agent) Registering job 276091. Type: watch-method for: com.zj.wuaipojie.Demo.a</span><br><span class="line">com.zj.wuaipojie on (google: 13) [usb] # (agent) [276091] Called com.zj.wuaipojie.Demo.a(java.lang.String)</span><br><span class="line">(agent) [276091] Backtrace:</span><br><span class="line">        com.zj.wuaipojie.Demo.a(Native Method)</span><br><span class="line">        com.zj.wuaipojie.Demo.test(Demo.kt:19)</span><br><span class="line">        com.zj.wuaipojie.ui.ChallengeSixth.onCreate(ChallengeSixth.kt:36)</span><br><span class="line">        android.app.Activity.performCreate(Activity.java:8342)</span><br><span class="line">        android.app.Activity.performCreate(Activity.java:8321)</span><br><span class="line">        android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1417)</span><br><span class="line">        android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3625)</span><br><span class="line">        android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3781)</span><br><span class="line">        android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:101)</span><br><span class="line">        android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:138)</span><br><span class="line">        android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:95)</span><br><span class="line">        android.app.ActivityThread$H.handleMessage(ActivityThread.java:2306)</span><br><span class="line">        android.os.Handler.dispatchMessage(Handler.java:106)</span><br><span class="line">        android.os.Looper.loopOnce(Looper.java:201)</span><br><span class="line">        android.os.Looper.loop(Looper.java:288)</span><br><span class="line">        android.app.ActivityThread.main(ActivityThread.java:7918)</span><br><span class="line">        java.lang.reflect.Method.invoke(Native Method)</span><br><span class="line">        com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)</span><br><span class="line">        com.android.internal.os.ZygoteInit.main(ZygoteInit.java:936)</span><br><span class="line"></span><br><span class="line">(agent) [276091] Arguments com.zj.wuaipojie.Demo.a(普通)</span><br><span class="line">(agent) [276091] Return Value: 这是一个普通方法</span><br></pre></td></tr></table></figure>
+
+<p>其他例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android hooking watch class_method com.zj.wuaipojie.Demo.privateFunc --dump-args --dump-return --dump-backtrace</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>hook 类的构造方法</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android hooking watch class_method com.zj.wuaipojie.Demo.$init --dump-args --dump-backtrace</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>hook 方法的所有重载</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android hooking watch class_method com.zj.wuaipojie.Demo.repleaceFunc</span><br></pre></td></tr></table></figure>
+
+<p>调用repleaceFunc的时候会显示</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(agent) [107162] Called com.zj.wuaipojie.Demo.repleaceFunc()</span><br></pre></td></tr></table></figure>
+
+<h1 id="trace实战java控制流混淆"><a href="#trace实战java控制流混淆" class="headerlink" title="trace实战java控制流混淆"></a>trace实战java控制流混淆</h1><p>项目地址：<br><a href="https://github.com/CodingGay/BlackObfuscator" target="_blank" rel="noopener">BlackObfuscator</a></p>
+<p>示例1：<br><img src="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/3d5d1185189ca52ba2504f8597c20ba1_1721117607153.png" alt></p>
+<p>示例2：</p>
+<p><img src="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/fad6b8e02b1e401644cd029f31b974ec_1721117607165.png" alt></p>
+<h2 id="对抗方法"><a href="#对抗方法" class="headerlink" title="对抗方法"></a>对抗方法</h2><ol>
+<li>ZenTracer<br><a href="https://github.com/hluwa/ZenTracer" target="_blank" rel="noopener">项目地址</a></li>
+</ol>
+<p>缺点:无法打印调用栈，无法<code>hook</code>构造函数</p>
+<p>支持frida的版本<code>firda==14.2.18</code>，可以通过<code>frida-tools==9.2.4</code>来安装</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip install frida-tools==9.2.4</span><br><span class="line">pip install PyQt5</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//使用说明</span><br><span class="line">1.运行server端</span><br><span class="line">2.点击action</span><br><span class="line">3.点击Match Regex设置过滤标签</span><br><span class="line">4.输入包名(或者方法名等可以过滤的标签)，点击add</span><br><span class="line">5.点击action的start</span><br><span class="line">6.点击应用触发相应的逻辑</span><br><span class="line">7.可左上角fils-Export JSON来导出日志分析</span><br></pre></td></tr></table></figure>
+
+<p><strong>具体使用实例</strong></p>
+<ol>
+<li>先启动frida-server</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">OnePlus3:/data/local/tmp # ./frida-server-14.2.18-android-arm64</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>手机打开要分析的app</li>
+</ol>
+<ol start="3">
+<li>电脑端设置过滤</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/c429182dba50ef71f604014a847b903a_1721117607166.png" alt><br><img src="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/8c17874276a7f68f612076c7fd5befc8_1721117607167.png" alt></p>
+<ol start="4">
+<li>之后点击start，有下面的日志说明hook成功</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/060a358c224dd4c62d30e849776fd994_1721117607168.png" alt><br>清空软件的log，点击app的功能（这里是flag验证）</p>
+<p><img src="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/fcaa2fd1b687ca6b8a0ac1dcc762a0f7_1721117607169.png" alt></p>
+<p>就可以看到使用的加密算法，加密后的返回值，最终retval是</p>
+<p>tips：可以导出json复制查看</p>
+<p><img src="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/f962fb9f544aefd24c2b23c569629048_1721117607170.png" alt></p>
+<ol start="3">
+<li><ol start="2">
+<li>r0tracer<br><a href="https://github.com/r0ysue/r0tracer" target="_blank" rel="noopener">项目地址</a></li>
+</ol>
+</li>
+</ol>
+<p>兼容最新版本frida，16.2.1</p>
+<p><strong>使用方法</strong></p>
+<ol>
+<li>修改r0tracer.js文件最底部处的代码，开启某一个Hook模式。</li>
+</ol>
+<p>比如hook有wuaipojie2023_1关键字的所有类</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hook(&quot;wuaipojie2023_1&quot;);</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>推荐使用Frida14版本，并且将日志使用-o参数进行输出保存</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">frida -U -f com.zj.wuaipojie2023_1 -l r0tracer.js  --no-pause</span><br><span class="line">frida -U -f com.zj.wuaipojie2023_1 -l r0tracer.js  --no-pause -o saveLog.txt</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>“-f”为Spawn模式，去掉”-f”为Attach模式</p>
+</blockquote>
+<p><strong>注意：</strong> hook不到类的话，还<strong>需要再app点击相应的功能</strong>，之后执行<code>%reload</code>一下，看看是否hook所有类</p>
+<p>最开始也是只有4个类</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Search Class Completed!</span><br><span class="line">On Total Tracing :4 classes :</span><br><span class="line">com.zj.wuaipojie2023_1.MainActivity</span><br><span class="line">com.zj.wuaipojie2023_1.MD5Utils</span><br><span class="line">com.zj.wuaipojie2023_1.Base64Utils</span><br><span class="line">com.zj.wuaipojie2023_1.MainActivity$$ExternalSyntheticLambda0</span><br><span class="line">Start Tracing ...</span><br></pre></td></tr></table></figure>
+
+<p>后面app点击相应的功能，之后执行<code>%reload</code>一下才hook7个</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Search Class Completed!</span><br><span class="line">On Total Tracing :7 classes :</span><br><span class="line">com.zj.wuaipojie2023_1.B</span><br><span class="line">com.zj.wuaipojie2023_1.MainActivity</span><br><span class="line">com.zj.wuaipojie2023_1.C</span><br><span class="line">com.zj.wuaipojie2023_1.MD5Utils</span><br><span class="line">com.zj.wuaipojie2023_1.Base64Utils</span><br><span class="line">com.zj.wuaipojie2023_1.MainActivity$$ExternalSyntheticLambda0</span><br><span class="line">com.zj.wuaipojie2023_1.A</span><br><span class="line">Start Tracing ...</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>Frida版本=&lt;12时，要加上–runtime=v8选项</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://pic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://pic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://pic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2024/03/17/安卓Frida Hook之objection/" title="安卓Frida Hook之objection">https://www.giantbranch.cn/2024/03/17/安卓Frida Hook之objection/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Frida-Hook-安卓安全/" rel="tag"># Frida,Hook,安卓安全</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2024/03/16/安卓Frida Hook基础/" rel="next" title="安卓Frida Hook基础">
+                <i class="fa fa-chevron-left"></i> 安卓Frida Hook基础
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2024/03/18/安卓Frida Hook进阶/" rel="prev" title="安卓Frida Hook进阶">
+                安卓Frida Hook进阶 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">198</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">234</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#objection"><span class="nav-number">1.</span> <span class="nav-text">objection</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是Objection"><span class="nav-number">1.1.</span> <span class="nav-text">什么是Objection</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#环境配置"><span class="nav-number">1.2.</span> <span class="nav-text">环境配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#objection快速上手"><span class="nav-number">1.3.</span> <span class="nav-text">objection快速上手</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#注入命令"><span class="nav-number">1.3.1.</span> <span class="nav-text">注入命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动前就hook"><span class="nav-number">1.3.2.</span> <span class="nav-text">启动前就hook</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#objection基础api"><span class="nav-number">1.4.</span> <span class="nav-text">objection基础api</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#objection内存漫游"><span class="nav-number">1.5.</span> <span class="nav-text">objection内存漫游</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#objectionHook"><span class="nav-number">1.6.</span> <span class="nav-text">objectionHook</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#trace实战java控制流混淆"><span class="nav-number">2.</span> <span class="nav-text">trace实战java控制流混淆</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#对抗方法"><span class="nav-number">2.1.</span> <span class="nav-text">对抗方法</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright"> &copy; 2017 &mdash; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i> 
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch(simplelogin.irjqx@aleeas.com)</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/"></a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2024/03/17/安卓Frida Hook之objection/';
+          this.page.identifier = '2024/03/17/安卓Frida Hook之objection/';
+          this.page.title = '安卓Frida Hook之objection';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

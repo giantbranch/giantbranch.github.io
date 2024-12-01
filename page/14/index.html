@@ -302,7 +302,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/02/04/apache和nginx设置反向代理/">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/05/06/AFL fuzz工具初探/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="giantbranch">
@@ -321,7 +321,7 @@
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/02/04/apache和nginx设置反向代理/" itemprop="url">apache和nginx设置反向代理</a></h2>
+                <a class="post-title-link" href="/2018/05/06/AFL fuzz工具初探/" itemprop="url">AFL fuzz工具初探</a></h2>
         
 
         <div class="post-meta">
@@ -333,8 +333,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-04T08:00:00+08:00">
-                2018-02-04
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-06T08:00:00+08:00">
+                2018-05-06
               </time>
             
 
@@ -352,8 +352,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2018/02/04/apache和nginx设置反向代理/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/02/04/apache和nginx设置反向代理/" itemprop="commentCount"></span>
+                <a href="/2018/05/06/AFL fuzz工具初探/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/05/06/AFL fuzz工具初探/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -383,15 +383,11 @@
       
         
           
-          apache123a2enmod proxya2enmod proxy_httpa2enmod proxy_connect
-
-之后编辑/etc/apache2/mods-available/proxy.conf
-加个这个，或者修改助理里面的proxy
-1234&lt;Proxy *&gt;		Ord
+          下载 &amp;&amp; 安装1234wget http://lcamtuf.coredump.cx/afl/releases/afl-latest.tgztar -xvf ./afl-latest.tgzcd afl-2.52b/sudo make &amp;&amp; sudo make in
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/02/04/apache和nginx设置反向代理/#more" rel="contents">
+            <a class="btn" href="/2018/05/06/AFL fuzz工具初探/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -443,7 +439,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/02/02/简单实践Radare2/">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/05/03/D-Link_DIR-815_路由器多次溢出分析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="giantbranch">
@@ -462,7 +458,7 @@
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/02/02/简单实践Radare2/" itemprop="url">简单实践Radare2</a></h2>
+                <a class="post-title-link" href="/2018/05/03/D-Link_DIR-815_路由器多次溢出分析/" itemprop="url">D-Link DIR-815 路由器多次溢出分析</a></h2>
         
 
         <div class="post-meta">
@@ -474,8 +470,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-02T08:00:00+08:00">
-                2018-02-02
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-03T08:00:00+08:00">
+                2018-05-03
               </time>
             
 
@@ -493,8 +489,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2018/02/02/简单实践Radare2/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/02/02/简单实践Radare2/" itemprop="commentCount"></span>
+                <a href="/2018/05/03/D-Link_DIR-815_路由器多次溢出分析/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/05/03/D-Link_DIR-815_路由器多次溢出分析/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -524,15 +520,14 @@
       
         
           
-          安装与简介123$ git clone https://github.com/radare/radare2$ cd radare2$ sudo sys/install.sh
-
-这个软件的优势应该是开源，支持多架构，多系统
-实践rabin2第一个工具rabin2，这个比readelf，file强大
-1
+          beforeexploitdb链接：https://www.exploit-db.com/exploits/33863/
+简要分析我们根据描述可以看到漏洞是hedwig.cgi在处理过长的cookie出现的漏洞
+我们下载固件并binwalk解压
+ftp://54.187.190.227/PRODUC
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/02/02/简单实践Radare2/#more" rel="contents">
+            <a class="btn" href="/2018/05/03/D-Link_DIR-815_路由器多次溢出分析/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -584,7 +579,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/02/01/Murus 1.4.11 - Local Privilege Escalation 漏洞简析/">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/04/16/一次qemu动态调试路由程序的记录/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="giantbranch">
@@ -603,7 +598,7 @@
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/02/01/Murus 1.4.11 - Local Privilege Escalation 漏洞简析/" itemprop="url">Murus 1.4.11 - Local Privilege Escalation 漏洞简析</a></h2>
+                <a class="post-title-link" href="/2018/04/16/一次qemu动态调试路由程序的记录/" itemprop="url">一次qemu动态调试路由程序的记录</a></h2>
         
 
         <div class="post-meta">
@@ -615,8 +610,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-01T08:00:00+08:00">
-                2018-02-01
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-16T08:00:00+08:00">
+                2018-04-16
               </time>
             
 
@@ -634,8 +629,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2018/02/01/Murus 1.4.11 - Local Privilege Escalation 漏洞简析/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/02/01/Murus 1.4.11 - Local Privilege Escalation 漏洞简析/" itemprop="commentCount"></span>
+                <a href="/2018/04/16/一次qemu动态调试路由程序的记录/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/04/16/一次qemu动态调试路由程序的记录/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -665,14 +660,16 @@
       
         
           
-          没有mac的苦逼就直接分析代码了
-首先Murus是mac的防火墙，这个东西只要可以以admin权限运行就可以提权了
-step1首先我们看到编译一个c程序
-1234567891011121314151617181920cat &gt; /tmp/murus411_exp.c &lt;&lt;EOF#i
+          实践下载固件ftp://54.187.190.227/PRODUCTS/DIR-605L/REVA/DIR-605L_FIRMWARE_1.13.ZIP，
+binwalk解开
+1binwalk -e ./dir605L_FW_113.bin
+
+讲qemu-mips复制到固件根目录
+1cp $(whi
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/02/01/Murus 1.4.11 - Local Privilege Escalation 漏洞简析/#more" rel="contents">
+            <a class="btn" href="/2018/04/16/一次qemu动态调试路由程序的记录/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -724,7 +721,7 @@ step1首先我们看到编译一个c程序
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/02/01/读《如何做好首席安全官 》/">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/04/02/CTF线下赛的一些有用的东西/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="giantbranch">
@@ -743,7 +740,7 @@ step1首先我们看到编译一个c程序
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/02/01/读《如何做好首席安全官 》/" itemprop="url">读《如何做好首席安全官 》</a></h2>
+                <a class="post-title-link" href="/2018/04/02/CTF线下赛的一些有用的东西/" itemprop="url">CTF线下赛的一些有用的东西</a></h2>
         
 
         <div class="post-meta">
@@ -755,8 +752,8 @@ step1首先我们看到编译一个c程序
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-01T08:00:00+08:00">
-                2018-02-01
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-02T08:00:00+08:00">
+                2018-04-02
               </time>
             
 
@@ -774,8 +771,8 @@ step1首先我们看到编译一个c程序
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2018/02/01/读《如何做好首席安全官 》/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/02/01/读《如何做好首席安全官 》/" itemprop="commentCount"></span>
+                <a href="/2018/04/02/CTF线下赛的一些有用的东西/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/04/02/CTF线下赛的一些有用的东西/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -805,13 +802,12 @@ step1首先我们看到编译一个c程序
       
         
           
-          其实还没毕业的时候会有过这个想法，当然现在也有，不然关注这个干嘛，或许以后会变也不一定，或许想去创业，或许只是想一直搞技术，玩出自己想要的就好了。
-当时想的是其实比较简单，就是知识面比较广，又有管理能力，那么就可以了。那我们看看作者说得东西，我再去跟进。
-业务理解与赋能这个不错的，你对你保护的对象都
+          什么软waf，文件监控都很老了，这有个开源的 https://github.com/ssooking/CTFDefense本项目开发了一个简单的在CTF线下赛中截取攻击流量的日志工具 https://github.com/Bluekezhou/binaryWaf
+怎么去patch格式化串漏洞的程序：
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/02/01/读《如何做好首席安全官 》/#more" rel="contents">
+            <a class="btn" href="/2018/04/02/CTF线下赛的一些有用的东西/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -863,7 +859,7 @@ step1首先我们看到编译一个c程序
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/01/28/搭建mhn蜜罐管理系统并部署蜜罐/">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/03/21/用Firmware Analysis Toolkit简单地启动一个模拟路由/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="giantbranch">
@@ -882,7 +878,7 @@ step1首先我们看到编译一个c程序
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/01/28/搭建mhn蜜罐管理系统并部署蜜罐/" itemprop="url">搭建mhn蜜罐管理系统并部署蜜罐</a></h2>
+                <a class="post-title-link" href="/2018/03/21/用Firmware Analysis Toolkit简单地启动一个模拟路由/" itemprop="url">用Firmware Analysis Toolkit简单地启动一个模拟路由</a></h2>
         
 
         <div class="post-meta">
@@ -894,8 +890,8 @@ step1首先我们看到编译一个c程序
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-28T08:00:00+08:00">
-                2018-01-28
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-21T08:00:00+08:00">
+                2018-03-21
               </time>
             
 
@@ -913,8 +909,8 @@ step1首先我们看到编译一个c程序
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2018/01/28/搭建mhn蜜罐管理系统并部署蜜罐/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/01/28/搭建mhn蜜罐管理系统并部署蜜罐/" itemprop="commentCount"></span>
+                <a href="/2018/03/21/用Firmware Analysis Toolkit简单地启动一个模拟路由/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/03/21/用Firmware Analysis Toolkit简单地启动一个模拟路由/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -944,14 +940,15 @@ step1首先我们看到编译一个c程序
       
         
           
-          安装12345sudo apt-get install git -ycd /opt/sudo git clone https://github.com/threatstream/mhn.gitcd mhn/sudo ./install.sh
+          运行fat.py
+12/home/oit/tools/firmadyne [git::master *] [oit@ubuntu] [2:58]&gt; ./fat.py
 
-配置默认就行，邮箱和密码要记住，后面要用
-1234567
+输入你下载的zip的路径，在输入下brand就可以了
+最后再就是输入user firmadyne的密码，密码也是firmady
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/01/28/搭建mhn蜜罐管理系统并部署蜜罐/#more" rel="contents">
+            <a class="btn" href="/2018/03/21/用Firmware Analysis Toolkit简单地启动一个模拟路由/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1003,7 +1000,7 @@ step1首先我们看到编译一个c程序
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/01/22/简单实践传说中的2T每秒的DRDoS/">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/03/12/CVE-2011-0065-Firefox 3.6.16 mChannel 释放重引用漏洞/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="giantbranch">
@@ -1022,7 +1019,7 @@ step1首先我们看到编译一个c程序
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/01/22/简单实践传说中的2T每秒的DRDoS/" itemprop="url">简单实践传说中的2T/S的DRDoS</a></h2>
+                <a class="post-title-link" href="/2018/03/12/CVE-2011-0065-Firefox 3.6.16 mChannel 释放重引用漏洞/" itemprop="url">CVE-2011-0065-Firefox 3.6.16 mChannel 释放重引用漏洞</a></h2>
         
 
         <div class="post-meta">
@@ -1034,8 +1031,8 @@ step1首先我们看到编译一个c程序
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-22T08:00:00+08:00">
-                2018-01-22
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-12T08:00:00+08:00">
+                2018-03-12
               </time>
             
 
@@ -1053,8 +1050,8 @@ step1首先我们看到编译一个c程序
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2018/01/22/简单实践传说中的2T每秒的DRDoS/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/01/22/简单实践传说中的2T每秒的DRDoS/" itemprop="commentCount"></span>
+                <a href="/2018/03/12/CVE-2011-0065-Firefox 3.6.16 mChannel 释放重引用漏洞/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/03/12/CVE-2011-0065-Firefox 3.6.16 mChannel 释放重引用漏洞/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -1084,17 +1081,13 @@ step1首先我们看到编译一个c程序
       
         
           
-          说一下DRDos我们知道Dos是拒绝服务攻击，DDos是分布式的，那么这个R是反射的意思，DNS放大的拒绝服务就是这种,这次我们实践的是memcache的DRDos，当然我们只是看看发送和返回的差异
-这个实验基于：
-
-memcache无认证（有认证基本没戏啊）
-udp的源ip可伪造性
-
-测试环境一个
+          环境win7  32windbg
+漏洞分析先开启hpa，再打开poc
+1234C:\Program Files\Debugging Tools for Windows (x86)&gt;gflags.exe /i &quot;C:\Program Files\Mozilla Firefox\fire
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/01/22/简单实践传说中的2T每秒的DRDoS/#more" rel="contents">
+            <a class="btn" href="/2018/03/12/CVE-2011-0065-Firefox 3.6.16 mChannel 释放重引用漏洞/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1146,7 +1139,7 @@ udp的源ip可伪造性
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/01/21/使用远程线程注入DLL/">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/03/11/PortDog端口扫描异常检测工具源码简析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="giantbranch">
@@ -1165,7 +1158,7 @@ udp的源ip可伪造性
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/01/21/使用远程线程注入DLL/" itemprop="url">使用远程线程注入DLL</a></h2>
+                <a class="post-title-link" href="/2018/03/11/PortDog端口扫描异常检测工具源码简析/" itemprop="url">PortDog端口扫描异常检测工具源码简析</a></h2>
         
 
         <div class="post-meta">
@@ -1177,8 +1170,8 @@ udp的源ip可伪造性
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-21T08:00:00+08:00">
-                2018-01-21
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-11T08:00:00+08:00">
+                2018-03-11
               </time>
             
 
@@ -1196,8 +1189,8 @@ udp的源ip可伪造性
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2018/01/21/使用远程线程注入DLL/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/01/21/使用远程线程注入DLL/" itemprop="commentCount"></span>
+                <a href="/2018/03/11/PortDog端口扫描异常检测工具源码简析/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/03/11/PortDog端口扫描异常检测工具源码简析/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -1227,17 +1220,12 @@ udp的源ip可伪造性
       
         
           
-          总览注入
-
-OpenProcess()
-VirtualAllocEx()
-WriteProcessMemory()
-GetProcessAddress() -&gt; LoadLibrary
-CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
+          总览首先获取要捕获的网卡的流量（其实这个不太好，因为我们要检测的网卡不一定排在第一啊，这个可以根据自己的实际情况修改）
+1LANip = commands.getoutput(&quot;/sbin/ifconfig&quot;).split(&quot;\n&quot;)[1].split()[1
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/01/21/使用远程线程注入DLL/#more" rel="contents">
+            <a class="btn" href="/2018/03/11/PortDog端口扫描异常检测工具源码简析/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1289,7 +1277,7 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/01/21/调用dll里面的函数的两种方法/">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/03/01/实践——从fuzzing到0day漏洞挖掘/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="giantbranch">
@@ -1308,7 +1296,7 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/01/21/调用dll里面的函数的两种方法/" itemprop="url">调用dll里面的函数的两种方法</a></h2>
+                <a class="post-title-link" href="/2018/03/01/实践——从fuzzing到0day漏洞挖掘/" itemprop="url">实践——从fuzzing到0day漏洞挖掘</a></h2>
         
 
         <div class="post-meta">
@@ -1320,8 +1308,8 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-21T08:00:00+08:00">
-                2018-01-21
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-01T00:00:00+08:00">
+                2018-03-01
               </time>
             
 
@@ -1339,8 +1327,8 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2018/01/21/调用dll里面的函数的两种方法/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/01/21/调用dll里面的函数的两种方法/" itemprop="commentCount"></span>
+                <a href="/2018/03/01/实践——从fuzzing到0day漏洞挖掘/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/03/01/实践——从fuzzing到0day漏洞挖掘/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -1370,17 +1358,14 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
       
         
           
-          除了有dll，还有.h和.lib文件首先将这三个文件放到代码目录，首先将.h添加到工程（右键添加-现有项）
+          环境及工具windows 7 32 企业版Peach FuzzerWinDbgSocketSniffEasy File Sharing Web Server 6.8
+实践安装完就可以打开页面，开启SocketSniff进行监听，跟着以guest模式登录
 
-跟着在你需要用dll的代码文件开头添加
-1#include &quot;dll.h&quot;
-
-跟着你就可以尽情调用里面的函数了
-假如只有dll文件12345678typedef DWOR
+跟着我们就可以捕捉到请求（其实这个用wire
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/01/21/调用dll里面的函数的两种方法/#more" rel="contents">
+            <a class="btn" href="/2018/03/01/实践——从fuzzing到0day漏洞挖掘/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1432,7 +1417,7 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/01/20/Windows服务编程/">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/02/06/POC 2017的一些要点记录/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="giantbranch">
@@ -1451,7 +1436,7 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/01/20/Windows服务编程/" itemprop="url">Windows服务编程</a></h2>
+                <a class="post-title-link" href="/2018/02/06/POC 2017的一些要点记录/" itemprop="url">POC 2017的一些要点记录</a></h2>
         
 
         <div class="post-meta">
@@ -1463,8 +1448,8 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-20T08:00:00+08:00">
-                2018-01-20
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-06T08:00:00+08:00">
+                2018-02-06
               </time>
             
 
@@ -1482,8 +1467,8 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2018/01/20/Windows服务编程/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/01/20/Windows服务编程/" itemprop="commentCount"></span>
+                <a href="/2018/02/06/POC 2017的一些要点记录/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/02/06/POC 2017的一些要点记录/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -1513,12 +1498,12 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
       
         
           
-          我们看到有什么360主动防御服务，Google更新服务等，我们也写个简单的服务吧
-1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859
+          这其中有一个生成2T/的议题已经简单实践了一下了，因为简单啊。。。。。。
+http://www.giantbranch.cn/2018/01/21/%E7%AE%80%E5%8D%95%E5%AE%9E%E8%B7%B5%E4%BC%A0%E8%AF%B4%E4%B8%AD%E7%9A%842T%E
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/01/20/Windows服务编程/#more" rel="contents">
+            <a class="btn" href="/2018/02/06/POC 2017的一些要点记录/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1570,7 +1555,7 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/01/17/C++添加开机自启动的代码/">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2018/02/06/为什么我毕业后还偶尔打打ctf比赛/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="giantbranch">
@@ -1589,7 +1574,7 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/01/17/C++添加开机自启动的代码/" itemprop="url">C++添加开机自启动的代码</a></h2>
+                <a class="post-title-link" href="/2018/02/06/为什么我毕业后还偶尔打打ctf比赛/" itemprop="url">为什么我毕业后还偶尔打打ctf比赛</a></h2>
         
 
         <div class="post-meta">
@@ -1601,8 +1586,8 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-17T08:00:00+08:00">
-                2018-01-17
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-06T08:00:00+08:00">
+                2018-02-06
               </time>
             
 
@@ -1620,8 +1605,8 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2018/01/17/C++添加开机自启动的代码/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/01/17/C++添加开机自启动的代码/" itemprop="commentCount"></span>
+                <a href="/2018/02/06/为什么我毕业后还偶尔打打ctf比赛/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/02/06/为什么我毕业后还偶尔打打ctf比赛/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -1651,11 +1636,14 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
       
         
           
-          123456789101112131415161718192021222324252627282930313233343536373839404142#include &lt;stdio.h&gt;#include &lt;Windows.h&gt;#include &lt;string.h&gt;
+          写这个题目的时候是2017-12-26，拖了很久了。。。。。。，随便写写，写得不好别介意
+这个只是偶尔，不过也是都基本是国外的比赛了，现在只关注re跟pwn
+这个打比赛也包含刷一下以前的题目，不一定真的就是打那个时间举办的ctf
+简单说一下国内外的比赛吧，国内比赛就是无限循环，最多改一下别人国外的题
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/01/17/C++添加开机自启动的代码/#more" rel="contents">
+            <a class="btn" href="/2018/02/06/为什么我毕业后还偶尔打打ctf比赛/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1698,7 +1686,7 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/13/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/19/">19</a><a class="extend next" rel="next" href="/page/15/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/13/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/20/">20</a><a class="extend next" rel="next" href="/page/15/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1744,7 +1732,7 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">188</span>
+                  <span class="site-state-item-count">198</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1755,7 +1743,7 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
               
               <div class="site-state-item site-state-categories">
                 
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">分类</span>
                 
               </div>
@@ -1766,7 +1754,7 @@ CreateRemoteThread() -&gt; LoadLibrary() -&gt; DLLMain
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">226</span>
+                  <span class="site-state-item-count">234</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>

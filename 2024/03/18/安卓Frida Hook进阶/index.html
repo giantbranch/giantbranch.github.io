@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hook,Frida,安卓安全,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="实验环境 windows 10vscodefrida 16.2.1jadx-guijeb  实验1.Frida写数据12345678//一般写在app的私有目录里，不然会报错:failed to open file (Permission denied)(实际上就是权限不足)var file_path = &amp;quot;/data/user/0/com.zj.wuaipojie/test.txt&amp;q">
+<meta name="keywords" content="Hook,Frida,安卓安全">
+<meta property="og:type" content="article">
+<meta property="og:title" content="安卓Frida Hook进阶">
+<meta property="og:url" content="https://www.giantbranch.cn/2024/03/18/安卓Frida Hook进阶/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="实验环境 windows 10vscodefrida 16.2.1jadx-guijeb  实验1.Frida写数据12345678//一般写在app的私有目录里，不然会报错:failed to open file (Permission denied)(实际上就是权限不足)var file_path = &amp;quot;/data/user/0/com.zj.wuaipojie/test.txt&amp;q">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/2be3f7ec1c14dae19090d36e4b78b028_1721117668567.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1bb6e9b95f4f963294a3f57d4ec87f0d_1721117668568.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1800ccc018ce2865dbb1981d0bf9fd19_1721117668569.png">
+<meta property="og:updated_time" content="2024-12-01T02:32:48.810Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="安卓Frida Hook进阶">
+<meta name="twitter:description" content="实验环境 windows 10vscodefrida 16.2.1jadx-guijeb  实验1.Frida写数据12345678//一般写在app的私有目录里，不然会报错:failed to open file (Permission denied)(实际上就是权限不足)var file_path = &amp;quot;/data/user/0/com.zj.wuaipojie/test.txt&amp;q">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/2be3f7ec1c14dae19090d36e4b78b028_1721117668567.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2024/03/18/安卓Frida Hook进阶/">
+
+
+
+
+
+  <title>安卓Frida Hook进阶 | giantbranch's blog</title>
+  
+
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SQ8CHXJB60"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SQ8CHXJB60');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-vulfound">
+          <a href="/vulfound/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br>
+            
+            漏洞挖掘
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2024/03/18/安卓Frida Hook进阶/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">安卓Frida Hook进阶</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2024-03-18T00:00:00+08:00">
+                2024-03-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/小书匠-日记-2024-03/" itemprop="url" rel="index">
+                    <span itemprop="name">/小书匠/日记/2024-03</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2024/03/18/安卓Frida Hook进阶/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2024/03/18/安卓Frida Hook进阶/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="实验环境"><a href="#实验环境" class="headerlink" title="实验环境"></a>实验环境</h1><blockquote>
+<p>windows 10<br>vscode<br>frida 16.2.1<br>jadx-gui<br>jeb</p>
+</blockquote>
+<h1 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h1><h2 id="1-Frida写数据"><a href="#1-Frida写数据" class="headerlink" title="1.Frida写数据"></a>1.Frida写数据</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//一般写在app的私有目录里，不然会报错:failed to open file (Permission denied)(实际上就是权限不足)</span><br><span class="line">var file_path = &quot;/data/user/0/com.zj.wuaipojie/test.txt&quot;;</span><br><span class="line">var file_handle = new File(file_path, &quot;wb&quot;);</span><br><span class="line">if (file_handle &amp;&amp; file_handle != null) &#123;</span><br><span class="line">        file_handle.write(data); //写入数据</span><br><span class="line">        file_handle.flush(); //刷新</span><br><span class="line">        file_handle.close(); //关闭</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-Frida-inlineHook与读写汇编"><a href="#2-Frida-inlineHook与读写汇编" class="headerlink" title="2.Frida_inlineHook与读写汇编"></a>2.Frida_inlineHook与读写汇编</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">function inline_hook() &#123;</span><br><span class="line">    var soAddr = Module.findBaseAddress(&quot;lib52pojie.so&quot;);</span><br><span class="line">    if (soAddr) &#123;</span><br><span class="line">        var func_addr = soAddr.add(0x10428);</span><br><span class="line">        Java.perform(function () &#123;</span><br><span class="line">            Interceptor.attach(func_addr, &#123;</span><br><span class="line">                onEnter: function (args) &#123;</span><br><span class="line">                    console.log(this.context.x22); //注意此时就没有args概念了</span><br><span class="line">                    this.context.x22 = ptr(1); //赋值方法参考上一节课</span><br><span class="line">                &#125;,</span><br><span class="line">                onLeave: function (retval) &#123;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            )</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>将地址的指令解析成汇编</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> soAddr = Module.findBaseAddress(<span class="string">"lib52pojie.so"</span>);</span><br><span class="line"><span class="keyword">var</span> codeAddr = Instruction.parse(soAddr.add(<span class="number">0x10428</span>));</span><br><span class="line"><span class="built_in">console</span>.log(codeAddr.toString());</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>Frida Api</li>
+</ol>
+<p><a href="https://armconverter.com/" target="_blank" rel="noopener">arm转hex</a></p>
+<p>直接改写汇编，改机器码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">function patchCode()&#123;</span><br><span class="line">    var soAddr = Module.findBaseAddress(&quot;lib52pojie.so&quot;);</span><br><span class="line">    var codeAddr = soAddr.add(0x10428);</span><br><span class="line">    var codeasm = Instruction.parse(codeAddr);</span><br><span class="line">    console.log(codeasm.toString());</span><br><span class="line">    Memory.patchCode(codeAddr, 4, function(code) &#123;</span><br><span class="line">        const writer = new Arm64Writer(code, &#123; pc: codeAddr &#125;);</span><br><span class="line">        writer.putBytes(hexToBytes(&quot;20008052&quot;)); //     MOV             W0, 1</span><br><span class="line">        // writer.putBytes(hexToBytes(&quot;200080D2&quot;)); //  MOV             X0, 1</span><br><span class="line">        writer.flush();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function hexToBytes(str) &#123;</span><br><span class="line">    var pos = 0;</span><br><span class="line">    var len = str.length;</span><br><span class="line">    if (len % 2 != 0) &#123;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line">    len /= 2;</span><br><span class="line">    var hexA = new Array();</span><br><span class="line">    for (var i = 0; i &lt; len; i++) &#123;</span><br><span class="line">        var s = str.substr(pos, 2);</span><br><span class="line">        var v = parseInt(s, 16);</span><br><span class="line">        hexA.push(v);</span><br><span class="line">        pos += 2;</span><br><span class="line">    &#125;</span><br><span class="line">    return hexA;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-普通函数与jni函数的主动调用"><a href="#3-普通函数与jni函数的主动调用" class="headerlink" title="3.普通函数与jni函数的主动调用"></a>3.普通函数与jni函数的主动调用</h2><p>frida关于nativefunction的文档：<a href="https://frida.re/docs/javascript-api/#nativefunction" target="_blank" rel="noopener">https://frida.re/docs/javascript-api/#nativefunction</a></p>
+<p>支持的参数类型如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">void</span><br><span class="line">pointer</span><br><span class="line">int</span><br><span class="line">uint</span><br><span class="line">long</span><br><span class="line">ulong</span><br><span class="line">char</span><br><span class="line">uchar</span><br><span class="line">size_t</span><br><span class="line">ssize_t</span><br><span class="line">float</span><br><span class="line">double</span><br><span class="line">int8</span><br><span class="line">uint8</span><br><span class="line">int16</span><br><span class="line">uint16</span><br><span class="line">int32</span><br><span class="line">uint32</span><br><span class="line">int64</span><br><span class="line">uint64</span><br><span class="line">bool</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">var funcAddr = Module.findBaseAddress(&quot;lib52pojie.so&quot;).add(0x1054C);</span><br><span class="line">//声明函数指针</span><br><span class="line">//NativeFunction的第一个参数是地址，第二个参数是返回值类型，第三个[]里的是传入的参数类型(有几个就填几个)</span><br><span class="line">var aesAddr = new NativeFunction(funcAddr , &apos;pointer&apos;, [&apos;pointer&apos;, &apos;pointer&apos;]);</span><br><span class="line">var encry_text = Memory.allocUtf8String(&quot;OOmGYpk6s0qPSXEPp4X31g==&quot;);    //开辟一个指针存放字符串       </span><br><span class="line">var key = Memory.allocUtf8String(&apos;wuaipojie0123456&apos;); </span><br><span class="line">console.log(aesAddr(encry_text ,key).readCString());</span><br></pre></td></tr></table></figure>
+
+<p>jni函数还是原来那一套，比如下面输出返回值，并修改返回值为true</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">function hooktest()&#123;</span><br><span class="line">    Java.perform(function() &#123;</span><br><span class="line">        var securityUtilClass = Java.use(&quot;com.zj.wuaipojie.util.SecurityUtil&quot;);</span><br><span class="line">        </span><br><span class="line">        // 定义要调用的 JNI 方法</span><br><span class="line">        var checkVipMethod = securityUtilClass.checkVip.overload();</span><br><span class="line">        </span><br><span class="line">        // 在 Frida 中调用 JNI 方法</span><br><span class="line">        checkVipMethod.implementation = function() &#123;</span><br><span class="line">            console.log(&quot;Calling Java_com_zj_wuaipojie_util_SecurityUtil_checkVip method...&quot;);</span><br><span class="line">            </span><br><span class="line">            // 在这里可以添加自定义逻辑</span><br><span class="line">            </span><br><span class="line">            // 调用原始 JNI 方法</span><br><span class="line">            var result = this.checkVip();</span><br><span class="line">            </span><br><span class="line">            // 输出结果</span><br><span class="line">            console.log(&quot;Result: &quot; + result);</span><br><span class="line">            </span><br><span class="line">            // 返回结果</span><br><span class="line">            return true;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-Trace"><a href="#4-Trace" class="headerlink" title="4.Trace"></a>4.Trace</h2><table>
+<thead>
+<tr>
+<th>工具名称</th>
+<th>描述</th>
+<th>链接</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>jnitrace</td>
+<td>老牌，经典，信息全，携带方便</td>
+<td><a href="https://github.com/chame1eon/jnitrace" target="_blank" rel="noopener">jnitrace</a></td>
+</tr>
+<tr>
+<td>jnitrace-engine</td>
+<td>基于jnitrace，可定制化</td>
+<td><a href="https://github.com/chame1eon/jnitrace-engine" target="_blank" rel="noopener">jnitrace-engine</a></td>
+</tr>
+<tr>
+<td>jtrace</td>
+<td>定制方便，信息全面，直接在_agent.js或者_agent_stable.js 里面加自己的逻辑就行</td>
+<td><a href="https://github.com/SeeFlowerX/jtrace" target="_blank" rel="noopener">jtrace</a></td>
+</tr>
+<tr>
+<td>hook_art.js</td>
+<td>可提供jni trace，可以灵活的增加你需要hook的函数</td>
+<td><a href="https://github.com/lasting-yang/frida_hook_libart" target="_blank" rel="noopener">hook_art.js</a></td>
+</tr>
+<tr>
+<td>JNI-Frida-Hook</td>
+<td>函数名已定义，方便定位</td>
+<td><a href="https://github.com/Areizen/JNI-Frida-Hook" target="_blank" rel="noopener">JNI-Frida-Hook</a></td>
+</tr>
+<tr>
+<td>findhash</td>
+<td>ida插件，可用于检测加解密函数，也可作为Native Trace库</td>
+<td><a href="https://github.com/Pr0214/findhash" target="_blank" rel="noopener">findhash</a></td>
+</tr>
+<tr>
+<td>Stalker</td>
+<td>frida官方提供的代码跟踪引擎，可以在Native层方法级别，块级别，指令级别实现代码修改，代码跟踪</td>
+<td><a href="https://frida.re/docs/stalker/" target="_blank" rel="noopener">Stalker</a></td>
+</tr>
+<tr>
+<td>sktrace</td>
+<td>类似 ida 指令 trace 功能</td>
+<td><a href="https://github.com/bmax121/sktrace" target="_blank" rel="noopener">sktrace</a></td>
+</tr>
+<tr>
+<td>frida-qbdi-tracer</td>
+<td>速度比frida stalker快，免补环境</td>
+<td><a href="https://github.com/lasting-yang/frida-qbdi-tracer" target="_blank" rel="noopener">frida-qbdi-tracer</a></td>
+</tr>
+<tr>
+<td>### 4.1 frida-trace</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Frida-Trace 是 Frida 框架提供的一个功能强大的工具，用于追踪和监视目标应用程序中的函数调用。通过 Frida-Trace，用户可以轻松地跟踪函数的调用、参数和返回值，并实时查看这些信息。以下是 Frida-Trace 的一些主要特点和用法介绍：</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p><strong>主要特点</strong>：</p>
+<ol>
+<li><p><strong>动态追踪</strong>：Frida-Trace 可以实时监视目标应用程序中的函数调用，无需重启应用或重新编译代码。</p>
+</li>
+<li><p><strong>灵活性</strong>：用户可以根据需要选择要追踪的函数，包括系统库函数和自定义函数。</p>
+</li>
+<li><p><strong>函数参数和返回值</strong>：除了函数调用，Frida-Trace 还可以显示函数的参数和返回值，帮助用户更好地理解函数的执行过程。</p>
+</li>
+<li><p><strong>易用性</strong>：Frida-Trace 提供了简洁的命令行接口，用户可以通过命令轻松设置和启动函数追踪。</p>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">- `-i` / `-a`: 跟踪 C 函数或 so 库中的函数。</span><br><span class="line"></span><br><span class="line">PS:-a 包含模块+偏移跟踪，一般用于追踪未导出函数，例子：-a &quot;lib52pojie.so!0x4793c&quot;</span><br><span class="line"></span><br><span class="line">包含/排除模块或函数：</span><br><span class="line"></span><br><span class="line">- `-I` : 包含指定模块。</span><br><span class="line">- `-X` : 排除指定模块。</span><br><span class="line"></span><br><span class="line">Java 方法跟踪：</span><br><span class="line"></span><br><span class="line">- `-j JAVA_METHOD`: 包含 Java 方法。</span><br><span class="line">- `-J JAVA_METHOD`: 排除 Java 方法。</span><br><span class="line"></span><br><span class="line">附加方式:</span><br><span class="line"></span><br><span class="line">- `-f`:通过 spwan 方式启动</span><br><span class="line">- `-F`:通过 attach 方式附加当前进程</span><br><span class="line"></span><br><span class="line">日志输出:</span><br><span class="line">`-o`:日志输出到文件</span><br></pre></td></tr></table></figure>
+
+<p>使用案例：</p>
+<p>注意下面需要打开相应的app保持在屏幕上</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#附加当前进程并追踪lib52pojie.so里的所有Java_开头的jni导出函数</span><br><span class="line">frida-trace -U -F -I &quot;lib52pojie.so&quot; -i &quot;Java_&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/2be3f7ec1c14dae19090d36e4b78b028_1721117668567.png" alt></p>
+<h3 id="4-2-jnitrace"><a href="#4-2-jnitrace" class="headerlink" title="4.2 jnitrace"></a>4.2 jnitrace</h3><p>安装</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install jnitrace==3.3.0</span><br></pre></td></tr></table></figure>
+
+<p>使用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//attach模式附加52pojie.so并输出日志，其中wuaipojie是进程名，可以通过frida-ps -U查看</span><br><span class="line">jnitrace -m attach -l lib52pojie.so wuaipojie -o trace.json </span><br><span class="line"></span><br><span class="line">jnitrace -m spawn -l lib52pojie.so com.zj.wuaipojie</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">`-l libnative-lib.so`- 用于指定要跟踪的库</span><br><span class="line"></span><br><span class="line">`-m &lt;spawn|attach&gt;`- 用于指定要使用的 Frida 附加机制</span><br><span class="line"></span><br><span class="line">`-i &lt;regex&gt;`- 用于指定应跟踪的方法名称，例如，`-i Get -i RegisterNatives`将仅包含名称中包含 Get 或 RegisterNatives 的 JNI 方法</span><br><span class="line"></span><br><span class="line">`-e &lt;regex&gt;`- 用于指定跟踪中应忽略的方法名称，例如，`-e ^Find -e GetEnv`将从结果中排除所有以 Find 开头或包含 GetEnv 的 JNI 方法名称</span><br><span class="line"></span><br><span class="line">`-I &lt;string&gt;`- 用于指定应跟踪的库的导出</span><br><span class="line"></span><br><span class="line">`-E &lt;string&gt;`用于指定不应跟踪的库的导出</span><br><span class="line"></span><br><span class="line">`-o path/output.json`- 用于指定`jnitrace`存储所有跟踪数据的输出路径</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1bb6e9b95f4f963294a3f57d4ec87f0d_1721117668568.png" alt></p>
+<h3 id="4-3-sktrace"><a href="#4-3-sktrace" class="headerlink" title="4.3 sktrace"></a>4.3 sktrace</h3><p>地址：<a href="https://github.com/bmax121/sktrace.git" target="_blank" rel="noopener">https://github.com/bmax121/sktrace.git</a></p>
+<p>这个类似 ida 指令 trace 功能，显示每个执行的汇编的寄存器的值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python sktrace.py -m attach -l lib52pojie.so -i 0x103B4 wuaipojie</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/giantbranch/pic-store/master/%E5%B0%8F%E4%B9%A6%E5%8C%A0/1800ccc018ce2865dbb1981d0bf9fd19_1721117668569.png" alt></p>
+<h2 id="5-控制流混淆对抗新发现"><a href="#5-控制流混淆对抗新发现" class="headerlink" title="5.控制流混淆对抗新发现"></a>5.控制流混淆对抗新发现</h2>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://pic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://pic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://pic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2024/03/18/安卓Frida Hook进阶/" title="安卓Frida Hook进阶">https://www.giantbranch.cn/2024/03/18/安卓Frida Hook进阶/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Hook-Frida-安卓安全/" rel="tag"># Hook,Frida,安卓安全</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2024/03/17/安卓Frida Hook之objection/" rel="next" title="安卓Frida Hook之objection">
+                <i class="fa fa-chevron-left"></i> 安卓Frida Hook之objection
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2024/03/20/安卓Frida Hook之Frida-Native-Hook/" rel="prev" title="安卓Frida Hook之Frida-Native-Hook">
+                安卓Frida Hook之Frida-Native-Hook <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">198</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">234</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#实验环境"><span class="nav-number">1.</span> <span class="nav-text">实验环境</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实验"><span class="nav-number">2.</span> <span class="nav-text">实验</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Frida写数据"><span class="nav-number">2.1.</span> <span class="nav-text">1.Frida写数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Frida-inlineHook与读写汇编"><span class="nav-number">2.2.</span> <span class="nav-text">2.Frida_inlineHook与读写汇编</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-普通函数与jni函数的主动调用"><span class="nav-number">2.3.</span> <span class="nav-text">3.普通函数与jni函数的主动调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Trace"><span class="nav-number">2.4.</span> <span class="nav-text">4.Trace</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-jnitrace"><span class="nav-number">2.4.1.</span> <span class="nav-text">4.2 jnitrace</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-sktrace"><span class="nav-number">2.4.2.</span> <span class="nav-text">4.3 sktrace</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-控制流混淆对抗新发现"><span class="nav-number">2.5.</span> <span class="nav-text">5.控制流混淆对抗新发现</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright"> &copy; 2017 &mdash; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i> 
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch(simplelogin.irjqx@aleeas.com)</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/"></a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2024/03/18/安卓Frida Hook进阶/';
+          this.page.identifier = '2024/03/18/安卓Frida Hook进阶/';
+          this.page.title = '安卓Frida Hook进阶';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

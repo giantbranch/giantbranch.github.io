@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="新建,模板,小书匠,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="giantbranch's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="Hook_Libartlibart.so: 在 Android 5.0（Lollipop）及更高版本中，libart.so 是 Android 运行时（ART，Android Runtime）的核心组件，它取代了之前的 Dalvik 虚拟机。可以在 libart.so 里找到 JNI 相关的实现。 PS:在高于安卓10的系统里，so的路径是/apex/com.android.runtime/lib">
+<meta name="keywords" content="新建,模板,小书匠">
+<meta property="og:type" content="article">
+<meta property="og:title" content="安卓Frida Hook进阶2">
+<meta property="og:url" content="https://www.giantbranch.cn/2024/03/23/安卓Frida Hook进阶2/index.html">
+<meta property="og:site_name" content="giantbranch&#39;s blog">
+<meta property="og:description" content="Hook_Libartlibart.so: 在 Android 5.0（Lollipop）及更高版本中，libart.so 是 Android 运行时（ART，Android Runtime）的核心组件，它取代了之前的 Dalvik 虚拟机。可以在 libart.so 里找到 JNI 相关的实现。 PS:在高于安卓10的系统里，so的路径是/apex/com.android.runtime/lib">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2024-12-01T02:32:50.326Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="安卓Frida Hook进阶2">
+<meta name="twitter:description" content="Hook_Libartlibart.so: 在 Android 5.0（Lollipop）及更高版本中，libart.so 是 Android 运行时（ART，Android Runtime）的核心组件，它取代了之前的 Dalvik 虚拟机。可以在 libart.so 里找到 JNI 相关的实现。 PS:在高于安卓10的系统里，so的路径是/apex/com.android.runtime/lib">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.giantbranch.cn/2024/03/23/安卓Frida Hook进阶2/">
+
+
+
+
+
+  <title>安卓Frida Hook进阶2 | giantbranch's blog</title>
+  
+
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SQ8CHXJB60"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SQ8CHXJB60');
+</script>
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e3a097ddc6964e154e65d478725ac9ed";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">giantbranch's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">忘掉掌声，按自己的方式，继续前行，跑过一生</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-vulfound">
+          <a href="/vulfound/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br>
+            
+            漏洞挖掘
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-book">
+          <a href="/book/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            读过的书
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br>
+            
+            站点地图
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.giantbranch.cn/2024/03/23/安卓Frida Hook进阶2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="giantbranch">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="giantbranch's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">安卓Frida Hook进阶2</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2024-03-23T00:00:00+08:00">
+                2024-03-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/小书匠-日记-2024-03/" itemprop="url" rel="index">
+                    <span itemprop="name">/小书匠/日记/2024-03</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2024/03/23/安卓Frida Hook进阶2/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2024/03/23/安卓Frida Hook进阶2/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Hook-Libart"><a href="#Hook-Libart" class="headerlink" title="Hook_Libart"></a>Hook_Libart</h1><p><code>libart.so</code>: 在 Android 5.0（Lollipop）及更高版本中，<code>libart.so</code> 是 Android 运行时（ART，Android Runtime）的核心组件，它取代了之前的 Dalvik 虚拟机。可以在 <code>libart.so</code> 里找到 JNI 相关的实现。</p>
+<p>PS:在高于安卓10的系统里，so的路径是/apex/com.android.runtime/lib64/libart.so，低于10的则在system/lib64/libart.so</p>
+<table>
+<thead>
+<tr>
+<th>函数名称</th>
+<th>参数</th>
+<th>描述</th>
+<th>返回值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>RegisterNatives</code></td>
+<td><code>JNIEnv *env, jclass clazz, const JNINativeMethod *methods, jint nMethods</code></td>
+<td>反注册类的本地方法。类将返回到链接或注册了本地方法函数前的状态。该函数不应在本地代码中使用。相反，它可以为某些程序提供一种重新加载和重新链接本地库的途径。</td>
+<td>成功时返回0；失败时返回负数</td>
+</tr>
+<tr>
+<td><code>GetStringUTFChars</code></td>
+<td><code>JNIEnv*env, jstring string, jboolean *isCopy</code></td>
+<td>通过JNIEnv接口指针调用，它将一个代表着Java虚拟机中的字符串jstring引用，转换成为一个UTF-8形式的C字符串</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>NewStringUTF</code></td>
+<td><code>JNIEnv *env, const char *bytes</code></td>
+<td>以字节为单位返回字符串的 UTF-8 长度</td>
+<td>返回字符串的长度</td>
+</tr>
+<tr>
+<td><code>FindClass</code></td>
+<td><code>JNIEnv *env, const char *name</code></td>
+<td>通过对象获取这个类。该函数比较简单，唯一注意的是对象不能为NULL，否则获取的class肯定返回也为NULL。</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>GetMethodID</code></td>
+<td><code>JNIEnv *env, jclass clazz, const char *name, const char *sig</code></td>
+<td>返回类或接口实例（非静态）方法的方法 ID。方法可在某个 clazz 的超类中定义，也可从 clazz 继承。GetMethodID() 可使未初始化的类初始化。</td>
+<td>方法ID，如果找不到指定的方法，则为NULL</td>
+</tr>
+<tr>
+<td><code>GetStaticMethodID</code></td>
+<td><code>JNIEnv *env, jclass clazz, const char *name, const char *sig</code></td>
+<td>获取类对象的静态方法ID</td>
+<td>属性ID对象。如果操作失败，则返回NULL</td>
+</tr>
+<tr>
+<td><code>GetFieldID</code></td>
+<td><code>JNIEnv *env, jclass clazz, const char *name, const char *sig</code></td>
+<td>回Java类（非静态）域的属性ID。该域由其名称及签名指定。访问器函数的<code>Get&lt;type&gt;Field</code> 及 <code>Set&lt;type&gt;Field</code>系列使用域 ID 检索对象域。GetFieldID() 不能用于获取数组的长度域。应使用GetArrayLength()。</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>GetStaticFieldID</code></td>
+<td><code>JNIEnv *env,jclass clazz, const char *name, const char *sig</code></td>
+<td>获取类的静态域ID方法</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>Call&lt;type&gt;Method</code>, <code>Call&lt;type&gt;MethodA</code>, <code>Call&lt;type&gt;MethodV</code></td>
+<td><code>JNIEnv *env, jobject obj, jmethodID methodID, .../jvalue *args/va_list args</code></td>
+<td>这三个操作的方法用于从本地方法调用Java 实例方法。它们的差别仅在于向其所调用的方法传递参数时所用的机制。</td>
+<td>NativeType，具体的返回值取决于调用的类型</td>
+</tr>
+</tbody></table>
+<p>主要用得多的是hook_RegisterNatives.js：hook打印动态注册的函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"> ~  frida -U -f com.zj.wuaipojie -l .\hook_RegisterNatives.js</span><br><span class="line">     ____</span><br><span class="line">    / _  |   Frida 16.2.1 - A world-class dynamic instrumentation toolkit</span><br><span class="line">   | (_| |</span><br><span class="line">    &gt; _  |   Commands:</span><br><span class="line">   /_/ |_|       help      -&gt; Displays the help system</span><br><span class="line">   . . . .       object?   -&gt; Display information about &apos;object&apos;</span><br><span class="line">   . . . .       exit/quit -&gt; Exit</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   More info at https://frida.re/docs/home/</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   Connected to ONEPLUS A3000 (id=1c7dbd17)</span><br><span class="line">Spawning `com.zj.wuaipojie`...</span><br><span class="line">RegisterNatives is at  0x74e977a018 _ZN3art3JNIILb0EE15RegisterNativesEP7_JNIEnvP7_jclassPK15JNINativeMethodi</span><br><span class="line">RegisterNatives is at  0x74e97e39f0 _ZN3art3JNIILb1EE15RegisterNativesEP7_JNIEnvP7_jclassPK15JNINativeMethodi</span><br><span class="line">Spawned `com.zj.wuaipojie`. Resuming main thread!</span><br><span class="line">[ONEPLUS A3000::com.zj.wuaipojie ]-&gt; [RegisterNatives] method_count: 0x1</span><br><span class="line">[RegisterNatives] java_class: android.util.StatsLog name: writeImpl sig: ([BII)V fnPtr: 0x7475276214  fnOffset: 0x7475276214 libstats_jni.so!0x1214  callee: 0x747527618c libstats_jni.so!JNI_OnLoad+0xa8</span><br><span class="line">[RegisterNatives] method_count: 0x1</span><br><span class="line">[RegisterNatives] java_class: com.zj.wuaipojie.util.SecurityUtil name: check sig: (Ljava/lang/String;)Z fnPtr: 0x74dcd9a3b4  fnOffset: 0x74dcd9a3b4 lib52pojie.so!_Z5checkP7_JNIEnvP7_jclassP8_jstring  callee: 0x74dcd9a514 lib52pojie.so!JNI_OnLoad+0xac</span><br></pre></td></tr></table></figure>
+
+<h2 id="hook-GetStringUTFChars"><a href="#hook-GetStringUTFChars" class="headerlink" title="hook_GetStringUTFChars"></a>hook_GetStringUTFChars</h2><p>这个的坑点在于：有两个GetStringUTFChars地址，选择第一个就好（默认就变成hook第二个了）,不行就通过上面的name.indexOf(“b1EE”) == -1过滤,或者下面添加break退出循环</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">function hook_GetStringUTFChars() &#123;</span><br><span class="line">    var GetStringUTFChars_addr = null;</span><br><span class="line"></span><br><span class="line">    // jni 系统函数都在 libart.so 中</span><br><span class="line">    var module_libart = Process.findModuleByName(&quot;libart.so&quot;);</span><br><span class="line">    var symbols = module_libart.enumerateSymbols();</span><br><span class="line">    for (var i = 0; i &lt; symbols.length; i++) &#123;</span><br><span class="line">        var name = symbols[i].name;</span><br><span class="line">        if ((name.indexOf(&quot;JNI&quot;) &gt;= 0) </span><br><span class="line">            // &amp;&amp; (name.indexOf(&quot;CheckJNI&quot;) == -1 &amp;&amp; (name.indexOf(&quot;b1EE&quot;) == -1))</span><br><span class="line">            &amp;&amp; (name.indexOf(&quot;CheckJNI&quot;) == -1)</span><br><span class="line">            &amp;&amp; (name.indexOf(&quot;art&quot;) &gt;= 0)) &#123;</span><br><span class="line">            if (name.indexOf(&quot;GetStringUTFChars&quot;) &gt;= 0) &#123;</span><br><span class="line">                // 获取到指定 jni 方法地址</span><br><span class="line">                GetStringUTFChars_addr = symbols[i].address;</span><br><span class="line">                </span><br><span class="line">                console.log(&quot;name: &quot;, name);// 有两个地址，选择第一个就好,不行就通过上面的name.indexOf(&quot;b1EE&quot;) == -1过滤,或者下面添加break退出循环</span><br><span class="line">                console.log(&quot;GetStringUTFChars addr: &quot;, GetStringUTFChars_addr);</span><br><span class="line">                break;</span><br><span class="line">                </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Java.perform(function()&#123;</span><br><span class="line">        console.log(&quot;实际的GetStringUTFChars addr: &quot;, GetStringUTFChars_addr);</span><br><span class="line">        Interceptor.attach(GetStringUTFChars_addr, &#123;</span><br><span class="line">            onEnter: function(args)&#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">            &#125;, onLeave: function(retval)&#123;</span><br><span class="line">                // retval const char*</span><br><span class="line">				console.log(&quot;GetStringUTFChars onLeave : &quot;, ptr(retval).readCString());</span><br><span class="line">				if(ptr(retval).readCString().indexOf(&quot;普通&quot;) &gt;=0)&#123;</span><br><span class="line">					console.log(&quot;GetStringUTFChars onLeave : &quot;, ptr(retval).readCString());</span><br><span class="line">					console.log(Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join(&apos;\n&apos;) + &apos;\n&apos;);</span><br><span class="line">				&#125;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br><span class="line">function main()&#123;</span><br><span class="line">    Java.perform(function()&#123;</span><br><span class="line">        hook_GetStringUTFChars();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125; </span><br><span class="line">setImmediate(main);</span><br></pre></td></tr></table></figure>
+
+<p>运行实例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"> ~  frida -U wuaipojie -l .\hook_GetStringUTFChars.js</span><br><span class="line">     ____</span><br><span class="line">    / _  |   Frida 16.2.1 - A world-class dynamic instrumentation toolkit</span><br><span class="line">   | (_| |</span><br><span class="line">    &gt; _  |   Commands:</span><br><span class="line">   /_/ |_|       help      -&gt; Displays the help system</span><br><span class="line">   . . . .       object?   -&gt; Display information about &apos;object&apos;</span><br><span class="line">   . . . .       exit/quit -&gt; Exit</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   More info at https://frida.re/docs/home/</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   Connected to ONEPLUS A3000 (id=1c7dbd17)</span><br><span class="line">Attaching...</span><br><span class="line">name:  _ZN3art3JNIILb0EE17GetStringUTFCharsEP7_JNIEnvP8_jstringPh</span><br><span class="line">GetStringUTFChars addr:  0x74e9764548</span><br><span class="line">实际的GetStringUTFChars addr:  0x74e9764548</span><br><span class="line">[ONEPLUS A3000::wuaipojie ]-&gt; GetStringUTFChars onLeave :  /data/app/~~mcnLRJYrvfwmPs1SzDLDLw==/com.zj.wuaipojie-qBIKQBAAXl2V9AjNVNrtkw==/lib/arm64/lib52pojie.so</span><br><span class="line">GetStringUTFChars onLeave :  /data/app/~~mcnLRJYrvfwmPs1SzDLDLw==/com.zj.wuaipojie-qBIKQBAAXl2V9AjNVNrtkw==/lib/arm64/lib52pojie.so</span><br><span class="line">GetStringUTFChars onLeave :  com.zj.wuaipojie</span><br><span class="line">GetStringUTFChars onLeave :  android.widget.TextView</span><br><span class="line">GetStringUTFChars onLeave :  普通</span><br><span class="line">GetStringUTFChars onLeave :  普通</span><br><span class="line">0x74d6d90588 lib52pojie.so!Java_com_zj_wuaipojie_util_SecurityUtil_vipLevel+0x3c</span><br><span class="line">0x74782e03f0 base.odex!0x3f3f0</span><br><span class="line">0x74782e03f0 base.odex!0x3f3f0</span><br></pre></td></tr></table></figure>
+
+<h1 id="Hook-Libc"><a href="#Hook-Libc" class="headerlink" title="Hook_Libc"></a>Hook_Libc</h1><p><code>libc.so</code>: 这是一个标准的 C 语言库，用于提供基本的系统调用和功能，如文件操作、字符串处理、内存分配等。在Android系统中，<code>libc</code> 是最基础的库之一。</p>
+<h2 id="hook-kill"><a href="#hook-kill" class="headerlink" title="hook_kill"></a>hook_kill</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">function replaceKILL() &#123;</span><br><span class="line">    // 查找libc.so库中kill函数的地址</span><br><span class="line">    var kill_addr = Module.findExportByName(&quot;libc.so&quot;, &quot;kill&quot;);</span><br><span class="line">    // 使用Interceptor.replace来替换kill函数</span><br><span class="line">    Interceptor.replace(kill_addr, new NativeCallback(function (arg0, arg1) &#123;</span><br><span class="line">        // 当kill函数被调用时，打印第一个参数（通常是进程ID）</span><br><span class="line">        console.log(&quot;arg0=&gt; &quot;, arg0);</span><br><span class="line">        // 打印第二个参数（通常是发送的信号）</span><br><span class="line">        console.log(&quot;arg1=&gt; &quot;, arg1);</span><br><span class="line">        // 打印调用kill函数的堆栈跟踪信息</span><br><span class="line">        console.log(&apos;libc.so!kill called from:\n&apos; +</span><br><span class="line">            Thread.backtrace(this.context, Backtracer.ACCURATE)</span><br><span class="line">            .map(DebugSymbol.fromAddress).join(&apos;\n&apos;) + &apos;\n&apos;);</span><br><span class="line">    &#125;, &quot;int&quot;, [&quot;int&quot;, &quot;int&quot;]))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function main()&#123;</span><br><span class="line">    Java.perform(function()&#123;</span><br><span class="line">        replaceKILL();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125; </span><br><span class="line">setImmediate(main);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"> ~  frida -U wuaipojie -l .\hook_kill.js</span><br><span class="line">     ____</span><br><span class="line">    / _  |   Frida 16.2.1 - A world-class dynamic instrumentation toolkit</span><br><span class="line">   | (_| |</span><br><span class="line">    &gt; _  |   Commands:</span><br><span class="line">   /_/ |_|       help      -&gt; Displays the help system</span><br><span class="line">   . . . .       object?   -&gt; Display information about &apos;object&apos;</span><br><span class="line">   . . . .       exit/quit -&gt; Exit</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   More info at https://frida.re/docs/home/</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   Connected to ONEPLUS A3000 (id=1c7dbd17)</span><br><span class="line"></span><br><span class="line">[ONEPLUS A3000::wuaipojie ]-&gt; arg0=&gt;  29458</span><br><span class="line">arg1=&gt;  9</span><br><span class="line">libc.so!kill called from:</span><br><span class="line">0x74e94beed8 libart.so!art_quick_generic_jni_trampoline+0x98</span><br><span class="line">0x74e94beed8 libart.so!art_quick_generic_jni_trampoline+0x98</span><br><span class="line"></span><br><span class="line">Error: expected an integer</span><br></pre></td></tr></table></figure>
+
+<h2 id="hook-pthread-create"><a href="#hook-pthread-create" class="headerlink" title="hook_pthread_create"></a>hook_pthread_create</h2><p>下面反调试，应该是反调试的代码在pthread_create新建的线程中实现</p>
+<p>下面只是进行输出，没有进行一些修改操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">function hook_pthread_create()&#123;</span><br><span class="line">    //hook反调试</span><br><span class="line">    var pthread_create_addr = Module.findExportByName(&quot;libc.so&quot;, &quot;pthread_create&quot;);</span><br><span class="line">    console.log(&quot;pthread_create_addr: &quot;, pthread_create_addr);</span><br><span class="line">    Interceptor.attach(pthread_create_addr,&#123;</span><br><span class="line">        onEnter:function(args)&#123;</span><br><span class="line">            console.log(args[0], args[1], args[2], args[4]);</span><br><span class="line">        &#125;,onLeave:function(retval)&#123;</span><br><span class="line">            console.log(&quot;retval is =&gt;&quot;,retval)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"> ~  frida -U wuaipojie -l .\hook_libc.js</span><br><span class="line">     ____</span><br><span class="line">    / _  |   Frida 16.2.1 - A world-class dynamic instrumentation toolkit</span><br><span class="line">   | (_| |</span><br><span class="line">    &gt; _  |   Commands:</span><br><span class="line">   /_/ |_|       help      -&gt; Displays the help system</span><br><span class="line">   . . . .       object?   -&gt; Display information about &apos;object&apos;</span><br><span class="line">   . . . .       exit/quit -&gt; Exit</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   More info at https://frida.re/docs/home/</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   Connected to ONEPLUS A3000 (id=1c7dbd17)</span><br><span class="line">Attaching...</span><br><span class="line">pthread_create_addr:  0x777d7ffc88</span><br><span class="line">[ONEPLUS A3000::wuaipojie ]-&gt; 0x74db4a9ab8 0x0 0x777b8cdd74 0x0</span><br><span class="line">retval is =&gt; 0x0</span><br><span class="line">0x7fc751b7e8 0x7fc751b820 0x74e9930358 0x0</span><br><span class="line">retval is =&gt; 0x0</span><br></pre></td></tr></table></figure>
+
+<h2 id="hook-str-cmp"><a href="#hook-str-cmp" class="headerlink" title="hook_str_cmp"></a>hook_str_cmp</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">function hook_strcmp() &#123;</span><br><span class="line">    var pt_strcmp = Module.findExportByName(&quot;libc.so&quot;, &apos;strcmp&apos;);</span><br><span class="line">    Interceptor.attach(pt_strcmp, &#123;</span><br><span class="line">        onEnter: function (args) &#123;</span><br><span class="line">            var str1 = args[0].readCString();</span><br><span class="line">            var str2 = args[1].readCString();</span><br><span class="line">            if (str1.indexOf(&quot;test&quot;) !== -1 || str2.indexOf(&quot;test&quot;) !== -1) &#123; // test是我们输入的字符</span><br><span class="line">                console.log(&quot;strcmp--&gt;&quot;, str1, str2);</span><br><span class="line">                this.printStack = true;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, onLeave: function (retval) &#123;</span><br><span class="line">            if (this.printStack) &#123; </span><br><span class="line">                var stack = Thread.backtrace(this.context, Backtracer.ACCURATE)</span><br><span class="line">                    .map(DebugSymbol.fromAddress).join(&quot;\n&quot;);</span><br><span class="line">                console.log(&quot;Stack trace:\n&quot; + stack);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"> ~  frida -U wuaipojie -l .\hook_libc.js</span><br><span class="line">     ____</span><br><span class="line">    / _  |   Frida 16.2.1 - A world-class dynamic instrumentation toolkit</span><br><span class="line">   | (_| |</span><br><span class="line">    &gt; _  |   Commands:</span><br><span class="line">   /_/ |_|       help      -&gt; Displays the help system</span><br><span class="line">   . . . .       object?   -&gt; Display information about &apos;object&apos;</span><br><span class="line">   . . . .       exit/quit -&gt; Exit</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   More info at https://frida.re/docs/home/</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   Connected to ONEPLUS A3000 (id=1c7dbd17)</span><br><span class="line"></span><br><span class="line">[ONEPLUS A3000::wuaipojie ]-&gt; strcmp--&gt; wuaipojie2023 test</span><br><span class="line">Stack trace:</span><br><span class="line">0x74866d04d0 lib52pojie.so!_Z5checkP7_JNIEnvP7_jclassP8_jstring+0x4c</span><br><span class="line">0x74866d04d0 lib52pojie.so!_Z5checkP7_JNIEnvP7_jclassP8_jstring+0x4c</span><br><span class="line">0x74866d04d0 lib52pojie.so!_Z5checkP7_JNIEnvP7_jclassP8_jstring+0x4c</span><br></pre></td></tr></table></figure>
+
+<h1 id="Hook-Libdl"><a href="#Hook-Libdl" class="headerlink" title="Hook_Libdl"></a>Hook_Libdl</h1><p><code>libdl.so</code>是一个处理动态链接和加载的标准库，它提供了<code>dlopen</code>、<code>dlclose</code>、<code>dlsym</code>等函数，用于在运行时动态地加载和使用共享库</p>
+<table>
+<thead>
+<tr>
+<th>别</th>
+<th>函数名称</th>
+<th>参数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>动态链接库操作</td>
+<td>dlopen</td>
+<td><code>const char *filename, int flag</code></td>
+<td>打开动态链接库文件</td>
+</tr>
+<tr>
+<td></td>
+<td>dlsym</td>
+<td><code>void *handle, const char *symbol</code></td>
+<td>从动态链接库中获取符号地址</td>
+</tr>
+</tbody></table>
+<p><code>Hook_dlsym</code>获取jni静态注册方法地址</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">function hook_dlsym() &#123;</span><br><span class="line">    var dlsymAddr = Module.findExportByName(&quot;libdl.so&quot;, &quot;dlsym&quot;);</span><br><span class="line">    Interceptor.attach(dlsymAddr, &#123;</span><br><span class="line">        onEnter: function(args) &#123;</span><br><span class="line">            this.args1 = args[1];</span><br><span class="line">        &#125;,</span><br><span class="line">        onLeave: function(retval) &#123;</span><br><span class="line">            var module = Process.findModuleByAddress(retval);</span><br><span class="line">            if (module === null) return; </span><br><span class="line">            console.log(this.args1.readCString(), module.name, retval, retval.sub(module.base));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">~  frida -U wuaipojie -l .\hook_libdl.js</span><br><span class="line">     ____</span><br><span class="line">    / _  |   Frida 16.2.1 - A world-class dynamic instrumentation toolkit</span><br><span class="line">   | (_| |</span><br><span class="line">    &gt; _  |   Commands:</span><br><span class="line">   /_/ |_|       help      -&gt; Displays the help system</span><br><span class="line">   . . . .       object?   -&gt; Display information about &apos;object&apos;</span><br><span class="line">   . . . .       exit/quit -&gt; Exit</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   More info at https://frida.re/docs/home/</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   Connected to ONEPLUS A3000 (id=1c7dbd17)</span><br><span class="line"></span><br><span class="line">[ONEPLUS A3000::wuaipojie ]-&gt; Java_com_zj_wuaipojie_util_SecurityUtil_checkVip lib52pojie.so 0x74866d0614 0x10614</span><br><span class="line">Java_com_zj_wuaipojie_util_SecurityUtil_vipLevel lib52pojie.so 0x74866d061c 0x1061c</span><br><span class="line">Java_com_zj_wuaipojie_util_SecurityUtil_diamondNum lib52pojie.so 0x74866d07ec 0x107ec</span><br></pre></td></tr></table></figure>
+
+<h1 id="Hook-Linker"><a href="#Hook-Linker" class="headerlink" title="Hook_Linker"></a>Hook_Linker</h1><p>Linker是Android系统动态库so的加载器/链接器，通过android源码分析 init 和 init_array 是在 callConstructor 中被调用的</p>
+<h2 id="hookInit和hookInitArray"><a href="#hookInit和hookInitArray" class="headerlink" title="hookInit和hookInitArray"></a>hookInit和hookInitArray</h2><p>frida的CModule是一个极其强大的模块，本文将使用CModule来完成init_array的信息输出</p>
+<p>简单来说，就是借助CModule对soinfo结构体进行解析</p>
+<p>经过对比分析历代soinfo结构体的定义，可以确定从Android 8 ~ 14，结构体中init_array的位置都很稳定</p>
+<p>于是通过下面的头文件中提取必要的内容，在CModule中定义一个soinfo结构体，这样frida就能自动完成相关偏移的处理</p>
+<p><a href="http://aosp.app/android-14.0.0_r1/xref/bionic/libc/include/link.h" target="_blank" rel="noopener">http://aosp.app/android-14.0.0_r1/xref/bionic/libc/include/link.h</a><br><a href="http://aosp.app/android-14.0.0_r1/xref/bionic/libc/kernel/uapi/asm-generic/int-ll64.h" target="_blank" rel="noopener">http://aosp.app/android-14.0.0_r1/xref/bionic/libc/kernel/uapi/asm-generic/int-ll64.h</a><br><a href="http://aosp.app/android-14.0.0_r1/xref/bionic/libc/kernel/uapi/linux/elf.h" target="_blank" rel="noopener">http://aosp.app/android-14.0.0_r1/xref/bionic/libc/kernel/uapi/linux/elf.h</a><br><a href="http://aosp.app/android-14.0.0_r1/xref/bionic/linker/linker_soinfo.h" target="_blank" rel="noopener">http://aosp.app/android-14.0.0_r1/xref/bionic/linker/linker_soinfo.h</a><br>接着定义一个函数，接受一个soinfo指针参数和一个callback函数，优雅地输出init_array信息</p>
+<p>核心代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">function hook_call_constructors() &#123;</span><br><span class="line">    // 初始化变量</span><br><span class="line">    let get_soname = null;</span><br><span class="line">    let call_constructors_addr = null;</span><br><span class="line">    let hook_call_constructors_addr = true;</span><br><span class="line">    // 根据进程的指针大小找到对应的linker模块</span><br><span class="line">    let linker = null;</span><br><span class="line">    if (Process.pointerSize == 4) &#123;</span><br><span class="line">        linker = Process.findModuleByName(&quot;linker&quot;);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        linker = Process.findModuleByName(&quot;linker64&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    // 枚举linker模块中的所有符号</span><br><span class="line">    let symbols = linker.enumerateSymbols();</span><br><span class="line">    for (let index = 0; index &lt; symbols.length; index++) &#123;</span><br><span class="line">        let symbol = symbols[index];</span><br><span class="line">        // 查找名为&quot;__dl__ZN6soinfo17call_constructorsEv&quot;的符号地址</span><br><span class="line">        if (symbol.name == &quot;__dl__ZN6soinfo17call_constructorsEv&quot;) &#123;</span><br><span class="line">            call_constructors_addr = symbol.address;</span><br><span class="line">        // 查找名为&quot;__dl__ZNK6soinfo10get_sonameEv&quot;的符号地址，获取soname</span><br><span class="line">        &#125; else if (symbol.name == &quot;__dl__ZNK6soinfo10get_sonameEv&quot;) &#123;</span><br><span class="line">            get_soname = new NativeFunction(symbol.address, &quot;pointer&quot;, [&quot;pointer&quot;]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    // 如果找到了所有需要的地址和函数</span><br><span class="line">    if (hook_call_constructors_addr &amp;&amp; call_constructors_addr &amp;&amp; get_soname) &#123;</span><br><span class="line">        // 挂钩call_constructors函数</span><br><span class="line">        Interceptor.attach(call_constructors_addr,&#123;</span><br><span class="line">            onEnter: function(args)&#123;</span><br><span class="line">                // 从参数获取soinfo对象</span><br><span class="line">                let soinfo = args[0];</span><br><span class="line">                // 使用get_soname函数获取模块名称</span><br><span class="line">                let soname = get_soname(soinfo).readCString();</span><br><span class="line">                // 调用tell_init_info函数并传递一个回调，用于记录构造函数的调用信息</span><br><span class="line">                tell_init_info(soinfo, new NativeCallback((count, init_array_ptr, init_func) =&gt; &#123;</span><br><span class="line">                    console.log(`[call_constructors] $&#123;soname&#125; count:$&#123;count&#125;`);</span><br><span class="line">                    console.log(`[call_constructors] init_array_ptr:$&#123;init_array_ptr&#125;`);</span><br><span class="line">                    console.log(`[call_constructors] init_func:$&#123;init_func&#125; -&gt; $&#123;get_addr_info(init_func)&#125;`);</span><br><span class="line">                    // 遍历所有初始化函数，并打印它们的信息</span><br><span class="line">                    for (let index = 0; index &lt; count; index++) &#123;</span><br><span class="line">                        let init_array_func = init_array_ptr.add(Process.pointerSize * index).readPointer();</span><br><span class="line">                        let func_info = get_addr_info(init_array_func);</span><br><span class="line">                        console.log(`[call_constructors] init_array:$&#123;index&#125; $&#123;init_array_func&#125; -&gt; $&#123;func_info&#125;`);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;, &quot;void&quot;, [&quot;int&quot;, &quot;pointer&quot;, &quot;pointer&quot;]));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"> ~  frida -U -f com.zj.wuaipojie -l .\hook_init.js</span><br><span class="line">     ____</span><br><span class="line">    / _  |   Frida 16.2.1 - A world-class dynamic instrumentation toolkit</span><br><span class="line">   | (_| |</span><br><span class="line">    &gt; _  |   Commands:</span><br><span class="line">   /_/ |_|       help      -&gt; Displays the help system</span><br><span class="line">   . . . .       object?   -&gt; Display information about &apos;object&apos;</span><br><span class="line">   . . . .       exit/quit -&gt; Exit</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   More info at https://frida.re/docs/home/</span><br><span class="line">   . . . .</span><br><span class="line">   . . . .   Connected to ONEPLUS A3000 (id=1c7dbd17)</span><br><span class="line">Spawned `com.zj.wuaipojie`. Resuming main thread!</span><br><span class="line">[ONEPLUS A3000::com.zj.wuaipojie ]-&gt; [call_constructors] gralloc.msm8996.so count:0</span><br><span class="line">[call_constructors] init_array_ptr:0x0</span><br><span class="line">[call_constructors] init_func:0x0 -&gt; null</span><br><span class="line">[call_constructors] liblog.so count:0</span><br><span class="line">[call_constructors] init_array_ptr:0x0</span><br><span class="line">[call_constructors] init_func:0x0 -&gt; null</span><br><span class="line">[call_constructors] libutils.so count:2</span><br><span class="line">[call_constructors] init_array_ptr:0x777e675880</span><br><span class="line">[call_constructors] init_func:0x0 -&gt; null</span><br><span class="line">[call_constructors] init_array:0 0x777e66d7cc -&gt; [libutils.so + 0x147cc]</span><br><span class="line">[call_constructors] init_array:1 0x777e674844 -&gt; [libutils.so + 0x1b844]</span><br><span class="line">[call_constructors] libcutils.so count:0</span><br><span class="line">[call_constructors] init_array_ptr:0x0</span><br><span class="line">[call_constructors] init_func:0x0 -&gt; null</span><br><span class="line">[call_constructors] libhardware.so count:0</span><br><span class="line">[call_constructors] init_array_ptr:0x0</span><br><span class="line">[call_constructors] init_func:0x0 -&gt; null</span><br><span class="line">[call_constructors] libqdMetaData.so count:0</span><br><span class="line">[call_constructors] init_array_ptr:0x0</span><br><span class="line">[call_constructors] init_func:0x0 -&gt; null</span><br><span class="line">[call_constructors] liblog.so count:0</span><br><span class="line">[call_constructors] init_array_ptr:0x0</span><br><span class="line">[call_constructors] init_func:0x0 -&gt; null</span><br><span class="line">[call_constructors] libcutils.so count:0</span><br><span class="line">[call_constructors] init_array_ptr:0x0</span><br><span class="line">[call_constructors] init_func:0x0 -&gt; null</span><br><span class="line">[call_constructors] libutils.so count:2</span><br><span class="line">[call_constructors] init_array_ptr:0x777e675880</span><br><span class="line">[call_constructors] init_func:0x0 -&gt; null</span><br></pre></td></tr></table></figure>
+
+<h1 id="frida-rpc"><a href="#frida-rpc" class="headerlink" title="frida_rpc"></a>frida_rpc</h1><p>在 Frida 中，RPC（Remote Procedure Calls）是一种机制，允许你在 Frida 脚本和应用程序之间进行远程调用。通过 RPC，你可以在 Frida 脚本中定义函数，并在目标应用程序中调用这些函数，实现脚本和目标应用程序之间的交互。</p>
+<p>下面是获取文字和图片url的js</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">function get_url()&#123;</span><br><span class="line">    let ChallengeNinth = Java.use(&quot;com.zj.wuaipojie.ui.ChallengeNinth&quot;);</span><br><span class="line">    ChallengeNinth[&quot;updateUI&quot;].implementation = function (list) &#123;</span><br><span class="line">        // console.log(`ChallengeNinth.updateUI is called: list=$&#123;list&#125;`);</span><br><span class="line">        var ret= this[&quot;updateUI&quot;](list);</span><br><span class="line">        var size = list.size();</span><br><span class="line">        for (var i = 0; i &lt; size; i++) &#123;</span><br><span class="line">            var ImageEntity = Java.cast(list.get(i), Java.use(&quot;com.zj.wuaipojie.entity.ImageEntity&quot;));</span><br><span class="line">            console.log(ImageEntity.name.value + &quot; , &quot; + ImageEntity.cover.value);</span><br><span class="line">        &#125;</span><br><span class="line">        return ret;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function main()&#123;</span><br><span class="line">    Java.perform(function()&#123;</span><br><span class="line">        get_url();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125; </span><br><span class="line">setImmediate(main);</span><br></pre></td></tr></table></figure>
+
+<p>先安装下面的库，frida-tools装过就不用装了，最好里面的frida版本跟server要对应上</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install frida-tools uvicorn fastapi requests</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><p><strong>uvicorn</strong>：uvicorn 是一个基于 ASGI（Asynchronous Server Gateway Interface）的 Web 服务器，用于运行基于 Python 的异步 Web 应用程序。它是一个轻量级、高性能的服务器，常用于部署和运行基于 ASGI 的 Web 框架，如 FastAPI。</p>
+</li>
+<li><p><strong>fastapi</strong>：FastAPI 是一个现代、快速（高性能）、易于使用的 Python Web 框架，用于构建 Web API。它基于 ASGI 并利用 Python 类型提示（Type Hints）和异步特性，提供了强大的自动化文档生成、输入验证、序列化、依赖注入等功能。FastAPI 具有出色的性能和开发效率，被广泛应用于构建高性能的 Web 后端服务。</p>
+</li>
+<li><p><strong>requests</strong>：requests 是一个流行的 Python HTTP 库，用于发送 HTTP 请求和处理响应。它简化了与 Web 服务进行交互的过程，提供了简洁的 API，支持常见的 HTTP 方法（GET、POST、PUT 等），并且可以方便地处理请求头、请求参数、Cookies 等内容。requests 是一个非常实用的工具，适用于各种 Web 开发场景。</p>
+</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>打赏专区</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="http://pic.giantbranch.cn/wechat.png" alt="giantbranch 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="http://pic.giantbranch.cn/alipay.png" alt="giantbranch 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+    
+      <div class="footer-custom">
+        <b>paypal: <a href="https://www.paypal.me/giantbranch">https://www.paypal.me/giantbranch</a> </b>
+      </div>
+    
+
+    
+    <div style="padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+    	<div><img src="http://pic.giantbranch.cn/ask.png"></div>
+    </div>
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    giantbranch
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.giantbranch.cn/2024/03/23/安卓Frida Hook进阶2/" title="安卓Frida Hook进阶2">https://www.giantbranch.cn/2024/03/23/安卓Frida Hook进阶2/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/新建-模板-小书匠/" rel="tag"># 新建,模板,小书匠</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2024/03/20/安卓Frida Hook之Frida-Native-Hook/" rel="next" title="安卓Frida Hook之Frida-Native-Hook">
+                <i class="fa fa-chevron-left"></i> 安卓Frida Hook之Frida-Native-Hook
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2024/03/25/安卓利用frida+tcpdump抓https包/" rel="prev" title="安卓利用frida+tcpdump抓https包">
+                安卓利用frida+tcpdump抓https包 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+    <div class="footer-custom">
+	<b>假如你看不到评论，可能是你访问Disqus被墙了，请使用代理访问</b>
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">giantbranch</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">198</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">分类</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">234</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/giantbranch" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/giantbranch" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-globe"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.csdn.net/u012763794" title="my csdn blog" target="_blank">my csdn blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://oldblog.giantbranch.cn/" title="old blog" target="_blank">old blog</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://weaponx.site/" title="WeaponX" target="_blank">WeaponX</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.tasfa.cn/" title="Tasfa" target="_blank">Tasfa</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://matshao.com/" title="MatShao" target="_blank">MatShao</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Hook-Libart"><span class="nav-number">1.</span> <span class="nav-text">Hook_Libart</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#hook-GetStringUTFChars"><span class="nav-number">1.1.</span> <span class="nav-text">hook_GetStringUTFChars</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Hook-Libc"><span class="nav-number">2.</span> <span class="nav-text">Hook_Libc</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#hook-kill"><span class="nav-number">2.1.</span> <span class="nav-text">hook_kill</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hook-pthread-create"><span class="nav-number">2.2.</span> <span class="nav-text">hook_pthread_create</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hook-str-cmp"><span class="nav-number">2.3.</span> <span class="nav-text">hook_str_cmp</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Hook-Libdl"><span class="nav-number">3.</span> <span class="nav-text">Hook_Libdl</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Hook-Linker"><span class="nav-number">4.</span> <span class="nav-text">Hook_Linker</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#hookInit和hookInitArray"><span class="nav-number">4.1.</span> <span class="nav-text">hookInit和hookInitArray</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#frida-rpc"><span class="nav-number">5.</span> <span class="nav-text">frida_rpc</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright"> &copy; 2017 &mdash; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i> 
+  </span>
+  <span class="author" itemprop="copyrightHolder">giantbranch(simplelogin.irjqx@aleeas.com)</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+<div class="footer-custom">
+<!-- <a href="https://beian.miit.gov.cn/"></a> -->
+<br>
+这是我的新博客，网站建于2017年10月
+<!-- <br>以下UV,PV统计始于2018.06.23 -->
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://giantbranch.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.giantbranch.cn/2024/03/23/安卓Frida Hook进阶2/';
+          this.page.identifier = '2024/03/23/安卓Frida Hook进阶2/';
+          this.page.title = '安卓Frida Hook进阶2';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://giantbranch.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

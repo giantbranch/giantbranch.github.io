@@ -1,5 +1,9 @@
 https://www.giantbranch.cn/2024/09/23/Clang Static Analyzer/
 https://www.giantbranch.cn/2024/09/21/Cppcheck的使用与VSCODE 插件/
+https://www.giantbranch.cn/2024/09/03/reqable的使用/
+https://www.giantbranch.cn/2024/07/16/利用bettercap进行蓝牙扫描/
+https://www.giantbranch.cn/2024/03/13/安卓修改so后安装出错/
+https://www.giantbranch.cn/2024/03/12/powershell配置主题/
 https://www.giantbranch.cn/2024/02/18/重学安卓逆向：Hook学习/
 https://www.giantbranch.cn/2024/02/11/重学安卓逆向：签名校验/
 https://www.giantbranch.cn/2024/02/08/重学安卓逆向：动态调试&Log插桩/

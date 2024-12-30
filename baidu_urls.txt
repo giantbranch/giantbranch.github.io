@@ -196,3 +196,4 @@ https://www.giantbranch.cn/2017/08/19/当gflag不“奏效”——CVE-2013-0077
 https://www.giantbranch.cn/2017/08/03/Exploit Exercises Protostar Stack Part 0-7/
 https://www.giantbranch.cn/2017/05/20/我的安全之路——二进制与逆向篇/
 https://www.giantbranch.cn/2017/04/07/我的安全之路——Web安全篇/
+https://www.giantbranch.cn/1970/12/30/我的博客即将同步至腾讯云开发者社区/
